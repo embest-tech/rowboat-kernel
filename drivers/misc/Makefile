@@ -31,3 +31,4 @@ obj-$(CONFIG_C2PORT)		+= c2port/
 obj-$(CONFIG_IWMC3200TOP)      += iwmc3200top/
 obj-y				+= eeprom/
 obj-y				+= cb710/
+obj-$(CONFIG_WL127X_RFKILL)	+= wl127x-rfkill.o
