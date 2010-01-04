@@ -72,4 +72,12 @@ config SND_OMAP_SOC_OMAP3_BEAGLE
 	help
 	  Say Y if you want to add support for SoC audio on the Beagleboard.
 
+config SND_OMAP_SOC_IGEP0020
+	tristate "SoC Audio support for IGEP v2"
+	depends on TWL4030_CORE && SND_OMAP_SOC && MACH_IGEP0020
+	select SND_OMAP_SOC_MCBSP
+	select SND_SOC_TWL4030
+	help
+	  Say Y if you want to add support for SoC audio on the IGEP v2.
+
 
