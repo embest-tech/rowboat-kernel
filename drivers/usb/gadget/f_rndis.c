@@ -724,6 +724,10 @@ rndis_bind(struct usb_configuration *c, struct usb_function *f)
 					rndis_pdata->vendorDescr))
 			goto fail;
 	}
+#else
+	if (rndis_set_param_vendor(rndis->config, vendorID,
+				manufacturer))
+			goto fail;
 #endif
 
 	/* NOTE:  all that is done without knowing or caring about
