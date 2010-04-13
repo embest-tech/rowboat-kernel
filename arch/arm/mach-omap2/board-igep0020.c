@@ -244,6 +244,20 @@ static void __init igep2_init_irq(void)
 	omap_gpio_init();
 }
 
+#ifdef CONFIG_FB_OMAP2 
+static struct resource igep2_vout_resource[3 - CONFIG_FB_OMAP2_NUM_FBS] = {
+};
+#else /* CONFIG_FB_OMAP2 */ 
+static struct resource igep2_vout_resource[2] = {
+};
+#endif /* CONFIG_FB_OMAP2 */ 
+static struct platform_device igep2_vout_device = {
+        .name           = "omap_vout",
+        .num_resources  = ARRAY_SIZE(igep2_vout_resource),
+        .resource       = &igep2_vout_resource[0],
+        .id             = -1,
+};
+
 /* DSS */
 static int igep2_enable_dvi(struct omap_display *display)
 {
@@ -299,6 +313,7 @@ static struct omap_board_config_kernel igep2_config[] __initdata = {
 
 static struct platform_device *igep2_devices[] __initdata = {
 	&igep2_dss_device,
+	&igep2_vout_device,
 };
 
 static void __init igep2_init(void)
