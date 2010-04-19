@@ -1435,7 +1435,7 @@ static int omapfb_alloc_fbmem_display(struct fb_info *fbi, unsigned long size,
 			DBG("adjusting fb mem size for VRFB, %u -> %lu\n",
 					w * h * bytespp, size);
 		} else {
-			size = w * h * bytespp;
+			size = w * h * bytespp * 2;
 		}
 	}
 
@@ -1756,7 +1756,7 @@ static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi)
 		}
 
 		var->xres_virtual = var->xres;
-		var->yres_virtual = var->yres;
+		var->yres_virtual = var->yres * 2;
 
 		if (!var->bits_per_pixel) {
 			switch (display->get_recommended_bpp(display)) {
@@ -1777,7 +1777,7 @@ static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi)
 		var->xres = 320;
 		var->yres = 240;
 		var->xres_virtual = var->xres;
-		var->yres_virtual = var->yres;
+		var->yres_virtual = var->yres * 2;
 		if (!var->bits_per_pixel)
 			var->bits_per_pixel = 16;
 	}
