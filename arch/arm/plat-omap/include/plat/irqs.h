@@ -417,7 +417,16 @@
 #define TWL_IRQ_END		TWL6030_IRQ_END
 #endif
 
-#define NR_IRQS			TWL_IRQ_END
+/* MSI IRQs may get added for TI81XX */
+#define MSI_IRQ_BASE		TWL_IRQ_END
+#ifdef CONFIG_PCI_MSI
+#define MSI_NR_IRQS		32
+#else
+#define MSI_NR_IRQS		0
+#endif
+#define MSI_IRQ_END		(MSI_IRQ_BASE + MSI_NR_IRQS)
+
+#define NR_IRQS			MSI_IRQ_END
 
 #define TI816X_IH_GPIO_BASE	128
 
