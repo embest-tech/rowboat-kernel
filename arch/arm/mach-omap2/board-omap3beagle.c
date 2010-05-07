@@ -56,54 +56,6 @@
 
 #define NAND_BLOCK_SIZE		SZ_128K
 
-
-/*
- * OPP tables for OMAP35x
- */
-struct omap_opp omap35x_mpu_rate_table[] = {
-	{0, 0, 0},
-	/*OPP1*/
-	{S125M, VDD1_OPP1, 0x1E},
-	/*OPP2*/
-	{S250M, VDD1_OPP2, 0x26},
-	/*OPP3*/
-	{S500M, VDD1_OPP3, 0x30},
-	/*OPP4*/
-	{S550M, VDD1_OPP4, 0x36},
-	/*OPP5*/
-	{S600M, VDD1_OPP5, 0x3C},
-	/*OPP6*/
-	{S720M, VDD1_OPP6, 0x3C},
-};
-
-struct omap_opp omap35x_dsp_rate_table[] = {
-	{0, 0, 0},
-	/*OPP1*/
-	{S90M, VDD1_OPP1, 0x1E},
-	/*OPP2*/
-	{S180M, VDD1_OPP2, 0x26},
-	/*OPP3*/
-	{S360M, VDD1_OPP3, 0x30},
-	/*OPP4*/
-	{S400M, VDD1_OPP4, 0x36},
-	/*OPP5*/
-	{S430M, VDD1_OPP5, 0x3C},
-	/*OPP5*/
-	{S520M, VDD1_OPP6, 0x3C},
-};
-
-struct omap_opp omap35x_l3_rate_table[] = {
-	{0, 0, 0},
-	/*OPP1*/
-	{0, VDD2_OPP1, 0x1E},
-	/*OPP2*/
-	{S83M, VDD2_OPP2, 0x24},
-	/*OPP3*/
-	{S166M, VDD2_OPP3, 0x2C},
-};
-
-
-
 static struct mtd_partition omap3beagle_nand_partitions[] = {
 	/* All the partition sizes are listed in terms of NAND block size */
 	{
@@ -410,8 +362,8 @@ static void __init omap3_beagle_init_irq(void)
 	omap_board_config = omap3_beagle_config;
 	omap_board_config_size = ARRAY_SIZE(omap3_beagle_config);
 	omap2_init_common_hw(mt46h32m32lf6_sdrc_params,
-			     mt46h32m32lf6_sdrc_params, omap35x_mpu_rate_table,
-			     omap35x_dsp_rate_table, omap35x_l3_rate_table);
+			     mt46h32m32lf6_sdrc_params, omap3_mpu_rate_table,
+			     omap3_dsp_rate_table, omap3_l3_rate_table);
 	omap_init_irq();
 #ifdef CONFIG_OMAP_32K_TIMER
 	omap2_gp_clockevent_set_gptimer(12);
