@@ -159,8 +159,8 @@ return_sleep_time:
 	return ts_idle.tv_nsec / NSEC_PER_USEC + ts_idle.tv_sec * USEC_PER_SEC;
 }
 
-
-/* next_valid_state - Find next valid c-state
+/**
+ * next_valid_state - Find next valid c-state
  * @dev: cpuidle device
  * @state: Currently selected c-state
  *
@@ -168,7 +168,7 @@ return_sleep_time:
  * Else, this function searches for a lower c-state which is still
  * valid (as defined in omap3_power_states[]).
  */
-static struct cpuidle_state* next_valid_state(struct cpuidle_device *dev,
+static struct cpuidle_state *next_valid_state(struct cpuidle_device *dev,
 						struct cpuidle_state *curr)
 {
 	struct cpuidle_state *next = NULL;
@@ -178,12 +178,13 @@ static struct cpuidle_state* next_valid_state(struct cpuidle_device *dev,
 
 	/* Check if current state is valid */
 	if (cx->valid) {
-		next = curr;
-	}
-	else {
+		return curr;
+	} else {
 		u8 idx = OMAP3_STATE_MAX;
 
-		/* Reach the current state starting at highest C-state */
+		/*
+		 * Reach the current state starting at highest C-state
+		 */
 		for (; idx >= OMAP3_STATE_C1; idx--) {
 			if (&dev->states[idx] == curr) {
 				next = &dev->states[idx];
@@ -194,16 +195,18 @@ static struct cpuidle_state* next_valid_state(struct cpuidle_device *dev,
 		/*
 		 * Should never hit this condition.
 		 */
-		BUG_ON(next == NULL);
+		WARN_ON(next == NULL);
 
-		/* Drop to next valid state.
+		/*
+		 * Drop to next valid state.
 		 * Start search from the next (lower) state.
 		 */
 		idx--;
 		for (; idx >= OMAP3_STATE_C1; idx--) {
-			if (((struct omap3_processor_cx *)
-				cpuidle_get_statedata(
-					&dev->states[idx]))->valid) {
+			struct omap3_processor_cx *cx;
+
+			cx = cpuidle_get_statedata(&dev->states[idx]);
+			if (cx->valid) {
 				next = &dev->states[idx];
 				break;
 			}
@@ -217,7 +220,6 @@ static struct cpuidle_state* next_valid_state(struct cpuidle_device *dev,
 	return next;
 }
 
-
 /**
  * omap3_enter_idle_bm - Checks for any bus activity
  * @dev: cpuidle device
@@ -230,7 +232,7 @@ static struct cpuidle_state* next_valid_state(struct cpuidle_device *dev,
 static int omap3_enter_idle_bm(struct cpuidle_device *dev,
 			       struct cpuidle_state *state)
 {
-	struct cpuidle_state *new_state= next_valid_state(dev, state);
+	struct cpuidle_state *new_state = next_valid_state(dev, state);
 
 	if ((state->flags & CPUIDLE_FLAG_CHECK_BM) && omap3_idle_bm_check()) {
 		BUG_ON(!dev->safe_state);
@@ -275,19 +277,17 @@ void omap3_cpuidle_update_states(void)
 	int i;
 
 	for (i = OMAP3_STATE_C1; i < OMAP3_MAX_STATES; i++) {
+		struct omap3_processor_cx *cx = &omap3_power_states[i];
+
 		if (enable_off_mode) {
-			omap3_power_states[i].valid = 1;
-		}
-		else {
-			if ((omap3_power_states[i].mpu_state
-					== PWRDM_POWER_OFF)
-				|| (omap3_power_states[i].core_state
-					== PWRDM_POWER_OFF))
-			omap3_power_states[i].valid = 0;
+			cx->valid = 1;
+		} else {
+			if ((cx->mpu_state == PWRDM_POWER_OFF) ||
+				(cx->core_state == PWRDM_POWER_OFF))
+				cx->valid = 0;
 		}
 	}
 }
-
 
 /* omap3_init_power_states - Initialises the OMAP3 specific C states.
  *

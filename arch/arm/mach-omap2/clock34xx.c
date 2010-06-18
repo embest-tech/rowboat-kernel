@@ -544,47 +544,35 @@ int __init omap2_clk_set_freq(void)
 	 * Attempt to get the required clocks
 	 */
 	dpll1_ck = clk_get(NULL, "dpll1_ck");
-	if (dpll1_ck == NULL) {
+	if (WARN(IS_ERR(dpll1_ck), "Failed to get dpll1_ck.\n"))
 		err = 1;
-		pr_err("*** Failed to get dpll1_ck.\n");
-	}
 
 	arm_fck = clk_get(NULL, "arm_fck");
-	if (arm_fck == NULL) {
+	if (WARN(IS_ERR(arm_fck), "Failed to get arm_fck.\n"))
 		err = 1;
-		pr_err("*** Failed to get arm_fck.\n");
-	}
 
 	core_ck = clk_get(NULL, "core_ck");
-	if (core_ck == NULL) {
+	if (WARN(IS_ERR(core_ck), "Failed to get core_ck.\n"))
 		err = 1;
-		pr_err("*** Failed to get core_ck.\n");
-	}
 
 	osc_sys_ck = clk_get(NULL, "osc_sys_ck");
-	if (osc_sys_ck == NULL) {
+	if (WARN(IS_ERR(osc_sys_ck), "Failed to get osc_sys_ck.\n"))
 		err = 1;
-		pr_err("*** Failed to get osc_sys_ck.\n");
-	}
 
 	dpll2_ck = clk_get(NULL, "dpll2_ck");
-	if (dpll2_ck == NULL) {
+	if (WARN(IS_ERR("dpll2_ck"), "Failed to get dpll2_ck.\n"))
 		err = 1;
-		pr_err("*** Failed to get dpll2_ck.\n");
-	}
 
 	iva2_ck = clk_get(NULL, "iva2_ck");
-	if (iva2_ck == NULL) {
+	if (WARN(IS_ERR("iva2_ck"), "Failed to get iva2_ck.\n"))
 		err = 1;
-		pr_err("*** Failed to get iva2_ck.\n");
-	}
 
 	dpll3_m2_ck = clk_get(NULL, "dpll3_m2_ck");
 	if (WARN(IS_ERR("dpll3_m2_ck"), "Failed to get dpll3_m2_ck.\n"))
 		err = 1;
 
 	if (err)
-		return 1;
+		return -ENOENT;
 
 	/*
 	 * Set MPU frequency
