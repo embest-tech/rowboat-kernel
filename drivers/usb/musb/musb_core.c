@@ -2101,12 +2101,10 @@ bad_config:
 	 * (We expect the ID pin to be forcibly grounded!!)
 	 * Otherwise, wait till the gadget driver hooks up.
 	 */
-	if (is_host_enabled(musb)) {
-		if (!is_otg_enabled(musb)) {
-			MUSB_HST_MODE(musb);
-			musb->xceiv->default_a = 1;
-			musb->xceiv->state = OTG_STATE_A_IDLE;
-		}
+	if (!is_otg_enabled(musb) && is_host_enabled(musb)) {
+		MUSB_HST_MODE(musb);
+		musb->xceiv->default_a = 1;
+		musb->xceiv->state = OTG_STATE_A_IDLE;
 
 		status = usb_add_hcd(musb_to_hcd(musb), -1, 0);
 
@@ -2117,9 +2115,7 @@ bad_config:
 					& MUSB_DEVCTL_BDEVICE
 				? 'B' : 'A'));
 
-	}
-	/* peripheral is enabled */
-	if (is_peripheral_enabled(musb)) {
+	} else /* peripheral is enabled */ {
 		MUSB_DEV_MODE(musb);
 		musb->xceiv->default_a = 0;
 		musb->xceiv->state = OTG_STATE_B_IDLE;
