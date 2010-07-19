@@ -319,7 +319,7 @@ static struct twl4030_hsmmc_info mmc[] = {
 	{
 		.mmc		= 1,
 		.wires		= 8,
-		.gpio_wp	= 29,
+		.gpio_wp	= -1,
 	},
 	{
 		.mmc		= 2,
@@ -344,9 +344,15 @@ static int beagle_twl_gpio_setup(struct device *dev,
 		unsigned gpio, unsigned ngpio)
 {
 	if (system_rev >= 0x20 && system_rev <= 0x34301000) {
-		omap_mux_init_gpio(23, OMAP_PIN_INPUT);
-		mmc[0].gpio_wp = 23;
+		if (cpu_is_omap3630()) {
+			mmc[0].gpio_wp = -1;
+		}
+		else {
+			mmc[0].gpio_wp = 23;
+			omap_mux_init_gpio(23, OMAP_PIN_INPUT);
+		}
 	} else {
+		mmc[0].gpio_wp = 29;
 		omap_mux_init_gpio(29, OMAP_PIN_INPUT);
 	}
 	/* gpio + 0 is "mmc0_cd" (input/IRQ) */
