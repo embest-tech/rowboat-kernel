@@ -30,6 +30,7 @@
 #include <linux/i2c/twl.h>
 #include <linux/usb/otg.h>
 #include <linux/smsc911x.h>
+#include <linux/usb/android_composite.h>
 
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/partitions.h>
@@ -86,7 +87,54 @@ extern struct regulator_consumer_supply twl4030_vsim_supply;
 extern struct regulator_init_data vmmc1_data;
 extern struct regulator_init_data vsim_data;
 
+#ifdef CONFIG_USB_ANDROID
 
+#define GOOGLE_VENDOR_ID		0x18d1
+#define GOOGLE_PRODUCT_ID		0x9018
+#define GOOGLE_ADB_PRODUCT_ID		0x9015
+
+static char *usb_functions_adb[] = {
+	"adb",
+};
+
+static char *usb_functions_all[] = {
+	"adb",
+};
+
+static struct android_usb_product usb_products[] = {
+	{
+		.product_id	= GOOGLE_PRODUCT_ID,
+		.num_functions	= ARRAY_SIZE(usb_functions_adb),
+		.functions	= usb_functions_adb,
+	},
+};
+
+static struct android_usb_platform_data android_usb_pdata = {
+	.vendor_id	= GOOGLE_VENDOR_ID,
+	.product_id	= GOOGLE_PRODUCT_ID,
+	.functions	= usb_functions_all,
+	.products	= usb_products,
+	.version	= 0x0100,
+	.product_name	= "rowboat gadget",
+	.manufacturer_name	= "rowboat",
+	.serial_number	= "20100720",
+	.num_functions	= ARRAY_SIZE(usb_functions_all),
+};
+
+static struct platform_device androidusb_device = {
+	.name	= "android_usb",
+	.id	= -1,
+	.dev	= {
+		.platform_data = &android_usb_pdata,
+	},
+};
+
+static void omap3evm_android_gadget_init(void)
+{
+	platform_device_register(&androidusb_device);
+}
+
+#endif
 
 static u8 omap3_evm_version;
 
@@ -1163,6 +1211,10 @@ static void __init omap3_evm_init(void)
 	omap3evm_init_smsc911x();
 
 	omap3_evm_display_init();
+
+#ifdef CONFIG_USB_ANDROID
+	omap3evm_android_gadget_init();
+#endif
 }
 
 static void __init omap3_evm_map_io(void)
