@@ -1,5 +1,5 @@
 /*
- * OMAP2/3/4 clockdomain framework functions
+ * OMAP2/3/4 and TI816X clockdomain framework functions
  *
  * Copyright (C) 2008-2010 Texas Instruments, Inc.
  * Copyright (C) 2008-2010 Nokia Corporation
