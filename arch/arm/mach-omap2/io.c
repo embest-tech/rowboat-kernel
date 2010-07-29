@@ -323,7 +323,7 @@ static inline void omap_irq_base_init(void)
 {
 	if (cpu_is_omap24xx())
 		omap_irq_base = OMAP2_L4_IO_ADDRESS(OMAP24XX_IC_BASE);
-	else if (cpu_is_omap34xx())
+	else if (cpu_is_omap34xx() || cpu_is_ti81xx())
 		omap_irq_base = OMAP2_L4_IO_ADDRESS(OMAP34XX_IC_BASE);
 	else if (cpu_is_omap44xx())
 		omap_irq_base = OMAP2_L4_IO_ADDRESS(OMAP44XX_GIC_CPU_BASE);
