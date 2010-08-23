@@ -50,8 +50,8 @@ config ARCH_OMAP4
 	select PM_OPP if PM
 	select USB_ARCH_HAS_EHCI
 
-config ARCH_TI816X
-	bool "TI 816X"
+config ARCH_TI81XX
+	bool "TI 81XX"
 	depends on ARCH_OMAP2PLUS
 	default y
 	select CPU_V7
@@ -77,6 +77,16 @@ config ARCH_OMAP3430
 	depends on ARCH_OMAP3
 	default y
 	select ARCH_OMAP_OTG
+
+config ARCH_TI816X
+	bool "TI816X support"
+	depends on ARCH_TI81XX
+	default y
+
+config ARCH_TI814X
+	bool "TI814X support"
+	depends on ARCH_TI81XX
+	default y
 
 config OMAP_PACKAGE_ZAF
        bool
