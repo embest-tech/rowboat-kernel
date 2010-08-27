@@ -17,6 +17,7 @@
 #include <linux/err.h>
 #include <linux/slab.h>
 #include <linux/davinci_emac.h>
+#include <linux/cpsw.h>
 
 #include <mach/hardware.h>
 #include <mach/irqs.h>
@@ -1440,6 +1441,7 @@ static inline void ti81xx_register_edma(void) {}
 #ifdef CONFIG_ARCH_TI814X
 #define TI814X_CPSW_BASE		(0x4A100000)
 #define TI814X_CPSW_MDIO_BASE		(0x4A100800)
+#define	TI814X_EMAC_MDIO_FREQ		(1000000)
 
 static u64 cpsw_dma_mask = DMA_BIT_MASK(32);
 /* TODO : Verify the offsets */
@@ -1447,12 +1449,12 @@ struct cpsw_slave_data cpsw_slaves[] = {
 	{
 		.slave_reg_ofs  = 0x50,
 		.sliver_reg_ofs = 0x700,
-		.phy_id		= {"0:01"},
+		.phy_id		= "0:01",
 	},
 	{
 		.slave_reg_ofs  = 0x90,
 		.sliver_reg_ofs = 0x740,
-		.phy_id		= {"0:00"},
+		.phy_id		= "0:00",
 	},
 };
 
@@ -1491,7 +1493,7 @@ static struct resource cpsw_mdio_resources[] = {
 static struct platform_device cpsw_mdio_device = {
 	.name           = "davinci_mdio",
 	.id             = 0,
-	.num_resources  = ARRAY_SIZE(mdio_resources),
+	.num_resources  = ARRAY_SIZE(cpsw_mdio_resources),
 	.resource       = cpsw_mdio_resources,
 	.dev.platform_data = &cpsw_mdio_pdata,
 };
@@ -1503,23 +1505,23 @@ static struct resource ti814x_cpsw_resources[] = {
 		.flags  = IORESOURCE_MEM,
 	},
 	{
-		.start	= TI814X_IRQ_MACRXTHR0,
-		.end	= TI814X_IRQ_MACRXTHR0,
+		.start	= TI814X_IRQ_GSWRXTHR0,
+		.end	= TI814X_IRQ_GSWRXTHR0,
 		.flags	= IORESOURCE_IRQ,
 	},
 	{
-		.start	= TI814X_IRQ_MACRXINT0,
-		.end	= TI814X_IRQ_MACRXINT0,
+		.start	= TI814X_IRQ_GSWRXINT0,
+		.end	= TI814X_IRQ_GSWRXINT0,
 		.flags	= IORESOURCE_IRQ,
 	},
 	{
-		.start	= TI814X_IRQ_MACTXINT0,
-		.end	= TI814X_IRQ_MACTXINT0,
+		.start	= TI814X_IRQ_GSWTXINT0,
+		.end	= TI814X_IRQ_GSWTXINT0,
 		.flags	= IORESOURCE_IRQ,
 	},
 	{
-		.start	= TI814X_IRQ_MACMISC0,
-		.end	= TI814X_IRQ_MACMISC0,
+		.start	= TI814X_IRQ_GSWMISC0,
+		.end	= TI814X_IRQ_GSWMISC0,
 		.flags	= IORESOURCE_IRQ,
 	},
 };
@@ -1530,14 +1532,15 @@ static struct platform_device ti814x_cpsw_device = {
 	.num_resources	=	ARRAY_SIZE(ti814x_cpsw_resources),
 	.resource	=	ti814x_cpsw_resources,
 	.dev		=	{
-					.platform_data	   = &ti814x_cpsw_pdata;
-					.dma_mask	   =  cpsw_dma_mask;
-					.coherent_dma_mask = cpsw_dma_mask;
+					.platform_data	   = &ti814x_cpsw_pdata,
+					.dma_mask	   = &cpsw_dma_mask,
+					.coherent_dma_mask = DMA_BIT_MASK(32),
 				},
 };
 
 void ti814x_cpsw_mux(void)
 {
+#if 0 /* No pinmux for now */
 	omap_mux_init_signal("gmii1_rxclk", OMAP_MUX_MODE1);
 	omap_mux_init_signal("gmii1_rxd0", OMAP_MUX_MODE1);
 	omap_mux_init_signal("gmii1_rxd1", OMAP_MUX_MODE1);
@@ -1562,6 +1565,7 @@ void ti814x_cpsw_mux(void)
 	omap_mux_init_signal("gmii1_col", OMAP_MUX_MODE1);
 	omap_mux_init_signal("gmii1_crs", OMAP_MUX_MODE1);
 	omap_mux_init_signal("gmii1_rxer", OMAP_MUX_MODE1);
+#endif
 }
 
 void ti814x_cpsw_init(void)
@@ -1595,6 +1599,14 @@ void ti814x_cpsw_init(void)
 static inline void ti814x_cpsw_init(void) {}
 #endif
 
+static void ti81xx_ethernet_init(void)
+{
+	if (cpu_is_ti816x())
+		ti816x_ethernet_init();
+	else
+		ti814x_cpsw_init();
+}
+
 static int __init omap2_init_devices(void)
 {
 	/*
@@ -1613,8 +1625,7 @@ static int __init omap2_init_devices(void)
 	omap_init_aes();
 	omap_init_vout();
 #ifdef CONFIG_ARCH_TI81XX
-	ti816x_ethernet_init();
-	ti814x_cpsw_init();
+	ti81xx_ethernet_init();
 	ti81xx_register_edma();
 #endif
 
