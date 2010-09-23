@@ -446,9 +446,53 @@ static int __init omap2_clk_arch_init(void)
 {
 	struct omap_opp *opp_table;
 	short valid=0, err=0, i;
+	struct clk *osc_sys_ck, *dpll1_ck, *arm_fck, *core_ck;
+	unsigned long osc_sys_rate;
 
 	if (!mpurate)
 		return -EINVAL;
+
+	/* make chance to set mpurate statically if smartreflex is disabled */
+	if (cpu_is_omap3517()) {
+		dpll1_ck = clk_get(NULL, "dpll1_ck");
+		if (WARN(IS_ERR(dpll1_ck), "Failed to get dpll1_ck.\n"))
+			err = 1;
+
+		arm_fck = clk_get(NULL, "arm_fck");
+		if (WARN(IS_ERR(arm_fck), "Failed to get arm_fck.\n"))
+			err = 1;
+
+		core_ck = clk_get(NULL, "core_ck");
+		if (WARN(IS_ERR(core_ck), "Failed to get core_ck.\n"))
+			err = 1;
+
+		osc_sys_ck = clk_get(NULL, "osc_sys_ck");
+		if (WARN(IS_ERR(osc_sys_ck), "Failed to get osc_sys_ck.\n"))
+			err = 1;
+
+		if (err)
+			return -ENOENT;
+
+		if (clk_set_rate(dpll1_ck, mpurate))
+			printk(KERN_ERR "*** Unable to set MPU rate\n");
+		/*
+		 * Re-calculate the clocks
+		 */
+		recalculate_root_clocks();
+
+		osc_sys_rate = clk_get_rate(osc_sys_ck);
+
+		printk("Switched to new clocking rate (Crystal/Core/MPU): "
+			"%ld.%01ld/%ld/%ld MHz\n",
+			(osc_sys_rate / 1000000),
+			((osc_sys_rate / 100000) % 10),
+			(clk_get_rate(core_ck) / 1000000),
+			(clk_get_rate(arm_fck) / 1000000));
+
+		calibrate_delay();
+
+		return 0;
+	}
 
 	/*
 	 * Check if OPP tables are defined.
