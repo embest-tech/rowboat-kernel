@@ -201,7 +201,7 @@ static int __devinit tca6416_keypad_probe(struct i2c_client *client,
 		kfree(ddata);
 		goto fail2;
 	}
-
+	input->name = "TCA6416 Keypad";
 	input->phys = "tca6416-keys/input0";
 	input->dev.parent = &client->dev;
 
