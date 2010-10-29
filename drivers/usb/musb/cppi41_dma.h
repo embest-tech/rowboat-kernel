@@ -19,7 +19,12 @@
 
 #ifndef _CPPI41_DMA_H_
 #define _CPPI41_DMA_H_
-#include <plat/usb.h>
+
+#define USB_CPPI41_NUM_CH 4
+
+#ifdef CONFIG_ARCH_DAVINCI_DA8XX
+#include "da8xx.h"
+#endif
 
 /**
  * struct usb_cppi41_info - CPPI 4.1 USB implementation details

@@ -64,7 +64,8 @@ struct musb_ep;
 
 
 
-#ifdef CONFIG_USB_MUSB_OTG
+#define	is_dr_enabled(musb)		((musb)->board_mode == MUSB_DUAL_ROLE)
+#if defined(CONFIG_USB_MUSB_OTG) || defined(CONFIG_USB_MUSB_DUAL_ROLE)
 
 #define	is_peripheral_enabled(musb)	((musb)->board_mode != MUSB_HOST)
 #define	is_host_enabled(musb)		((musb)->board_mode != MUSB_PERIPHERAL)
@@ -307,16 +308,6 @@ static inline struct usb_request *next_out_request(struct musb_hw_ep *hw_ep)
 #endif
 }
 
-#ifdef CONFIG_USB_MUSB_HDRC_HCD
-/*
- * struct queue - Queue data structure
- */
-struct queue {
-	struct urb *urb;
-	struct queue *next;
-};
-#endif
-
 /*
  * struct musb - Driver instance data.
  */
@@ -356,11 +347,6 @@ struct musb {
 	struct list_head	control;	/* of musb_qh */
 	struct list_head	in_bulk;	/* of musb_qh */
 	struct list_head	out_bulk;	/* of musb_qh */
-
-	struct workqueue_struct *gb_queue;
-	struct work_struct      gb_work;
-	spinlock_t		qlock;
-	struct queue		*qhead;
 #endif
 
 	/* called with IRQs blocked; ON/nonzero implies starting a session,
@@ -443,21 +429,13 @@ struct musb {
 	unsigned		hb_iso_tx:1;	/* high bandwidth iso tx? */
 	unsigned		dyn_fifo:1;	/* dynamic FIFO supported? */
 
-#ifdef C_MP_TX
-	unsigned bulk_split:1;
+	unsigned		bulk_split:1;
 #define	can_bulk_split(musb,type) \
-		(((type) == USB_ENDPOINT_XFER_BULK) && (musb)->bulk_split)
-#else
-#define	can_bulk_split(musb, type)	0
-#endif
+	(((type) == USB_ENDPOINT_XFER_BULK) && (musb)->bulk_split)
 
-#ifdef C_MP_RX
-	unsigned bulk_combine:1;
+	unsigned		bulk_combine:1;
 #define	can_bulk_combine(musb,type) \
-		(((type) == USB_ENDPOINT_XFER_BULK) && (musb)->bulk_combine)
-#else
-#define	can_bulk_combine(musb, type)	0
-#endif
+	(((type) == USB_ENDPOINT_XFER_BULK) && (musb)->bulk_combine)
 
 #ifdef CONFIG_USB_GADGET_MUSB_HDRC
 	/* is_suspended means USB B_PERIPHERAL suspend */
@@ -514,7 +492,7 @@ struct musb_context_registers {
 	u16 frame;
 	u8 index, testmode;
 
-	u8 devctl, busctl, misc;
+	u8 devctl, misc;
 
 	struct musb_csr_regs index_regs[MUSB_C_NUM_EPS];
 };
@@ -632,6 +610,7 @@ extern void musb_hnp_stop(struct musb *musb);
 extern int musb_platform_set_mode(struct musb *musb, u8 musb_mode);
 
 #if defined(CONFIG_USB_TUSB6010) || defined(CONFIG_BLACKFIN) || \
+	defined(CONFIG_ARCH_DAVINCI_DA8XX) || \
 	defined(CONFIG_ARCH_OMAP2430) || defined(CONFIG_ARCH_OMAP34XX)
 extern void musb_platform_try_idle(struct musb *musb, unsigned long timeout);
 #else
@@ -646,9 +625,6 @@ extern int musb_platform_get_vbus_status(struct musb *musb);
 
 extern int __init musb_platform_init(struct musb *musb);
 extern int musb_platform_exit(struct musb *musb);
-#ifdef CONFIG_USB_MUSB_HDRC_HCD
-extern void musb_gb_work(struct work_struct *data);
-#endif
 
 /*-------------------------- ProcFS definitions ---------------------*/
 

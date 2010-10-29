@@ -40,18 +40,14 @@
 #endif
 
 #ifdef CONFIG_MUSB_USE_SYSTEM_DMA_RX
-static int is_sdma = 1;
+static int use_sdma = 1;
 #else
-#define is_sdma          0
+#define use_sdma          0
 #endif
 
-int use_system_dma(u8 tx)
+int use_system_dma(void)
 {
-	int ret = 0;
-	if (is_sdma && (cpu_is_omap3630() || (cpu_is_omap3430() && !tx)))
-		ret = 1;
-
-	return ret;
+	return use_sdma;
 }
 
 #ifndef CONFIG_BLACKFIN

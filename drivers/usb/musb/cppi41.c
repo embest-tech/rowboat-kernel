@@ -42,6 +42,7 @@
 static struct {
 	void *virt_addr;
 	dma_addr_t phys_addr;
+	u32 size;
 } linking_ram[CPPI41_NUM_QUEUE_MGR];
 
 static u32 *allocated_queues[CPPI41_NUM_QUEUE_MGR];
@@ -57,6 +58,26 @@ static struct {
 	struct cppi41_queue_obj queue_obj;
 	u8 mem_rgn;
 } dma_teardown[CPPI41_NUM_DMA_BLOCK];
+
+struct cppi41_dma_sched_tbl_t {
+	u8      pos;
+	u8      dma_ch;
+	u8      is_tx;
+	u8      enb;
+};
+
+#define MAX_SCHED_TBL_ENTRY     8
+struct cppi41_dma_sched_tbl_t dma_sched_tbl[MAX_SCHED_TBL_ENTRY] = {
+	/*pos  dma_ch#  is_tx  enb/dis*/
+	{ 0,    0,      0,      1},
+	{ 1,    0,      1,      1},
+	{ 2,    1,      0,      1},
+	{ 3,    1,      1,      1},
+	{ 4,    2,      0,      1},
+	{ 5,    2,      1,      1},
+	{ 6,    3,      0,      1},
+	{ 7,    3,      1,      1}
+};
 
 /******************** CPPI 4.1 Functions (External Interface) *****************/
 
@@ -106,6 +127,22 @@ int cppi41_queue_mgr_init(u8 q_mgr, dma_addr_t rgn0_base, u16 rgn0_size)
 }
 EXPORT_SYMBOL(cppi41_queue_mgr_init);
 
+void cppi41_queue_mgr_deinit(u8 q_mgr)
+{
+	/* free the allocated linking ram memory */
+	dma_free_coherent(NULL, linking_ram[q_mgr].size,
+		linking_ram[q_mgr].virt_addr, linking_ram[q_mgr].phys_addr);
+
+	linking_ram[q_mgr].virt_addr = 0;
+	linking_ram[q_mgr].phys_addr = 0;
+	linking_ram[q_mgr].size = 0;
+
+	/* free the queue bit map memory */
+	kzfree(allocated_queues[q_mgr]);
+	allocated_queues[q_mgr] = 0;
+}
+EXPORT_SYMBOL(cppi41_queue_mgr_deinit);
+
 int cppi41_dma_sched_tbl_init(u8 dma_num, u8 q_mgr,
 			u32 *sched_tbl, u8 tbl_size)
 {
@@ -133,6 +170,83 @@ int cppi41_dma_sched_tbl_init(u8 dma_num, u8 q_mgr,
 	return 0;
 }
 EXPORT_SYMBOL(cppi41_dma_sched_tbl_init);
+
+int cppi41_schedtbl_add_dma_ch(u8 dmanum, u8 qmgr, u8 dma_ch, u8 is_tx)
+{
+	struct cppi41_dma_block *dma_block;
+	int num_ch, i, tbl_index = 0, j = 0, found = 0;
+	u32 val;
+
+	dma_block = (struct cppi41_dma_block *)&cppi41_dma_block[dmanum];
+
+	val = 0;
+	for (num_ch = 0, i = 0; i < MAX_SCHED_TBL_ENTRY; i++) {
+		if (!found && dma_sched_tbl[i].dma_ch == dma_ch &&
+			dma_sched_tbl[i].is_tx == is_tx &&
+			dma_sched_tbl[i].enb == 0) {
+			dma_sched_tbl[i].enb = 1;
+			found = 1;
+		}
+
+		if (dma_sched_tbl[i].enb) {
+			val |= ((dma_sched_tbl[i].dma_ch |
+				(dma_sched_tbl[i].is_tx ? 0 : (1<<7))) << j*8);
+			num_ch++;
+			j++;
+		}
+		if (num_ch % 4 == 0) {
+			__raw_writel(val, dma_block->sched_table_base +
+				DMA_SCHED_TABLE_WORD_REG(tbl_index));
+			tbl_index++;
+			val = j = 0;
+		}
+	}
+
+	if (num_ch % 4) {
+		__raw_writel(val, dma_block->sched_table_base +
+			DMA_SCHED_TABLE_WORD_REG(tbl_index));
+	}
+	return num_ch;
+}
+EXPORT_SYMBOL(cppi41_schedtbl_add_dma_ch);
+
+int cppi41_schedtbl_remove_dma_ch(u8 dmanum, u8 qmgr, u8 dma_ch, u8 is_tx)
+{
+	struct cppi41_dma_block *dma_block;
+	int num_ch, i, tbl_index = 0, j = 0, found = 0;
+	u32 val;
+
+	dma_block = (struct cppi41_dma_block *)&cppi41_dma_block[dmanum];
+
+	val = 0;
+	for (num_ch = 0, i = 0; i < MAX_SCHED_TBL_ENTRY; i++) {
+		if (!found && dma_sched_tbl[i].dma_ch == dma_ch &&
+			dma_sched_tbl[i].is_tx == is_tx &&
+			dma_sched_tbl[i].enb == 1) {
+			dma_sched_tbl[i].enb = 0;
+		}
+
+		if (dma_sched_tbl[i].enb) {
+			val |= ((dma_sched_tbl[i].dma_ch |
+				(dma_sched_tbl[i].is_tx ? 0 : (1<<7))) << j*8);
+			num_ch++;
+			j++;
+		}
+		if (num_ch % 4 == 0) {
+			__raw_writel(val, dma_block->sched_table_base +
+				DMA_SCHED_TABLE_WORD_REG(tbl_index));
+			tbl_index++;
+			val = j = 0;
+		}
+	}
+
+	if (num_ch % 4) {
+		__raw_writel(val, dma_block->sched_table_base +
+			DMA_SCHED_TABLE_WORD_REG(tbl_index));
+	}
+	return num_ch;
+}
+EXPORT_SYMBOL(cppi41_schedtbl_remove_dma_ch);
 
 int cppi41_dma_block_init(u8 dma_num, u8 q_mgr, u8 num_order,
 				 u32 *sched_tbl, u8 tbl_size)
@@ -250,6 +364,22 @@ free_queue:
 	return error;
 }
 EXPORT_SYMBOL(cppi41_dma_block_init);
+
+void cppi41_dma_block_deinit(u8 dma_num, u8 q_mgr)
+{
+	/* pop all the teardown descriptors from teardown queue */
+	cppi41_free_teardown_queue(dma_num);
+	dma_teardown[dma_num].queue_obj.base_addr = NULL;
+
+	/* free the teardown descripotr memory */
+	dma_free_coherent(NULL, dma_teardown[dma_num].rgn_size,
+		dma_teardown[dma_num].virt_addr,
+		dma_teardown[dma_num].phys_addr);
+
+	dma_teardown[dma_num].virt_addr = 0;
+	dma_teardown[dma_num].phys_addr = 0;
+}
+EXPORT_SYMBOL(cppi41_dma_block_deinit);
 
 /*
  * cppi41_mem_rgn_alloc - allocate a memory region within the queue manager

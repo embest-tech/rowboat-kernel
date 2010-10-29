@@ -43,7 +43,7 @@ struct davinci_soc_info {
 	void __iomem			*jtag_id_base;
 	struct davinci_id		*ids;
 	unsigned long			ids_num;
-	struct davinci_clk		*cpu_clks;
+	struct clk_lookup		*cpu_clks;
 	void __iomem			**psc_bases;
 	unsigned long			psc_bases_num;
 	void __iomem			*pinmux_base;
@@ -71,5 +71,6 @@ extern void davinci_common_init(struct davinci_soc_info *soc_info);
 /* standard place to map on-chip SRAMs; they *may* support DMA */
 #define SRAM_VIRT	0xfffe0000
 #define SRAM_SIZE	SZ_128K
+#define DAVINCI_USB_OTG_BASE    0x01C64000
 
 #endif /* __ARCH_ARM_MACH_DAVINCI_COMMON_H */

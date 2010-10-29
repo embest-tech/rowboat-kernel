@@ -25,17 +25,6 @@
 #include <mach/cputype.h>
 #include <mach/psc.h>
 
-/* PSC register offsets */
-#define EPCPR		0x070
-#define PTCMD		0x120
-#define PTSTAT		0x128
-#define PDSTAT		0x200
-#define PDCTL1		0x304
-#define MDSTAT		0x800
-#define MDCTL		0xA00
-
-#define MDSTAT_STATE_MASK 0x1f
-
 /* Return nonzero iff the domain's clock is active */
 int __init davinci_psc_is_clk_active(unsigned int ctlr, unsigned int id)
 {
@@ -76,6 +65,9 @@ void davinci_psc_config(unsigned int domain, unsigned int ctlr,
 	mdctl = __raw_readl(psc_base + MDCTL + 4 * id);
 	mdctl &= ~MDSTAT_STATE_MASK;
 	mdctl |= next_state;
+	/* For SATA force the domain turn on */
+	if (cpu_is_davinci_da850() && (id == 8) && (ctlr == 1))
+		mdctl |= 0x80000000;
 	__raw_writel(mdctl, psc_base + MDCTL + 4 * id);
 
 	pdstat = __raw_readl(psc_base + PDSTAT);

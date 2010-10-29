@@ -60,7 +60,7 @@ config SATA_PMP
 
 config SATA_AHCI
 	tristate "AHCI SATA support"
-	depends on PCI
+	depends on PCI || ARCH_DAVINCI_DA850
 	help
 	  This option enables support for AHCI Serial ATA.
 

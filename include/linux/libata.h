@@ -354,6 +354,9 @@ enum {
 	/* max tries if error condition is still set after ->error_handler */
 	ATA_EH_MAX_TRIES	= 5,
 
+	/* sometimes resuming a link requires several retries */
+	ATA_LINK_RESUME_TRIES	= 5,
+
 	/* how hard are we gonna try to probe/recover devices */
 	ATA_PROBE_MAX_TRIES	= 3,
 	ATA_EH_DEV_TRIES	= 3,
@@ -531,6 +534,7 @@ struct ata_host {
 	acpi_handle		acpi_handle;
 #endif
 	struct ata_port		*simplex_claimed;	/* channel owning the DMA */
+	struct clk		*clock;
 	struct ata_port		*ports[0];
 };
 
@@ -1046,6 +1050,11 @@ extern void ata_timing_merge(const struct ata_timing *,
 			     const struct ata_timing *, struct ata_timing *,
 			     unsigned int);
 extern u8 ata_timing_cycle2mode(unsigned int xfer_shift, int cycle);
+
+#ifndef CONFIG_PCI
+void ata_plat_init(void __iomem *base);
+void ata_plat_remove(struct ata_host *host);
+#endif
 
 /* PCI */
 #ifdef CONFIG_PCI

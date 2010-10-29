@@ -495,7 +495,6 @@ struct emac_priv {
 
 /* clock frequency for EMAC */
 static struct clk *emac_clk;
-static struct clk *emac_phy_clk;
 static unsigned long emac_bus_frequency;
 static unsigned long mdio_max_freq;
 
@@ -2281,7 +2280,7 @@ static int emac_mii_reset(struct mii_bus *bus)
 	unsigned int clk_div;
 	int mdio_bus_freq = emac_bus_frequency;
 
-	if (mdio_max_freq & mdio_bus_freq)
+	if (mdio_max_freq && mdio_bus_freq)
 		clk_div = ((mdio_bus_freq / mdio_max_freq) - 1);
 	else
 		clk_div = 0xFF;
@@ -2633,16 +2632,9 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 	struct device *emac_dev;
 
 	/* obtain emac clock from kernel */
-	emac_clk = clk_get(&pdev->dev, "ick");
+	emac_clk = clk_get(&pdev->dev, NULL);
 	if (IS_ERR(emac_clk)) {
 		printk(KERN_ERR "DaVinci EMAC: Failed to get EMAC clock\n");
-		return -EBUSY;
-	}
-	/* obtain emac functional clock from kernel */
-	emac_phy_clk = clk_get(&pdev->dev, "fck");
-	if (IS_ERR(emac_phy_clk)) {
-		printk(KERN_ERR "DaVinci EMAC: Failed to get EMAC Functional clock\n");
-		clk_put(emac_clk);
 		return -EBUSY;
 	}
 	emac_bus_frequency = clk_get_rate(emac_clk);
@@ -2652,7 +2644,6 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 	if (!ndev) {
 		printk(KERN_ERR "DaVinci EMAC: Error allocating net_device\n");
 		clk_put(emac_clk);
-		clk_put(emac_phy_clk);
 		return -ENOMEM;
 	}
 
@@ -2737,7 +2728,6 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 	SET_ETHTOOL_OPS(ndev, &ethtool_ops);
 	netif_napi_add(ndev, &priv->napi, emac_poll, EMAC_POLL_WEIGHT);
 
-	clk_enable(emac_phy_clk);
 	clk_enable(emac_clk);
 
 	/* register the network device */
@@ -2789,7 +2779,6 @@ mdiobus_quit:
 netdev_reg_err:
 mdio_alloc_err:
 	clk_disable(emac_clk);
-	clk_disable(emac_phy_clk);
 no_irq_res:
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	release_mem_region(res->start, res->end - res->start + 1);
@@ -2797,7 +2786,6 @@ no_irq_res:
 
 probe_quit:
 	clk_put(emac_clk);
-	clk_put(emac_phy_clk);
 	free_netdev(ndev);
 	return rc;
 }
@@ -2829,9 +2817,7 @@ static int __devexit davinci_emac_remove(struct platform_device *pdev)
 	iounmap(priv->remap_addr);
 
 	clk_disable(emac_clk);
-	clk_disable(emac_phy_clk);
 	clk_put(emac_clk);
-	clk_put(emac_phy_clk);
 
 	return 0;
 }
@@ -2845,7 +2831,6 @@ int davinci_emac_suspend(struct platform_device *pdev, pm_message_t state)
 		emac_dev_stop(dev);
 
 	clk_disable(emac_clk);
-	clk_disable(emac_phy_clk);
 
 	return 0;
 }
@@ -2854,7 +2839,6 @@ static int davinci_emac_resume(struct platform_device *pdev)
 {
 	struct net_device *dev = platform_get_drvdata(pdev);
 
-	clk_enable(emac_phy_clk);
 	clk_enable(emac_clk);
 
 	if (netif_running(dev))

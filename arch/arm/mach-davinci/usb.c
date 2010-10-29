@@ -1,23 +1,17 @@
 /*
  * USB
  */
+#include <linux/kernel.h>
+#include <linux/module.h>
 #include <linux/init.h>
 #include <linux/platform_device.h>
 #include <linux/dma-mapping.h>
+#include <linux/string.h>
 
 #include <linux/usb/musb.h>
+#include <linux/usb/otg.h>
+#include <mach/usb_musb.h>
 
-#include <mach/common.h>
-#include <mach/irqs.h>
-#include <mach/cputype.h>
-#include <mach/usb.h>
-
-#define DAVINCI_USB_OTG_BASE	0x01c64000
-
-#define DA8XX_USB0_BASE 	0x01e00000
-#define DA8XX_USB1_BASE 	0x01e25000
-
-#if defined(CONFIG_USB_MUSB_HDRC) || defined(CONFIG_USB_MUSB_HDRC_MODULE)
 static struct musb_hdrc_eps_bits musb_eps[] = {
 	{ "ep1_tx", 8, },
 	{ "ep1_rx", 8, },
@@ -41,136 +35,43 @@ static struct musb_hdrc_config musb_config = {
 	.eps_bits	= musb_eps,
 };
 
-static struct musb_hdrc_platform_data usb_data = {
-#if defined(CONFIG_USB_MUSB_OTG)
-	/* OTG requires a Mini-AB connector */
-	.mode           = MUSB_OTG,
-#elif defined(CONFIG_USB_MUSB_PERIPHERAL)
-	.mode           = MUSB_PERIPHERAL,
-#elif defined(CONFIG_USB_MUSB_HOST)
-	.mode           = MUSB_HOST,
-#endif
-	.clock		= "usb",
-	.config		= &musb_config,
-};
-
-static struct resource usb_resources[] = {
-	{
-		/* physical address */
-		.start          = DAVINCI_USB_OTG_BASE,
-		.end            = DAVINCI_USB_OTG_BASE + 0x5ff,
-		.flags          = IORESOURCE_MEM,
-	},
-	{
-		.start          = IRQ_USBINT,
-		.flags          = IORESOURCE_IRQ,
-	},
-	{
-		/* placeholder for the dedicated CPPI IRQ */
-		.flags          = IORESOURCE_IRQ,
-	},
-};
-
 static u64 usb_dmamask = DMA_BIT_MASK(32);
 
-static struct platform_device usb_dev = {
-	.name           = "musb_hdrc",
-	.id             = -1,
-	.dev = {
-		.platform_data		= &usb_data,
-		.dma_mask		= &usb_dmamask,
-		.coherent_dma_mask      = DMA_BIT_MASK(32),
-	},
-	.resource       = usb_resources,
-	.num_resources  = ARRAY_SIZE(usb_resources),
-};
-
-void __init davinci_setup_usb(unsigned mA, unsigned potpgt_ms)
+void __init setup_usb(struct usb_plat_data *pdata)
 {
-	usb_data.power = mA > 510 ? 255 : mA / 2;
-	usb_data.potpgt = (potpgt_ms + 1) / 2;
+	u8	ninst = pdata->num_inst;
+	u8	inst, i = 0;
+	char	name[20] = "musb_hdrc";
+	struct	platform_device *pdev;
+	struct	plat_res_data *plat_res_data;
 
-	if (cpu_is_davinci_dm646x()) {
-		/* Override the defaults as DM6467 uses different IRQs. */
-		usb_dev.resource[1].start = IRQ_DM646X_USBINT;
-		usb_dev.resource[2].start = IRQ_DM646X_USBDMAINT;
-	} else	/* other devices don't have dedicated CPPI IRQ */
-		usb_dev.num_resources = 2;
+	do {
+		plat_res_data = &pdata->prdata[i++];
+		inst = plat_res_data->plat_data->inst;
+		if (pdata->num_inst > 1)
+			sprintf(name, "musb_hdrc%d", inst);
 
-	platform_device_register(&usb_dev);
+		pdev = platform_device_alloc(name, -1);
+
+		if (!pdev) {
+			pr_warning("WARNING: USB platform Alloc Failed\n");
+			break;
 }
 
-#ifdef CONFIG_ARCH_DAVINCI_DA8XX
-static struct resource da8xx_usb20_resources[] = {
-	{
-		.start		= DA8XX_USB0_BASE,
-		.end		= DA8XX_USB0_BASE + SZ_64K - 1,
-		.flags		= IORESOURCE_MEM,
-	},
-	{
-		.start		= IRQ_DA8XX_USB_INT,
-		.flags		= IORESOURCE_IRQ,
-	},
-};
+		/* Verify whether the clock information has already been
+		 * specified if so do not override it with generic definition.
+		 */
+		if (!plat_res_data->plat_data->clock)
+			plat_res_data->plat_data->clock = "usb";
+		pdev->dev.platform_data = plat_res_data->plat_data;
+		pdev->dev.dma_mask = &usb_dmamask,
+		pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+		pdev->resource = plat_res_data->res_data;
+		pdev->num_resources = plat_res_data->num_res;
 
-int __init da8xx_register_usb20(unsigned mA, unsigned potpgt)
-{
-	usb_data.clock  = "usb20";
-	usb_data.power	= mA > 510 ? 255 : mA / 2;
-	usb_data.potpgt = (potpgt + 1) / 2;
-
-	usb_dev.resource = da8xx_usb20_resources;
-	usb_dev.num_resources = ARRAY_SIZE(da8xx_usb20_resources);
-
-	return platform_device_register(&usb_dev);
+		/* Associate the default configuration if not specified */
+		if (!plat_res_data->plat_data->config)
+			plat_res_data->plat_data->config = &musb_config;
+		platform_device_add(pdev);
+	} while (--ninst);
 }
-#endif	/* CONFIG_DAVINCI_DA8XX */
-
-#else
-
-void __init davinci_setup_usb(unsigned mA, unsigned potpgt_ms)
-{
-}
-
-#ifdef CONFIG_ARCH_DAVINCI_DA8XX
-int __init da8xx_register_usb20(unsigned mA, unsigned potpgt)
-{
-	return 0;
-}
-#endif
-
-#endif  /* CONFIG_USB_MUSB_HDRC */
-
-#ifdef	CONFIG_ARCH_DAVINCI_DA8XX
-static struct resource da8xx_usb11_resources[] = {
-	[0] = {
-		.start	= DA8XX_USB1_BASE,
-		.end	= DA8XX_USB1_BASE + SZ_4K - 1,
-		.flags	= IORESOURCE_MEM,
-	},
-	[1] = {
-		.start	= IRQ_DA8XX_IRQN,
-		.end	= IRQ_DA8XX_IRQN,
-		.flags	= IORESOURCE_IRQ,
-	},
-};
-
-static u64 da8xx_usb11_dma_mask = DMA_BIT_MASK(32);
-
-static struct platform_device da8xx_usb11_device = {
-	.name		= "ohci",
-	.id		= 0,
-	.dev = {
-		.dma_mask		= &da8xx_usb11_dma_mask,
-		.coherent_dma_mask	= DMA_BIT_MASK(32),
-	},
-	.num_resources	= ARRAY_SIZE(da8xx_usb11_resources),
-	.resource	= da8xx_usb11_resources,
-};
-
-int __init da8xx_register_usb11(struct da8xx_ohci_root_hub *pdata)
-{
-	da8xx_usb11_device.dev.platform_data = pdata;
-	return platform_device_register(&da8xx_usb11_device);
-}
-#endif	/* CONFIG_DAVINCI_DA8XX */

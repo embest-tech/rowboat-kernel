@@ -166,10 +166,13 @@
 #define DA830_LPSC1_McASP1		8
 #define DA850_LPSC1_SATA		8
 #define DA830_LPSC1_McASP2		9
+#define DA850_LPSC1_VPIF		9
 #define DA8XX_LPSC1_SPI1		10
 #define DA8XX_LPSC1_I2C			11
 #define DA8XX_LPSC1_UART1		12
 #define DA8XX_LPSC1_UART2		13
+#define DA850_LPSC1_MCBSP0		14
+#define DA850_LPSC1_MCBSP1		15
 #define DA8XX_LPSC1_LCDC		16
 #define DA8XX_LPSC1_PWM			17
 #define DA8XX_LPSC1_ECAP		20
@@ -180,8 +183,23 @@
 #define DA8XX_LPSC1_CR_P3_SS		26
 #define DA8XX_LPSC1_L3_CBA_RAM		31
 
+/* PSC register offsets */
+#define EPCPR		0x070
+#define PTCMD		0x120
+#define PTSTAT		0x128
+#define PDSTAT		0x200
+#define PDCTL1		0x304
+#define MDSTAT		0x800
+#define MDCTL		0xA00
+
+#define MDSTAT_STATE_MASK 0x1f
+
+#ifndef __ASSEMBLER__
+
 extern int davinci_psc_is_clk_active(unsigned int ctlr, unsigned int id);
 extern void davinci_psc_config(unsigned int domain, unsigned int ctlr,
 		unsigned int id, char enable);
+
+#endif
 
 #endif /* __ASM_ARCH_PSC_H */

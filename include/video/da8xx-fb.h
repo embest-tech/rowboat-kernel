@@ -38,6 +38,7 @@ struct da8xx_lcdc_platform_data {
 	const char manu_name[10];
 	void *controller_data;
 	const char type[25];
+	void (*panel_power_ctrl)(int);
 };
 
 struct lcd_ctrl_config {
@@ -81,6 +82,9 @@ struct lcd_ctrl_config {
 
 	/* Raster Data Order Select: 1=Most-to-least 0=Least-to-most */
 	unsigned char raster_order;
+
+	/* DMA FIFO threshold */
+	int fifo_th;
 };
 
 struct lcd_sync_arg {
@@ -98,6 +102,16 @@ struct lcd_sync_arg {
 #define FBIPUT_COLOR		_IOW('F', 6, int)
 #define FBIPUT_HSYNC		_IOW('F', 9, int)
 #define FBIPUT_VSYNC		_IOW('F', 10, int)
+#define FBIO_WAITFORVSYNC	_IOW('F', 0x20, u_int32_t)
+
+struct da8xx_clcd_platform_data {
+	u8 version;
+};
+
+enum {
+	CONFIG_SPACE_0 = 0,     /* DA830 */
+	CONFIG_SPACE_1,         /* DA850 */
+};
 
 #endif  /* ifndef DA8XX_FB_H */
 

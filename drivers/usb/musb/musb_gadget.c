@@ -309,30 +309,17 @@ static void txstate(struct musb *musb, struct musb_request *req)
 			size_t request_size;
 
 			/* setup DMA, then program endpoint CSR */
-			request_size = min(request->length,
+			request_size = min_t(size_t, request->length,
 						musb_ep->dma->max_len);
 			if (request_size < musb_ep->packet_sz)
 				musb_ep->dma->desired_mode = 0;
 			else
 				musb_ep->dma->desired_mode = 1;
 
-			/*
-			 * use sdma for unaligned buffers on OMAP3630 which
-			 * can work only in mode-0 so restrict the request_size.
-			 */
-			if (cpu_is_omap3630() &&
-				(request->dma + request->actual) & 0x3) {
-				request_size =
-				min((size_t)musb_ep->hw_ep->max_packet_sz_tx,
-					(request->length - request->actual));
-				musb_ep->dma->desired_mode = 0;
-			}
-
 			use_dma = use_dma && c->channel_program(
 					musb_ep->dma, musb_ep->packet_sz,
 					musb_ep->dma->desired_mode,
-					(request->dma + request->actual),
-					request_size);
+					request->dma + request->actual, request_size);
 			if (use_dma) {
 				if (musb_ep->dma->desired_mode == 0) {
 					/*
@@ -475,6 +462,7 @@ void musb_g_tx(struct musb *musb, u8 epnum)
 		u8	is_dma = 0;
 
 		if (dma && (csr & MUSB_TXCSR_DMAENAB)) {
+			is_dma = 1;
 			csr |= MUSB_TXCSR_P_WZC_BITS;
 			csr &= ~(MUSB_TXCSR_DMAENAB | MUSB_TXCSR_P_UNDERRUN |
 				 MUSB_TXCSR_TXPKTRDY);
@@ -482,10 +470,6 @@ void musb_g_tx(struct musb *musb, u8 epnum)
 			/* Ensure writebuffer is empty. */
 			csr = musb_readw(epio, MUSB_TXCSR);
 			request->actual += musb_ep->dma->actual_len;
-
-			if (request->actual == request->length)
-				is_dma = 1;
-
 			DBG(4, "TXCSR%d %04x, DMA off, len %zu, req %p\n",
 				epnum, csr, musb_ep->dma->actual_len, request);
 		}
@@ -697,15 +681,8 @@ static void rxstate(struct musb *musb, struct musb_request *req)
 							transfer_size);
 				}
 
-				if (use_dma) {
+				if (use_dma)
 					return;
-				} else {
-					/* Need to clear DMAENAB for the
-					 * backup PIO mode transfer to work
-					 */
-					csr &= ~MUSB_RXCSR_DMAENAB;
-					musb_writew(epio, MUSB_RXCSR, csr);
-				}
 			}
 #endif	/* Mentor's DMA */
 
@@ -769,6 +746,8 @@ void musb_g_rx(struct musb *musb, u8 epnum)
 	musb_ep_select(mbase, epnum);
 
 	request = next_request(musb_ep);
+	if (!request)
+		return;
 
 	csr = musb_readw(epio, MUSB_RXCSR);
 	dma = is_dma_capable() ? musb_ep->dma : NULL;
@@ -1754,7 +1733,8 @@ int usb_gadget_register_driver(struct usb_gadget_driver *driver)
 		spin_lock_irqsave(&musb->lock, flags);
 
 		otg_set_peripheral(musb->xceiv, &musb->g);
-		musb->is_active = 1;
+		musb->xceiv->state = OTG_STATE_B_IDLE;
+		//musb->is_active = 1;
 
 		/* FIXME this ignores the softconnect flag.  Drivers are
 		 * allowed hold the peripheral inactive until for example
@@ -1762,7 +1742,7 @@ int usb_gadget_register_driver(struct usb_gadget_driver *driver)
 		 * hosts only see fully functional devices.
 		 */
 
-		if (!is_otg_enabled(musb))
+		if (!(is_otg_enabled(musb) || is_dr_enabled(musb)))
 			musb_start(musb);
 
 		otg_set_peripheral(musb->xceiv, &musb->g);

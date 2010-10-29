@@ -10,6 +10,8 @@
 
 #ifndef __ASM_ARCH_USB_H
 #define __ASM_ARCH_USB_H
+#include <mach/hardware.h>
+#include <linux/io.h>
 
 /* DA8xx CFGCHIP2 (USB 2.0 PHY Control) register bits */
 #define CFGCHIP2_PHYCLKGD	(1 << 17)
@@ -33,6 +35,29 @@
 #define CFGCHIP2_REFFREQ_12MHZ	(1 << 0)
 #define CFGCHIP2_REFFREQ_24MHZ	(2 << 0)
 #define CFGCHIP2_REFFREQ_48MHZ	(3 << 0)
+
+/* DMxxxx USB PHY definitions */
+#define USBPHY_CTL_PADDR	(DAVINCI_SYSTEM_MODULE_BASE + 0x34)
+#define USB_PHY_CTRL		IO_ADDRESS(USBPHY_CTL_PADDR)
+
+#define USBPHY_NDATAPOL		BIT(18)
+#define USBPHY_SESSION_VBUS	BIT(17)
+#define USBPHY_PERI_USBID	BIT(16)
+#define USBPHY_DATAPOL		BIT(11) /* (dm355) switch D+/D- */
+#define USBPHY_PHYCLKGD		BIT(8)
+#define USBPHY_SESNDEN		BIT(7)  /* v(sess_end) comparator */
+#define USBPHY_VBDTCTEN		BIT(6)  /* v(bus) comparator */
+#define USBPHY_VBUSSENS		BIT(5)  /* (dm355,ro) is vbus > 0.5V */
+#define USBPHY_PHYPLLON		BIT(4)  /* override pll suspend */
+#define USBPHY_CLKO1SEL		BIT(3)
+#define USBPHY_OSCPDWN		BIT(2)
+#define USBPHY_OTGPDWN		BIT(1)
+#define USBPHY_PHYPDWN		BIT(0)
+
+#define DM355_DEEPSLEEP_PADDR (DAVINCI_SYSTEM_MODULE_BASE + 0x48)
+#define DM355_DEEPSLEEP IO_ADDRESS(DM355_DEEPSLEEP_PADDR)
+#define DRVVBUS_FORCE		BIT(2)
+#define DRVVBUS_OVERRIDE	BIT(1)
 
 struct	da8xx_ohci_root_hub;
 

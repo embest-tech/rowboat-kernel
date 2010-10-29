@@ -176,6 +176,12 @@
  */
 #define DMA_SCHED_CTRL_REG		0x00
 
+/*
+ * CPPI 4.1 configuration data
+ */
+#define USB_CPPI41_QMGR_REG0_MAX_SIZE           0x10000
+#define USB_CPPI41_QMGR_REG0_ALLOC_SIZE         0x3fff
+
 /* DMA Scheduler Control Register bits */
 #define DMA_SCHED_ENABLE_SHIFT		31
 #define DMA_SCHED_ENABLE_MASK		(1 << DMA_SCHED_ENABLE_SHIFT)
@@ -279,9 +285,18 @@ struct cppi41_teardown_desc {
 
 #define CPPI41_MAX_MEM_RGN		16
 
+#if 0
 /* CPPI 4.1 configuration for AM3517 */
 #define CPPI41_NUM_QUEUE_MGR		1	/* 4  max */
 #define CPPI41_NUM_DMA_BLOCK		1	/* 64 max */
+#define cppi41_num_queue_mgr	CPPI41_NUM_QUEUE_MGR
+#define cppi41_num_dma_block	CPPI41_NUM_DMA_BLOCK
+#endif
+/* CPPI 4.1 configuration for DA8xx */
+#define CPPI41_NUM_QUEUE_MGR            1       /* 4  max */
+#define CPPI41_NUM_DMA_BLOCK            1       /* 64 max */
+#define CPPI41_DMACH_TX_DIR             1
+#define CPPI41_DMACH_RX_DIR             0
 #define cppi41_num_queue_mgr	CPPI41_NUM_QUEUE_MGR
 #define cppi41_num_dma_block	CPPI41_NUM_DMA_BLOCK
 
@@ -329,6 +344,8 @@ struct cppi41_queue_mgr {
 				/* such queues. */
 	const u32 *assigned;	/* Pointer to the bitmask of the pre-assigned */
 				/* queues. */
+	void  *ptr_rgn0;        /* Pointer to region 0 memory */
+	dma_addr_t phys_ptr_rgn0; /* Phs pointer to region0 memory */
 };
 
 /* Queue type flags */
@@ -490,6 +507,7 @@ struct cppi41_queue_obj {
  */
 int cppi41_queue_mgr_init(u8 q_mgr, dma_addr_t rgn0_base, u16 rgn0_size);
 
+void cppi41_queue_mgr_deinit(u8 q_mgr);
 /*
  * CPPI 4.1 Queue Manager Memory Region Allocation and De-allocation APIs.
  */
@@ -536,6 +554,16 @@ int cppi41_mem_rgn_free(u8 q_mgr, u8 mem_rgn);
  */
 int cppi41_dma_block_init(u8 dma_num, u8 q_mgr, u8 num_order,
 				 u32 *sched_tbl, u8 tbl_size);
+
+/**
+ * cppi41_dma_block_deinit - CPPI 4.1 DMA block de-initialization.
+ * @dma_num:    number of the DMA block
+ * @q_mgr:      the queue manager in which to allocate the free teardown
+ *              descriptor queue
+ *
+ * Returns none.
+ */
+void cppi41_dma_block_deinit(u8 dma_num, u8 q_mgr);
 
 /*
  * CPPI 4.1 DMA Channel Management APIs
@@ -710,17 +738,51 @@ unsigned long cppi41_queue_pop(const struct cppi41_queue_obj *queue_obj);
 int cppi41_get_teardown_info(unsigned long addr, u32 *info);
 
 /**
+ * cppi41_free_teardown_queue - Pop all teardown descriptors of a given dma
+ *                              blocka
+ * @dma_num     Number of the DMA block
+ *
+ * This functions frees all the tear down descriptors in the given dma block.
+ */
+void cppi41_free_teardown_queue(int dma_num);
+
+/**
  * cppi41_exit - delete the instance created via cppi41_init()
  */
 void cppi41_exit(void);
 
 /**
- * cppi41_dma_sched_tbl_init
+ * cppi41_dma_sched_tbl_init - Update the Schedular table with the given data
+ *
+ * @dmanum      Number of DMa block
+ * @qmgr        Queue Manager Number
+ * @sch_tbl     Scheduler Table adderss
+ * @tblsz       Size of Scheduler table
+ *
  */
 int cppi41_dma_sched_tbl_init(u8 dma_num, u8 q_mgr,
 				u32 *sched_tbl, u8 tbl_size);
 
 /**
- * cppi41_free_teardown_queue
+ * cppi41_schedtbl_add_dma_ch - add a dma channel to schedular table
+ *
+ * @dmanum      Number of DMa block
+ * @qmgr        Queue Manager Number
+ * @dma_ch      dma channel number
+ * @is_tx       transmit (is_tx=1) or recieve(is_tx=0)
+ *
+ * returns      number of channel in schedular table
  */
-void cppi41_free_teardown_queue(int dma_num);
+int cppi41_schedtbl_add_dma_ch(u8 dmanum, u8 qmgr, u8 dma_ch, u8 is_tx);
+
+/**
+ * cppi41_schedtbl_remove_dma_ch - remove a dma channel from schedular table
+ *
+ * @dmanum      Number of DMa block
+ * @qmgr        Queue Manager Number
+ * @dma_ch      dma channel number
+ * @is_tx       transmit (is_tx=1) or recieve(is_tx=0)
+ *
+ * returns      number of channel in schedular table
+ */
+int cppi41_schedtbl_remove_dma_ch(u8 dmanum, u8 qmgr, u8 dma_ch, u8 is_tx);

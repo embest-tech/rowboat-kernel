@@ -35,10 +35,29 @@ config ARCH_DAVINCI_DA830
 	select CPU_DCACHE_WRITETHROUGH # needed on silicon revs 1.0, 1.1
 
 config ARCH_DAVINCI_DA850
-	bool "DA850/OMAP-L138 based system"
+	bool "DA850/OMAP-L138/AM18xx based system"
 	select CP_INTC
 	select ARCH_DAVINCI_DA8XX
 	select ARCH_HAS_CPUFREQ
+
+choice
+        prompt "Select Maximum DA850/OMAP-L138/AM18xx SoC speed"
+        depends on ARCH_DAVINCI_DA850
+        help
+          Select the maximum speed the SoC can operate at.
+
+config DA8XX_MAX_SPEED_300
+        bool "300 MHz"
+
+config DA8XX_MAX_SPEED_372
+        bool "372 MHz"
+
+config DA8XX_MAX_SPEED_408
+        bool "408 MHz"
+
+config DA8XX_MAX_SPEED_456
+        bool "456 MHz"
+endchoice
 
 config ARCH_DAVINCI_DA8XX
 	bool
@@ -134,18 +153,18 @@ config DA830_UI_NAND
 endchoice
 
 config MACH_DAVINCI_DA850_EVM
-	bool "TI DA850/OMAP-L138 Reference Platform"
+	bool "TI DA850/OMAP-L138/AM18xx Reference Platform"
 	default ARCH_DAVINCI_DA850
 	depends on ARCH_DAVINCI_DA850
 	select GPIO_PCA953X
 	help
-	  Say Y here to select the TI DA850/OMAP-L138 Evaluation Module.
+	  Say Y here to select the TI DA850/OMAP-L138/AM18xx Evaluation Module.
 
 choice
 	prompt "Select peripherals connected to expander on UI board"
 	depends on MACH_DAVINCI_DA850_EVM
 	help
-	  The presence of User Interface (UI) card on the DA850/OMAP-L138
+	  The presence of User Interface (UI) card on the DA850/OMAP-L138/AM18xx
 	  EVM is detected automatically based on successful probe of the I2C
 	  based GPIO expander on that card. This option selected in this
 	  menu has an effect only in case of a successful UI card detection.
@@ -154,17 +173,33 @@ config DA850_UI_NONE
 	bool "No peripheral is enabled"
 	help
 	  Say Y if you do not want to enable any of the peripherals connected
-	  to TCA6416 expander on DA850/OMAP-L138 EVM UI card
+	  to TCA6416 expander on DA850/OMAP-L138/AM18xx EVM UI card
 
 config DA850_UI_RMII
 	bool "RMII Ethernet PHY"
 	help
-	  Say Y if you want to use the RMII PHY on the DA850/OMAP-L138 EVM.
-	  This PHY is found on the UI daughter card that is supplied with
-	  the EVM.
-	  NOTE: Please take care while choosing this option, MII PHY will
-	  not be functional if RMII mode is selected.
+          Say Y if you want to use the RMII PHY on the DA850/OMAP-L138/AM18xx
+          EVM. This PHY is found on the UI daughter card that is supplied with
+          the EVM. NOTE: Please take care while choosing this option, MII PHY
+          will not be functional if RMII mode is selected.
 
+config DA850_UI_CLCD
+        bool "Character LCD"
+        help
+          Say Y if you want to use Character LCD on the DA850/OMAP-L138/AM18xx
+          EVM. The Character LCD is found on the UI daughter card that is
+          supplied with the EVM.
+          NOTE: Please take care while choosing this option, Graphical LCD will
+          not be functional if Character LCD is selected.
+
+config DA850_UI_VIDEO_PORT
+        bool "Video Port Interface"
+        help
+          Say Y if you want to use Video Port Interface (VPIF) on the
+          DA850/OMAP-L138 EVM. The Video decoders/encoders are found on the
+          UI daughter card that is supplied with the EVM.
+          NOTE: Please make sure to disable RMII and CLCD options when you
+          select Video Port Interface.
 endchoice
 
 config DAVINCI_MUX
@@ -203,6 +238,24 @@ config DAVINCI_RESET_CLOCKS
 	  If you are booting from another operating system, you
 	  probably do not want this option enabled until your
 	  device drivers work properly.
+
+config DAVINCI_MCBSP
+        bool "DaVinci McBSP (serial API) support"
+        depends on ARCH_DAVINCI
+        default n
+        help
+          Say Y if you want to use McBSP on DaVinci platforns as a
+          serial interface instead of using it as an audio interface.
+
+config DAVINCI_MCBSP0
+        bool "Support for McBSP instance 0"
+        depends on DAVINCI_MCBSP
+        default n
+
+config DAVINCI_MCBSP1
+        bool "Support for McBSP instance 1"
+        depends on DAVINCI_MCBSP
+        default n
 
 endmenu
 

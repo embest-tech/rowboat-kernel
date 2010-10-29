@@ -55,7 +55,7 @@
 #include <linux/list.h>
 #include <linux/notifier.h>
 #include <linux/reboot.h>
-#include <linux/utsrelease.h>
+#include <generated/utsrelease.h>
 
 #include <linux/io.h>
 #include <asm/uaccess.h>
@@ -378,7 +378,7 @@ static unsigned char lcd_bits[LCD_PORTS][LCD_BITS][BIT_STATES];
 
 #ifdef CONFIG_PANEL_LCD_CHARSET
 #undef DEFAULT_LCD_CHARSET
-#define DEFAULT_LCD_CHARSET
+#define DEFAULT_LCD_CHARSET CONFIG_PANEL_LCD_CHARSET
 #endif
 
 #endif /* DEFAULT_PROFILE == 0 */
@@ -1323,6 +1323,7 @@ void panel_lcd_print(char *s)
 	if (lcd_enabled && lcd_initialized)
 		lcd_write(NULL, s, strlen(s), NULL);
 }
+EXPORT_SYMBOL(panel_lcd_print);
 
 /* initialize the LCD driver */
 void lcd_init(void)
@@ -1399,7 +1400,7 @@ void lcd_init(void)
 	case LCD_TYPE_HANTRONIX:	/* parallel mode, 8 bits, hantronix-like */
 	default:
 		if (lcd_proto < 0)
-			lcd_proto = LCD_PROTO_PARALLEL;
+			lcd_proto = LCD_PROTO_TI_DA8XX_LCD;
 		if (lcd_charset < 0)
 			lcd_charset = LCD_CHARSET_NORMAL;
 		if (lcd_e_pin == PIN_NOT_SET)

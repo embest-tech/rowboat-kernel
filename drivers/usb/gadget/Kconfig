@@ -354,7 +354,7 @@ config USB_S3C2410_DEBUG
 # musb builds in ../musb along with host support
 config USB_GADGET_MUSB_HDRC
 	boolean "Inventra HDRC USB Peripheral (TI, ADI, ...)"
-	depends on USB_MUSB_HDRC && (USB_MUSB_PERIPHERAL || USB_MUSB_OTG)
+	depends on USB_MUSB_HDRC && (USB_MUSB_PERIPHERAL || USB_MUSB_OTG || USB_MUSB_DUAL_ROLE)
 	select USB_GADGET_DUALSPEED
 	select USB_GADGET_SELECTED
 	help

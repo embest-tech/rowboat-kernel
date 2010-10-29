@@ -6,8 +6,12 @@ musb_hdrc-objs := musb_core.o
 
 obj-$(CONFIG_USB_MUSB_HDRC)	+= musb_hdrc.o
 
-ifeq ($(CONFIG_ARCH_DAVINCI),y)
+ifeq ($(CONFIG_ARCH_DAVINCI_DMx),y)
 	musb_hdrc-objs	+= davinci.o
+endif
+
+ifeq ($(CONFIG_ARCH_DAVINCI_DA8XX),y)
+	musb_hdrc-objs	+= da8xx.o
 endif
 
 ifeq ($(CONFIG_USB_TUSB6010),y)

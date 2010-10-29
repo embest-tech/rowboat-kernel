@@ -5,7 +5,7 @@
 
 # Common objects
 obj-y 			:= time.o clock.o serial.o io.o psc.o \
-			   gpio.o dma.o usb.o common.o sram.o
+			   gpio.o dma.o usb.o common.o sram.o aemif.o
 
 obj-$(CONFIG_DAVINCI_MUX)		+= mux.o
 
@@ -34,3 +34,7 @@ obj-$(CONFIG_MACH_DAVINCI_DA850_EVM)	+= board-da850-evm.o
 # Power Management
 obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o
 obj-$(CONFIG_CPU_IDLE)			+= cpuidle.o
+obj-$(CONFIG_SUSPEND)                   += pm.o sleep.o
+
+# DA850/OMAP-L138 McBSP driver
+obj-$(CONFIG_DAVINCI_MCBSP)             += mcbsp.o

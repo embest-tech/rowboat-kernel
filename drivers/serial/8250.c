@@ -38,6 +38,8 @@
 #include <linux/serial_8250.h>
 #include <linux/nmi.h>
 #include <linux/mutex.h>
+#include <linux/cpufreq.h>
+#include <linux/clk.h>
 
 #include <asm/io.h>
 #include <asm/irq.h>
@@ -156,6 +158,10 @@ struct uart_8250_port {
 	 */
 	void			(*pm)(struct uart_port *port,
 				      unsigned int state, unsigned int old);
+	struct clk		*clk;
+#ifdef CONFIG_CPU_FREQ
+	struct notifier_block	freq_transition;
+#endif
 };
 
 struct irq_info {
@@ -2931,6 +2937,70 @@ void serial8250_resume_port(int line)
 	uart_resume_port(&serial8250_reg, &up->port);
 }
 
+#ifdef CONFIG_CPU_FREQ
+static int serial8250_cpufreq_transition(struct notifier_block *nb,
+					     unsigned long val, void *data)
+{
+	struct uart_8250_port *p;
+	struct uart_port *uport;
+
+	p = container_of(nb, struct uart_8250_port, freq_transition);
+	uport = &p->port;
+
+	if (IS_ERR(p->clk))
+		goto cpu_freq_exit;
+
+	if (p->port.uartclk == clk_get_rate(p->clk))
+		goto cpu_freq_exit;
+
+	p->port.uartclk = clk_get_rate(p->clk);
+	if (val == CPUFREQ_POSTCHANGE) {
+		struct ktermios *termios;
+		struct tty_struct *tty;
+		if (uport->state == NULL)
+			goto cpu_freq_exit;
+
+		tty = uport->state->port.tty;
+		if (tty == NULL)
+			goto cpu_freq_exit;
+
+		termios = tty->termios;
+		if (termios == NULL) {
+			printk(KERN_WARNING "%s: no termios?\n", __func__);
+			goto cpu_freq_exit;
+		}
+
+		serial8250_set_termios(uport, termios, NULL);
+	}
+
+cpu_freq_exit:
+	return 0;
+}
+
+static inline int serial8250_cpufreq_register(struct uart_8250_port *p)
+{
+	p->freq_transition.notifier_call = serial8250_cpufreq_transition;
+
+	return cpufreq_register_notifier(&p->freq_transition,
+					 CPUFREQ_TRANSITION_NOTIFIER);
+}
+
+static inline void serial8250_cpufreq_deregister(struct uart_8250_port *p)
+{
+	cpufreq_unregister_notifier(&p->freq_transition,
+				    CPUFREQ_TRANSITION_NOTIFIER);
+}
+#else
+static inline int serial8250_cpufreq_register(struct uart_8250_port *p)
+{
+	return 0;
+}
+
+static inline void serial8250_cpufreq_deregister(struct uart_8250_port *p)
+{
+}
+#endif
+
 /*
  * Register a set of serial devices attached to a platform device.  The
  * list is terminated with a zero flags entry, which means we expect
@@ -2964,6 +3034,9 @@ static int __devinit serial8250_probe(struct platform_device *dev)
 		port.serial_out		= p->serial_out;
 		port.dev		= &dev->dev;
 		port.irqflags		|= irqflag;
+		if (p->clk)
+			serial8250_ports[i].clk = p->clk;
+
 		ret = serial8250_register_port(&port);
 		if (ret < 0) {
 			dev_err(&dev->dev, "unable to register port at index %d "
@@ -3133,6 +3206,11 @@ int serial8250_register_port(struct uart_port *port)
 		ret = uart_add_one_port(&serial8250_reg, &uart->port);
 		if (ret == 0)
 			ret = uart->port.line;
+
+		ret = serial8250_cpufreq_register(uart);
+		if (ret < 0)
+			printk(KERN_ERR "Failed to add cpufreq notifier\n");
+
 	}
 	mutex_unlock(&serial_mutex);
 
@@ -3152,6 +3230,7 @@ void serial8250_unregister_port(int line)
 	struct uart_8250_port *uart = &serial8250_ports[line];
 
 	mutex_lock(&serial_mutex);
+	serial8250_cpufreq_deregister(uart);
 	uart_remove_one_port(&serial8250_reg, &uart->port);
 	if (serial8250_isa_devs) {
 		uart->port.flags &= ~UPF_BOOT_AUTOCONF;

@@ -83,4 +83,6 @@ IS_DAVINCI_CPU(da850, DAVINCI_CPU_ID_DA850)
 #define cpu_is_davinci_da850() 0
 #endif
 
+#define cpu_is_davinci_da8xx()	(cpu_is_davinci_da850() || \
+					cpu_is_davinci_da830())
 #endif

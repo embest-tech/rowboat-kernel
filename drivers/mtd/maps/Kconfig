@@ -359,12 +359,6 @@ config MTD_SA1100
 	  the SA1100 and SA1110, including the Assabet and the Compaq iPAQ.
 	  If you have such a board, say 'Y'.
 
-config MTD_IPAQ
-	tristate "CFI Flash device mapped on Compaq/HP iPAQ"
-	depends on IPAQ_HANDHELD && MTD_CFI
-	help
-	  This provides a driver for the on-board flash of the iPAQ.
-
 config MTD_DC21285
 	tristate "CFI Flash device mapped on DC21285 Footbridge"
 	depends on MTD_CFI && ARCH_FOOTBRIDGE && MTD_COMPLEX_MAPPINGS
@@ -554,5 +548,17 @@ config MTD_VMU
 
 	  To build this as a module select M here, the module will be called
 	  vmu-flash.
+
+config MTD_DAVINCI_NOR
+	tristate "TI DaVinci board mappings"
+	depends on MTD_CFI && ARCH_DAVINCI
+	help
+	  This enables access to the NOR flash chips on TI DaVinci-based
+	  boards. Use this driver instead of the generic PHYSMAP driver
+	  if the AEMIF needs to be reconfigured differently than the reset
+	  default or what is setup by the bootloader. The driver also provides
+	  power management features of gating of ASYNC module clock on suspend
+	  and re-calculation of access timings when the AEMIF clock input
+	  changes.
 
 endmenu

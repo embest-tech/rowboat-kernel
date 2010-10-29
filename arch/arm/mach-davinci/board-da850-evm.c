@@ -17,13 +17,18 @@
 #include <linux/i2c.h>
 #include <linux/i2c/at24.h>
 #include <linux/i2c/pca953x.h>
+#include <linux/mfd/tps6507x.h>
 #include <linux/gpio.h>
+#include <linux/delay.h>
 #include <linux/platform_device.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/partitions.h>
-#include <linux/mtd/physmap.h>
 #include <linux/regulator/machine.h>
+#include <linux/spi/spi.h>
+#include <linux/spi/flash.h>
+#include <linux/usb/musb.h>
+#include <linux/i2c-gpio.h>
 
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
@@ -32,6 +37,10 @@
 #include <mach/da8xx.h>
 #include <mach/nand.h>
 #include <mach/mux.h>
+#include <mach/flash.h>
+#include <mach/vpif.h>
+
+#include <media/tvp514x.h>
 
 #define DA850_EVM_PHY_MASK		0x1
 #define DA850_EVM_MDIO_FREQUENCY	2200000 /* PHY bus frequency */
@@ -44,19 +53,50 @@
 
 #define DA850_MII_MDIO_CLKEN_PIN	GPIO_TO_PIN(2, 6)
 
+#define TVP5147_CH0		"tvp514x-0"
+#define TVP5147_CH1		"tvp514x-1"
+
+#define VPIF_STATUS	(0x002C)
+#define VPIF_STATUS_CLR	(0x0030)
+#define DA850_USB1_VBUS_PIN		GPIO_TO_PIN(2, 4)
+#define DA850_USB1_OC_PIN		GPIO_TO_PIN(6, 13)
+
 static struct mtd_partition da850_evm_norflash_partition[] = {
 	{
-		.name           = "NOR filesystem",
+		.name           = "bootloaders + env",
 		.offset         = 0,
+		.size           = SZ_512K,
+		.mask_flags     = MTD_WRITEABLE,
+	},
+	{
+		.name           = "kernel",
+		.offset         = MTDPART_OFS_APPEND,
+		.size           = SZ_2M,
+		.mask_flags     = 0,
+	},
+	{
+		.name           = "filesystem",
+		.offset         = MTDPART_OFS_APPEND,
 		.size           = MTDPART_SIZ_FULL,
 		.mask_flags     = 0,
 	},
 };
 
-static struct physmap_flash_data da850_evm_norflash_data = {
+static struct davinci_aemif_timing da850_evm_norflash_timing = {
+	.wsetup		= 10,
+	.wstrobe	= 60,
+	.whold		= 10,
+	.rsetup		= 10,
+	.rstrobe	= 110,
+	.rhold		= 10,
+	.ta		= 30,
+};
+
+static struct davinciflash_pdata da850_evm_norflash_data = {
 	.width		= 2,
 	.parts		= da850_evm_norflash_partition,
 	.nr_parts	= ARRAY_SIZE(da850_evm_norflash_partition),
+	.timing		= &da850_evm_norflash_timing,
 };
 
 static struct resource da850_evm_norflash_resource[] = {
@@ -65,16 +105,33 @@ static struct resource da850_evm_norflash_resource[] = {
 		.end	= DA8XX_AEMIF_CS2_BASE + SZ_32M - 1,
 		.flags	= IORESOURCE_MEM,
 	},
+	{
+		.start	= DA8XX_AEMIF_CTL_BASE,
+		.end	= DA8XX_AEMIF_CTL_BASE + SZ_32K - 1,
+		.flags	= IORESOURCE_MEM,
+	},
 };
 
 static struct platform_device da850_evm_norflash_device = {
-	.name		= "physmap-flash",
+	.name		= "davinci-flash",
 	.id		= 0,
 	.dev		= {
 		.platform_data  = &da850_evm_norflash_data,
 	},
-	.num_resources	= 1,
+	.num_resources	= ARRAY_SIZE(da850_evm_norflash_resource),
 	.resource	= da850_evm_norflash_resource,
+};
+
+static struct davinci_pm_config da850_pm_pdata = {
+	.sleepcount = 128,
+};
+
+static struct platform_device da850_pm_device = {
+	.name           = "pm-davinci",
+	.dev = {
+		.platform_data	= &da850_pm_pdata,
+	},
+	.id             = -1,
 };
 
 /* DA850/OMAP-L138 EVM includes a 512 MByte large-page NAND flash
@@ -104,7 +161,7 @@ struct mtd_partition da850_evm_nandflash_partition[] = {
 	{
 		.name		= "kernel",
 		.offset		= 0x200000,
-		.size		= SZ_2M,
+		.size		= SZ_4M,
 		.mask_flags	= 0,
 	},
 	{
@@ -115,11 +172,23 @@ struct mtd_partition da850_evm_nandflash_partition[] = {
 	},
 };
 
+static struct davinci_aemif_timing da850_evm_nandflash_timing = {
+	.wsetup		= 24,
+	.wstrobe	= 21,
+	.whold		= 14,
+	.rsetup		= 19,
+	.rstrobe	= 50,
+	.rhold		= 0,
+	.ta		= 20,
+};
+
 static struct davinci_nand_pdata da850_evm_nandflash_data = {
 	.parts		= da850_evm_nandflash_partition,
 	.nr_parts	= ARRAY_SIZE(da850_evm_nandflash_partition),
 	.ecc_mode	= NAND_ECC_HW,
+	.ecc_bits	= 4,
 	.options	= NAND_USE_FLASH_BBT,
+	.timing		= &da850_evm_nandflash_timing,
 };
 
 static struct resource da850_evm_nandflash_resource[] = {
@@ -150,22 +219,52 @@ static struct platform_device *da850_evm_devices[] __initdata = {
 	&da850_evm_norflash_device,
 };
 
-#define DA8XX_AEMIF_CE2CFG_OFFSET	0x10
-#define DA8XX_AEMIF_ASIZE_16BIT		0x1
+static struct mtd_partition spi_flash_partitions[] = {
+	[0] = {
+		.name = "U-Boot",
+		.offset = 0,
+		.size = SZ_256K,
+		.mask_flags = MTD_WRITEABLE,
+	},
+	[1] = {
+		.name = "U-Boot Environment",
+		.offset = MTDPART_OFS_APPEND,
+		.size = SZ_64K,
+		.mask_flags = MTD_WRITEABLE,
+	},
+	[2] = {
+		.name = "Linux",
+		.offset = MTDPART_OFS_NXTBLK,
+		.size = SZ_8M - (SZ_256K + SZ_64K + SZ_64K),
+		.mask_flags = 0,
+	},
+	[3] = {
+		.name = "MAC Address",
+		.offset = MTDPART_OFS_NXTBLK,
+		.size = SZ_64K,
+		.mask_flags = MTD_WRITEABLE,
+		.setup = davinci_get_mac_addr,
+		.context = (void *)0,
+	},
+};
 
-static void __init da850_evm_init_nor(void)
-{
-	void __iomem *aemif_addr;
+static struct flash_platform_data spi_flash_data = {
+	.name = "m25p80",
+	.parts = spi_flash_partitions,
+	.nr_parts = ARRAY_SIZE(spi_flash_partitions),
+	.type = "m25p64",
+};
 
-	aemif_addr = ioremap(DA8XX_AEMIF_CTL_BASE, SZ_32K);
-
-	/* Configure data bus width of CS2 to 16 bit */
-	writel(readl(aemif_addr + DA8XX_AEMIF_CE2CFG_OFFSET) |
-		DA8XX_AEMIF_ASIZE_16BIT,
-		aemif_addr + DA8XX_AEMIF_CE2CFG_OFFSET);
-
-	iounmap(aemif_addr);
-}
+static struct spi_board_info da850_spi_board_info[] = {
+	[0] = {
+		.modalias = "m25p80",
+		.platform_data = &spi_flash_data,
+		.mode = SPI_MODE_0,
+		.max_speed_hz = 30000000,       /* max sample rate at 3V */
+		.bus_num = 1,
+		.chip_select = 0,
+	},
+};
 
 static u32 ui_card_detected;
 
@@ -191,8 +290,6 @@ static __init void da850_evm_setup_nor_nand(void)
 			pr_warning("da850_evm_init: nor mux setup failed: %d\n",
 				ret);
 
-		da850_evm_init_nor();
-
 		platform_add_devices(da850_evm_devices,
 					ARRAY_SIZE(da850_evm_devices));
 	}
@@ -208,6 +305,26 @@ static inline void da850_evm_setup_emac_rmii(int rmii_sel)
 }
 #else
 static inline void da850_evm_setup_emac_rmii(int rmii_sel) { }
+#endif
+
+#ifdef CONFIG_DA850_UI_CLCD
+static inline void da850_evm_setup_char_lcd(int a, int b, int c)
+{
+	gpio_set_value(a, 0);
+	gpio_set_value(b, 0);
+	gpio_set_value(c, 0);
+}
+#else
+static inline void da850_evm_setup_char_lcd(int a, int b, int c) { }
+#endif
+
+#ifdef CONFIG_DA850_UI_VIDEO_PORT
+static inline void da850_evm_setup_video_port(int video_sel)
+{
+	gpio_set_value(video_sel, 0);
+}
+#else
+static inline void da850_evm_setup_video_port(int video_sel) { }
 #endif
 
 static int da850_evm_ui_expander_setup(struct i2c_client *client, unsigned gpio,
@@ -249,6 +366,10 @@ static int da850_evm_ui_expander_setup(struct i2c_client *client, unsigned gpio,
 
 	da850_evm_setup_emac_rmii(sel_a);
 
+	da850_evm_setup_char_lcd(sel_a, sel_b, sel_c);
+
+	da850_evm_setup_video_port(sel_c);
+
 	return 0;
 
 exp_setup_selc_fail:
@@ -279,97 +400,6 @@ static struct pca953x_platform_data da850_evm_ui_expander_info = {
 	.setup		= da850_evm_ui_expander_setup,
 	.teardown	= da850_evm_ui_expander_teardown,
 };
-
-static struct i2c_board_info __initdata da850_evm_i2c_devices[] = {
-	{
-		I2C_BOARD_INFO("tlv320aic3x", 0x18),
-	},
-	{
-		I2C_BOARD_INFO("tca6416", 0x20),
-		.platform_data = &da850_evm_ui_expander_info,
-	},
-};
-
-static struct davinci_i2c_platform_data da850_evm_i2c_0_pdata = {
-	.bus_freq	= 100,	/* kHz */
-	.bus_delay	= 0,	/* usec */
-};
-
-static struct davinci_uart_config da850_evm_uart_config __initdata = {
-	.enabled_uarts = 0x7,
-};
-
-/* davinci da850 evm audio machine driver */
-static u8 da850_iis_serializer_direction[] = {
-	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
-	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
-	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	TX_MODE,
-	RX_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
-};
-
-static struct snd_platform_data da850_evm_snd_data = {
-	.tx_dma_offset	= 0x2000,
-	.rx_dma_offset	= 0x2000,
-	.op_mode	= DAVINCI_MCASP_IIS_MODE,
-	.num_serializer	= ARRAY_SIZE(da850_iis_serializer_direction),
-	.tdm_slots	= 2,
-	.serial_dir	= da850_iis_serializer_direction,
-	.eventq_no	= EVENTQ_1,
-	.version	= MCASP_VERSION_2,
-	.txnumevt	= 1,
-	.rxnumevt	= 1,
-};
-
-static int da850_evm_mmc_get_ro(int index)
-{
-	return gpio_get_value(DA850_MMCSD_WP_PIN);
-}
-
-static int da850_evm_mmc_get_cd(int index)
-{
-	return !gpio_get_value(DA850_MMCSD_CD_PIN);
-}
-
-static struct davinci_mmc_config da850_mmc_config = {
-	.get_ro		= da850_evm_mmc_get_ro,
-	.get_cd		= da850_evm_mmc_get_cd,
-	.wires		= 4,
-	.max_freq	= 50000000,
-	.caps		= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED,
-	.version	= MMC_CTLR_VERSION_2,
-};
-
-static int da850_lcd_hw_init(void)
-{
-	int status;
-
-	status = gpio_request(DA850_LCD_BL_PIN, "lcd bl\n");
-	if (status < 0)
-		return status;
-
-	status = gpio_request(DA850_LCD_PWR_PIN, "lcd pwr\n");
-	if (status < 0) {
-		gpio_free(DA850_LCD_BL_PIN);
-		return status;
-	}
-
-	gpio_direction_output(DA850_LCD_BL_PIN, 0);
-	gpio_direction_output(DA850_LCD_PWR_PIN, 0);
-
-	/* disable lcd backlight */
-	gpio_set_value(DA850_LCD_BL_PIN, 0);
-
-	/* disable lcd power */
-	gpio_set_value(DA850_LCD_PWR_PIN, 0);
-
-	/* enable lcd power */
-	gpio_set_value(DA850_LCD_PWR_PIN, 1);
-
-	/* enable lcd backlight */
-	gpio_set_value(DA850_LCD_BL_PIN, 1);
-
-	return 0;
-}
 
 /* TPS65070 voltage regulator support */
 
@@ -463,19 +493,21 @@ struct regulator_init_data tps65070_regulator_data[] = {
 		},
 		.num_consumer_supplies = ARRAY_SIZE(tps65070_dcdc2_consumers),
 		.consumer_supplies = tps65070_dcdc2_consumers,
+		.driver_data = (void *) 1,
 	},
 
 	/* dcdc3 */
 	{
 		.constraints = {
 			.min_uV = 950000,
-			.max_uV = 1320000,
+			.max_uV = 1380000,
 			.valid_ops_mask = (REGULATOR_CHANGE_VOLTAGE |
 				REGULATOR_CHANGE_STATUS),
 			.boot_on = 1,
 		},
 		.num_consumer_supplies = ARRAY_SIZE(tps65070_dcdc3_consumers),
 		.consumer_supplies = tps65070_dcdc3_consumers,
+		.driver_data = (void *) 1,
 	},
 
 	/* ldo1 */
@@ -505,17 +537,120 @@ struct regulator_init_data tps65070_regulator_data[] = {
 	},
 };
 
-static struct i2c_board_info __initdata da850evm_tps65070_info[] = {
+static struct tps6507x_board tps_board = {
+	.tps6507x_pmic_init_data = &tps65070_regulator_data[0],
+};
+
+static struct i2c_board_info __initdata da850_evm_i2c_devices[] = {
 	{
 		I2C_BOARD_INFO("tps6507x", 0x48),
-		.platform_data = &tps65070_regulator_data[0],
+		.platform_data = &tps_board,
+	},
+	{
+		I2C_BOARD_INFO("tlv320aic3x", 0x18),
+	},
+	{
+		I2C_BOARD_INFO("tca6416", 0x20),
+		.platform_data = &da850_evm_ui_expander_info,
+	},
+	{
+		I2C_BOARD_INFO("cdce913", 0x65),
 	},
 };
 
-static int __init pmic_tps65070_init(void)
+static struct davinci_uart_config da850_evm_uart_config __initdata = {
+	.enabled_uarts = 0x7,
+};
+
+/* davinci da850 evm audio machine driver */
+static u8 da850_iis_serializer_direction[] = {
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	TX_MODE,
+	RX_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+};
+
+static struct snd_platform_data da850_evm_snd_data = {
+	.tx_dma_offset	= 0x2000,
+	.rx_dma_offset	= 0x2000,
+	.op_mode	= DAVINCI_MCASP_IIS_MODE,
+	.num_serializer	= ARRAY_SIZE(da850_iis_serializer_direction),
+	.tdm_slots	= 2,
+	.serial_dir	= da850_iis_serializer_direction,
+	.eventq_no	= EVENTQ_1,
+	.version	= MCASP_VERSION_2,
+	.txnumevt	= 1,
+	.rxnumevt	= 1,
+};
+
+static struct davinci_mcbsp_platform_data da850_mcbsp0_config = {
+	.inst	= 0,
+};
+
+static struct davinci_mcbsp_platform_data da850_mcbsp1_config = {
+	.inst	= 1,
+};
+
+static int da850_evm_mmc_get_ro(int index)
 {
-	return i2c_register_board_info(1, da850evm_tps65070_info,
-					ARRAY_SIZE(da850evm_tps65070_info));
+	return gpio_get_value(DA850_MMCSD_WP_PIN);
+}
+
+static int da850_evm_mmc_get_cd(int index)
+{
+	return !gpio_get_value(DA850_MMCSD_CD_PIN);
+}
+
+static struct davinci_mmc_config da850_mmc_config = {
+	.get_ro		= da850_evm_mmc_get_ro,
+	.get_cd		= da850_evm_mmc_get_cd,
+	.wires		= 4,
+	.max_freq	= 50000000,
+	.caps		= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED,
+	.version	= MMC_CTLR_VERSION_2,
+};
+
+static void da850_panel_power_ctrl(int val)
+{
+	/* lcd power */
+	gpio_set_value(DA850_LCD_PWR_PIN, val);
+
+	mdelay(200);
+
+	/* lcd backlight */
+	gpio_set_value(DA850_LCD_BL_PIN, val);
+}
+
+static int da850_lcd_hw_init(void)
+{
+	void __iomem *cfg_mstpri2_base;
+	int status;
+	u32 val;
+
+	/*
+	 * Reconfigure the LCDC priority to the highest to ensure that
+	 * the throughput/latency requirements for the LCDC are met.
+	 */
+	cfg_mstpri2_base = DA8XX_SYSCFG0_VIRT(DA8XX_MSTPRI2_REG);
+
+	val = __raw_readl(cfg_mstpri2_base);
+	val &= 0x0fffffff;
+	__raw_writel(val, cfg_mstpri2_base);
+
+	status = gpio_request(DA850_LCD_BL_PIN, "lcd bl\n");
+	if (status < 0)
+		return status;
+
+	status = gpio_request(DA850_LCD_PWR_PIN, "lcd pwr\n");
+	if (status < 0) {
+		gpio_free(DA850_LCD_BL_PIN);
+		return status;
+	}
+
+	gpio_direction_output(DA850_LCD_BL_PIN, 0);
+	gpio_direction_output(DA850_LCD_PWR_PIN, 0);
+
+	return 0;
 }
 
 static const short da850_evm_lcdc_pins[] = {
@@ -534,7 +669,7 @@ static int __init da850_evm_config_emac(void)
 	if (!machine_is_davinci_da850_evm())
 		return 0;
 
-	cfg_chip3_base = DA8XX_SYSCFG_VIRT(DA8XX_CFGCHIP3_REG);
+	cfg_chip3_base = DA8XX_SYSCFG0_VIRT(DA8XX_CFGCHIP3_REG);
 
 	val = __raw_readl(cfg_chip3_base);
 
@@ -584,14 +719,329 @@ static int __init da850_evm_config_emac(void)
 }
 device_initcall(da850_evm_config_emac);
 
+/* Retaining these APIs, since the VPIF drivers do not check NULL handlers */
+static int da850_set_vpif_clock(int mux_mode, int hd)
+{
+	return 0;
+}
+
+static int da850_setup_vpif_input_channel_mode(int mux_mode)
+{
+	return 0;
+}
+
+static int da850_vpif_intr_status(void __iomem *vpif_base, int channel)
+{
+	int status = 0;
+	int mask;
+
+	if (channel < 0 || channel > 3)
+		return 0;
+
+	mask = 1 << channel;
+	status = __raw_readl((vpif_base + VPIF_STATUS)) & mask;
+	__raw_writel(status, (vpif_base + VPIF_STATUS_CLR));
+
+	return status;
+}
+
+/* VPIF capture configuration */
+static struct tvp514x_platform_data tvp5146_pdata = {
+	.clk_polarity = 0,
+	.hs_polarity = 1,
+	.vs_polarity = 1
+};
+
+#define TVP514X_STD_ALL (V4L2_STD_NTSC | V4L2_STD_PAL)
+
+static struct vpif_subdev_info da850_vpif_capture_sdev_info[] = {
+	{
+		.name	= TVP5147_CH0,
+		.board_info = {
+			I2C_BOARD_INFO("tvp5146", 0x5d),
+			.platform_data = &tvp5146_pdata,
+		},
+		.input = INPUT_CVBS_VI2B,
+		.output = OUTPUT_10BIT_422_EMBEDDED_SYNC,
+		.can_route = 1,
+		.vpif_if = {
+			.if_type = VPIF_IF_BT656,
+			.hd_pol = 1,
+			.vd_pol = 1,
+			.fid_pol = 0,
+		},
+	},
+	{
+		.name	= TVP5147_CH1,
+		.board_info = {
+			I2C_BOARD_INFO("tvp5146", 0x5c),
+			.platform_data = &tvp5146_pdata,
+		},
+		.input = INPUT_SVIDEO_VI2C_VI1C,
+		.output = OUTPUT_10BIT_422_EMBEDDED_SYNC,
+		.can_route = 1,
+		.vpif_if = {
+			.if_type = VPIF_IF_BT656,
+			.hd_pol = 1,
+			.vd_pol = 1,
+			.fid_pol = 0,
+		},
+	},
+};
+
+static const struct vpif_input da850_ch0_inputs[] = {
+	{
+		.input = {
+			.index = 0,
+			.name = "Composite",
+			.type = V4L2_INPUT_TYPE_CAMERA,
+			.std = TVP514X_STD_ALL,
+		},
+		.subdev_name = TVP5147_CH0,
+	},
+};
+
+static const struct vpif_input da850_ch1_inputs[] = {
+       {
+		.input = {
+			.index = 0,
+			.name = "S-Video",
+			.type = V4L2_INPUT_TYPE_CAMERA,
+			.std = TVP514X_STD_ALL,
+		},
+		.subdev_name = TVP5147_CH1,
+	},
+};
+
+static struct vpif_capture_config da850_vpif_capture_config = {
+	.setup_input_channel_mode = da850_setup_vpif_input_channel_mode,
+	.intr_status = da850_vpif_intr_status,
+	.subdev_info = da850_vpif_capture_sdev_info,
+	.subdev_count = ARRAY_SIZE(da850_vpif_capture_sdev_info),
+	.chan_config[0] = {
+		.inputs = da850_ch0_inputs,
+		.input_count = ARRAY_SIZE(da850_ch0_inputs),
+	},
+	.chan_config[1] = {
+		.inputs = da850_ch1_inputs,
+		.input_count = ARRAY_SIZE(da850_ch1_inputs),
+	},
+	.card_name      = "DA850/OMAP-L138 Video Capture",
+};
+
+/* VPIF display configuration */
+static struct vpif_subdev_info da850_vpif_subdev[] = {
+	{
+		.name	= "adv7343",
+		.board_info = {
+			I2C_BOARD_INFO("adv7343", 0x2a),
+		},
+	},
+};
+
+static const char *vpif_output[] = {
+	"Composite",
+	"Component",
+	"S-Video",
+};
+
+static struct vpif_display_config da850_vpif_display_config = {
+	.set_clock	= da850_set_vpif_clock,
+	.intr_status	= da850_vpif_intr_status,
+	.subdevinfo	= da850_vpif_subdev,
+	.subdev_count	= ARRAY_SIZE(da850_vpif_subdev),
+	.output		= vpif_output,
+	.output_count	= ARRAY_SIZE(vpif_output),
+	.card_name	= "DA850/OMAP-L138 Video Display",
+};
+
+#if defined(CONFIG_DAVINCI_MCBSP0)
+#define HAS_MCBSP0 1
+#else
+#define HAS_MCBSP0 0
+#endif
+
+#if defined(CONFIG_DAVINCI_MCBSP1)
+#define HAS_MCBSP1 1
+#else
+#define HAS_MCBSP1 0
+#endif
+
+#if defined(CONFIG_TI_DAVINCI_EMAC) || \
+	defined(CONFIG_TI_DAVINCI_EMAC_MODULE)
+#define HAS_EMAC 1
+#else
+#define HAS_EMAC 0
+#endif
+
+#if defined(CONFIG_SND_DA850_SOC_EVM) || \
+	defined(CONFIG_SND_DA850_SOC_EVM_MODULE)
+#define HAS_MCASP 1
+#else
+#define HAS_MCASP 0
+#endif
+
+#if defined(CONFIG_DA850_UI_RMII) && (HAS_EMAC)
+#define HAS_RMII 1
+#else
+#define HAS_RMII 0
+#endif
+
+#if defined(CONFIG_DA850_UI_LCD) && defined(CONFIG_FB_DA8XX) ||\
+		defined(CONFIG_FB_DA8XX_MODULE)
+#define HAS_GLCD 1
+#else
+#define HAS_GLCD 0
+#endif
+
+#if defined(CONFIG_VIDEO_DAVINCI_VPIF_DISPLAY) ||\
+		defined(CONFIG_VIDEO_DAVINCI_VPIF_DISPLAY_MODULE)
+#define HAS_VPIF_DISPLAY 1
+#else
+#define HAS_VPIF_DISPLAY 0
+#endif
+
+#if defined(CONFIG_VIDEO_DAVINCI_VPIF_CAPTURE) ||\
+		defined(CONFIG_VIDEO_DAVINCI_VPIF_CAPTURE_MODULE)
+#define HAS_VPIF_CAPTURE 1
+#else
+#define HAS_VPIF_CAPTURE 0
+#endif
+
+static da8xx_ocic_handler_t da850_evm_usb_ocic_handler;
+
+static int da850_evm_usb_set_power(unsigned port, int on)
+{
+	gpio_set_value(DA850_USB1_VBUS_PIN, on);
+	return 0;
+}
+
+static int da850_evm_usb_get_power(unsigned port)
+{
+	return gpio_get_value(DA850_USB1_VBUS_PIN);
+}
+
+static int da850_evm_usb_get_oci(unsigned port)
+{
+	return !gpio_get_value(DA850_USB1_OC_PIN);
+}
+
+static irqreturn_t da850_evm_usb_ocic_irq(int, void *);
+
+static int da850_evm_usb_ocic_notify(da8xx_ocic_handler_t handler)
+{
+	int irq 	= gpio_to_irq(DA850_USB1_OC_PIN);
+	int error	= 0;
+
+	if (handler != NULL) {
+		da850_evm_usb_ocic_handler = handler;
+
+		error = request_irq(irq, da850_evm_usb_ocic_irq, IRQF_DISABLED |
+				    IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
+				    "OHCI over-current indicator", NULL);
+		if (error)
+			printk(KERN_ERR "%s: could not request IRQ to watch "
+			       "over-current indicator changes\n", __func__);
+	} else
+		free_irq(irq, NULL);
+
+	return error;
+}
+
+static struct da8xx_ohci_root_hub da850_evm_usb11_pdata = {
+	.set_power	= da850_evm_usb_set_power,
+	.get_power	= da850_evm_usb_get_power,
+	.get_oci	= da850_evm_usb_get_oci,
+	.ocic_notify	= da850_evm_usb_ocic_notify,
+
+	/* TPS2065 switch @ 5V */
+	.potpgt		= (3 + 1) / 2,	/* 3 ms max */
+};
+
+static irqreturn_t da850_evm_usb_ocic_irq(int irq, void *dev_id)
+{
+	da850_evm_usb_ocic_handler(&da850_evm_usb11_pdata, 1);
+	return IRQ_HANDLED;
+}
+
+static struct musb_hdrc_platform_data usb_evm_data[] = {
+	{
+#ifdef CONFIG_USB_MUSB_OTG
+		.mode = MUSB_OTG,
+#elif defined(CONFIG_USB_MUSB_DUAL_ROLE)
+		.mode = MUSB_DUAL_ROLE,
+#elif defined(CONFIG_USB_MUSB_PERIPHERAL)
+		.mode =  MUSB_PERIPHERAL,
+#elif defined(CONFIG_USB_MUSB_HOST)
+		.mode = MUSB_HOST,
+#endif
+		.power = 255,
+		.potpgt = 8,
+		.set_vbus = NULL, /* VBUs is directly controlled by the IP */
+	}
+};
+
+static __init void da850_evm_usb_init(void)
+{
+	int ret;
+	u32 cfgchip2;
+
+	/*
+	 * Setup the Ref. clock frequency for the EVM at 24 MHz.
+	 */
+	cfgchip2 = __raw_readl(DA8XX_SYSCFG0_VIRT(DA8XX_CFGCHIP2_REG));
+	cfgchip2 &= ~CFGCHIP2_REFFREQ;
+	cfgchip2 |=  CFGCHIP2_REFFREQ_24MHZ;
+	__raw_writel(cfgchip2, DA8XX_SYSCFG0_VIRT(DA8XX_CFGCHIP2_REG));
+
+	da8xx_usb20_configure(usb_evm_data, ARRAY_SIZE(usb_evm_data));
+
+	ret = da8xx_pinmux_setup(da850_evm_usb11_pins);
+	if (ret) {
+		pr_warning("%s: USB 1.1 PinMux setup failed: %d\n",
+			   __func__, ret);
+		return;
+	}
+
+	ret = gpio_request(DA850_USB1_VBUS_PIN, "USB1 VBUS\n");
+	if (ret) {
+		printk(KERN_ERR "%s: failed to request GPIO for USB 1.1 port "
+		       "power control: %d\n", __func__, ret);
+		return;
+	}
+	gpio_direction_output(DA850_USB1_VBUS_PIN, 0);
+
+	ret = gpio_request(DA850_USB1_OC_PIN, "USB1 OC");
+	if (ret) {
+		printk(KERN_ERR "%s: failed to request GPIO for USB 1.1 port "
+		       "over-current indicator: %d\n", __func__, ret);
+		return;
+	}
+	gpio_direction_input(DA850_USB1_OC_PIN);
+
+	ret = da8xx_register_usb11(&da850_evm_usb11_pdata);
+	if (ret)
+		pr_warning("%s: USB 1.1 registration failed: %d\n",
+			   __func__, ret);
+}
+
+static struct i2c_gpio_platform_data da850_gpio_i2c_pdata = {
+	.sda_pin	= GPIO_TO_PIN(1, 4),
+	.scl_pin	= GPIO_TO_PIN(1, 5),
+	.udelay		= 2,			/* 250 KHz */
+};
+
+static struct platform_device da850_gpio_i2c = {
+	.name		= "i2c-gpio",
+	.id		= 1,
+	.dev		= {
+		.platform_data	= &da850_gpio_i2c_pdata,
+	},
+};
+
 static __init void da850_evm_init(void)
 {
 	int ret;
-
-	ret = pmic_tps65070_init();
-	if (ret)
-		pr_warning("da850_evm_init: TPS65070 PMIC init failed: %d\n",
-				ret);
 
 	ret = da8xx_register_edma();
 	if (ret)
@@ -603,11 +1053,7 @@ static __init void da850_evm_init(void)
 		pr_warning("da850_evm_init: i2c0 mux setup failed: %d\n",
 				ret);
 
-	ret = da8xx_register_i2c(0, &da850_evm_i2c_0_pdata);
-	if (ret)
-		pr_warning("da850_evm_init: i2c0 registration failed: %d\n",
-				ret);
-
+	platform_device_register(&da850_gpio_i2c);
 
 	ret = da8xx_register_watchdog();
 	if (ret)
@@ -651,12 +1097,48 @@ static __init void da850_evm_init(void)
 	__raw_writel(0, IO_ADDRESS(DA8XX_UART1_BASE) + 0x30);
 	__raw_writel(0, IO_ADDRESS(DA8XX_UART0_BASE) + 0x30);
 
-	ret = da8xx_pinmux_setup(da850_mcasp_pins);
-	if (ret)
-		pr_warning("da850_evm_init: mcasp mux setup failed: %d\n",
-				ret);
+	if (HAS_MCBSP0) {
+		if (HAS_EMAC)
+			pr_warning("WARNING: both MCBSP0 and EMAC are "
+				"enabled, but they share pins.\n"
+				"\tDisable one of them.\n");
 
-	da8xx_register_mcasp(0, &da850_evm_snd_data);
+		ret = da8xx_pinmux_setup(da850_mcbsp0_pins);
+		if (ret)
+			pr_warning("da850_evm_init: mcbsp0 mux setup failed:"
+					" %d\n", ret);
+
+		ret = da850_init_mcbsp(&da850_mcbsp0_config);
+		if (ret)
+			pr_warning("da850_evm_init: mcbsp0 registration"
+					"failed: %d\n",	ret);
+	}
+
+	if (HAS_MCBSP1) {
+		ret = da8xx_pinmux_setup(da850_mcbsp1_pins);
+		if (ret)
+			pr_warning("da850_evm_init: mcbsp1 mux setup failed:"
+					" %d\n", ret);
+
+		ret = da850_init_mcbsp(&da850_mcbsp1_config);
+		if (ret)
+			pr_warning("da850_evm_init: mcbsp1 registration"
+					" failed: %d\n", ret);
+	}
+
+	if (HAS_MCASP) {
+		if ((HAS_MCBSP0 || HAS_MCBSP1))
+			pr_warning("WARNING: both McASP and McBSP are enabled, "
+					"but they share pins.\n"
+					"\tDisable one of them.\n");
+
+		ret = da8xx_pinmux_setup(da850_mcasp_pins);
+		if (ret)
+			pr_warning("da850_evm_init: mcasp mux setup failed:"
+					"%d\n", ret);
+
+		da8xx_register_mcasp(0, &da850_evm_snd_data);
+	}
 
 	ret = da8xx_pinmux_setup(da850_lcdcntl_pins);
 	if (ret)
@@ -674,6 +1156,7 @@ static __init void da850_evm_init(void)
 		pr_warning("da850_evm_init: lcd initialization failed: %d\n",
 				ret);
 
+	sharp_lk043t1dg01_pdata.panel_power_ctrl = da850_panel_power_ctrl,
 	ret = da8xx_register_lcdc(&sharp_lk043t1dg01_pdata);
 	if (ret)
 		pr_warning("da850_evm_init: lcdc registration failed: %d\n",
@@ -692,6 +1175,59 @@ static __init void da850_evm_init(void)
 	if (ret)
 		pr_warning("da850_evm_init: cpuidle registration failed: %d\n",
 				ret);
+
+	ret = da850_register_pm(&da850_pm_device);
+	if (ret)
+		pr_warning("da850_evm_init: suspend registration failed: %d\n",
+				ret);
+
+	ret = da8xx_pinmux_setup(da850_spi1_pins);
+	if (ret)
+		pr_warning("da850_evm_init: spi1 mux setup failed: %d\n",
+				ret);
+
+	da850_init_spi1(BIT(0), da850_spi_board_info,
+			ARRAY_SIZE(da850_spi_board_info));
+
+	da850_evm_usb_init();
+
+	ret = da8xx_register_sata();
+	if (ret)
+		pr_warning("da850_evm_init: SATA registration failed: %d\n",
+						ret);
+
+	if (HAS_VPIF_DISPLAY || HAS_VPIF_CAPTURE) {
+		ret = da850_register_vpif();
+		if (ret)
+			pr_warning("da850_evm_init: VPIF registration failed: "
+					"%d\n",	ret);
+	}
+
+	if (!HAS_RMII && HAS_VPIF_CAPTURE) {
+		ret = da8xx_pinmux_setup(da850_vpif_capture_pins);
+		if (ret)
+			pr_warning("da850_evm_init: vpif capture mux failed: "
+					"%d\n",	ret);
+
+		ret = da850_register_vpif_capture(&da850_vpif_capture_config);
+		if (ret)
+			pr_warning("da850_evm_init: VPIF registration failed: "
+					"%d\n",	ret);
+
+	}
+
+	if (!HAS_GLCD && HAS_VPIF_DISPLAY) {
+		ret = da8xx_pinmux_setup(da850_vpif_display_pins);
+		if (ret)
+			pr_warning("da850_evm_init: vpif capture mux failed: "
+					"%d\n",	ret);
+
+		ret = da850_register_vpif_display(&da850_vpif_display_config);
+		if (ret)
+			pr_warning("da850_evm_init: VPIF registration failed: "
+					"%d\n",	ret);
+
+	}
 }
 
 #ifdef CONFIG_SERIAL_8250_CONSOLE
@@ -715,7 +1251,7 @@ static void __init da850_evm_map_io(void)
 	da850_init();
 }
 
-MACHINE_START(DAVINCI_DA850_EVM, "DaVinci DA850/OMAP-L138 EVM")
+MACHINE_START(DAVINCI_DA850_EVM, "DaVinci DA850/OMAP-L138/AM18xx EVM")
 	.phys_io	= IO_PHYS,
 	.io_pg_offst	= (__IO_ADDRESS(IO_PHYS) >> 18) & 0xfffc,
 	.boot_params	= (DA8XX_DDR_BASE + 0x100),
