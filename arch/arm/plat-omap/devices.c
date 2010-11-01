@@ -14,6 +14,7 @@
 #include <linux/init.h>
 #include <linux/platform_device.h>
 #include <linux/io.h>
+#include <linux/slab.h>
 
 #include <mach/hardware.h>
 #include <asm/mach-types.h>
@@ -28,6 +29,8 @@
 #include <plat/menelaus.h>
 #include <plat/mcbsp.h>
 #include <plat/dsp_common.h>
+#include <plat/omap44xx.h>
+#include <plat/dma.h>
 
 #if	defined(CONFIG_OMAP_DSP) || defined(CONFIG_OMAP_DSP_MODULE)
 
@@ -192,11 +195,50 @@ void omap_mcbsp_register_board_cfg(struct omap_mcbsp_platform_data *config,
 
 /*-------------------------------------------------------------------------*/
 
+#if defined(CONFIG_SND_OMAP_SOC_MCPDM) || \
+		defined(CONFIG_SND_OMAP_SOC_MCPDM_MODULE)
+
+static struct resource mcpdm_resources[] = {
+	{
+		.name		= "mcpdm_mem",
+		.start		= OMAP44XX_MCPDM_BASE,
+		.end		= OMAP44XX_MCPDM_BASE + SZ_4K,
+		.flags		= IORESOURCE_MEM,
+	},
+	{
+		.name		= "mcpdm_irq",
+		.start		= OMAP44XX_IRQ_MCPDM,
+		.end		= OMAP44XX_IRQ_MCPDM,
+		.flags		= IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device omap_mcpdm_device = {
+	.name		= "omap-mcpdm",
+	.id		= -1,
+	.num_resources	= ARRAY_SIZE(mcpdm_resources),
+	.resource	= mcpdm_resources,
+};
+
+static void omap_init_mcpdm(void)
+{
+	(void) platform_device_register(&omap_mcpdm_device);
+}
+#else
+static inline void omap_init_mcpdm(void) {}
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 #if defined(CONFIG_MMC_OMAP) || defined(CONFIG_MMC_OMAP_MODULE) || \
 	defined(CONFIG_MMC_OMAP_HS) || defined(CONFIG_MMC_OMAP_HS_MODULE)
 
-#define OMAP_MMC_NR_RES		2
+#define OMAP_MMC_NR_RES		4
 
+#ifdef CONFIG_ARCH_TI816X
+#define TI816X_DMA_MMC1_RX	25
+#define TI816X_DMA_MMC1_TX	24
+#endif
 /*
  * Register MMC devices. Called from mach-omap1 and mach-omap2 device init.
  */
@@ -218,6 +260,61 @@ int __init omap_mmc_add(const char *name, int id, unsigned long base,
 	res[0].flags = IORESOURCE_MEM;
 	res[1].start = res[1].end = irq;
 	res[1].flags = IORESOURCE_IRQ;
+	/* Populate DMA lines based on the instance used. Rx first,Tx next*/
+	switch (id) {
+	case 0:
+		if (cpu_is_ti816x()) {
+			res[2].start = TI816X_DMA_MMC1_RX;
+			res[2].end = TI816X_DMA_MMC1_RX;
+			res[2].flags = IORESOURCE_DMA;
+			res[3].start = TI816X_DMA_MMC1_TX;
+			res[3].end = TI816X_DMA_MMC1_TX;
+			res[3].flags = IORESOURCE_DMA;
+		} else {
+			res[2].start = OMAP24XX_DMA_MMC1_RX;
+			res[2].end = OMAP24XX_DMA_MMC1_RX;
+			res[2].flags = IORESOURCE_DMA;
+			res[3].start = OMAP24XX_DMA_MMC1_TX;
+			res[3].end = OMAP24XX_DMA_MMC1_TX;
+			res[3].flags = IORESOURCE_DMA;
+		}
+		break;
+	case 1:
+		res[2].start = OMAP24XX_DMA_MMC2_RX;
+		res[2].end = OMAP24XX_DMA_MMC2_RX;
+		res[2].flags = IORESOURCE_DMA;
+		res[3].start = OMAP24XX_DMA_MMC2_TX;
+		res[3].end = OMAP24XX_DMA_MMC2_TX;
+		res[3].flags = IORESOURCE_DMA;
+		break;
+	case 2:
+		res[2].start = OMAP34XX_DMA_MMC3_RX;
+		res[2].end = OMAP34XX_DMA_MMC3_RX;
+		res[2].flags = IORESOURCE_DMA;
+		res[3].start = OMAP34XX_DMA_MMC3_TX;
+		res[3].end = OMAP34XX_DMA_MMC3_TX;
+		res[3].flags = IORESOURCE_DMA;
+		break;
+	case 3:
+		res[2].start = OMAP44XX_DMA_MMC4_RX;
+		res[2].end = OMAP44XX_DMA_MMC4_RX;
+		res[2].flags = IORESOURCE_DMA;
+		res[3].start = OMAP44XX_DMA_MMC4_TX;
+		res[3].end = OMAP44XX_DMA_MMC4_TX;
+		res[3].flags = IORESOURCE_DMA;
+		break;
+	case 4:
+		res[2].start = OMAP44XX_DMA_MMC5_RX;
+		res[2].end = OMAP44XX_DMA_MMC5_RX;
+		res[2].flags = IORESOURCE_DMA;
+		res[3].start = OMAP44XX_DMA_MMC5_TX;
+		res[3].end = OMAP44XX_DMA_MMC5_TX;
+		res[3].flags = IORESOURCE_DMA;
+		break;
+	default:
+		ret = -ENODEV;
+		goto fail;
+	}
 
 	ret = platform_device_add_resources(pdev, res, ARRAY_SIZE(res));
 	if (ret == 0)
@@ -244,7 +341,7 @@ fail:
 
 #if defined(CONFIG_HW_RANDOM_OMAP) || defined(CONFIG_HW_RANDOM_OMAP_MODULE)
 
-#ifdef CONFIG_ARCH_OMAP24XX
+#ifdef CONFIG_ARCH_OMAP2
 #define	OMAP_RNG_BASE		0x480A0000
 #else
 #define	OMAP_RNG_BASE		0xfffe5000
@@ -346,6 +443,8 @@ static void omap_init_wdt(void)
 		wdt_resources[0].start = 0x48314000; /* WDT2 */
 	else if (cpu_is_omap44xx())
 		wdt_resources[0].start = 0x4a314000;
+	else if (cpu_is_ti816x())
+		wdt_resources[0].start = 0x480c2000;
 	else
 		return;
 
@@ -356,34 +455,6 @@ static void omap_init_wdt(void)
 #else
 static inline void omap_init_wdt(void) {}
 #endif
-
-/*---------------------------------------------------------------------------*/
-
-#if defined(CONFIG_VIDEO_OMAP2_VOUT) || \
-	defined(CONFIG_VIDEO_OMAP2_VOUT_MODULE)
-#if defined (CONFIG_FB_OMAP2) || defined (CONFIG_FB_OMAP2_MODULE)
-static struct resource omap_vout_resource[3 - CONFIG_FB_OMAP2_NUM_FBS] = {
-};
-#else
-static struct resource omap_vout_resource[2] = {
-};
-#endif
-
-static struct platform_device omap_vout_device = {
-	.name		= "omap_vout",
-	.num_resources	= ARRAY_SIZE(omap_vout_resource),
-	.resource 	= &omap_vout_resource[0],
-	.id		= -1,
-};
-static void omap_init_vout(void)
-{
-	(void) platform_device_register(&omap_vout_device);
-}
-#else
-static inline void omap_init_vout(void) {}
-#endif
-
-/*---------------------------------------------------------------------------*/
 
 /*
  * This gets called after board-specific INIT_MACHINE, and initializes most
@@ -413,9 +484,9 @@ static int __init omap_init_devices(void)
 	omap_init_dsp();
 	omap_init_kp();
 	omap_init_rng();
+	omap_init_mcpdm();
 	omap_init_uwire();
 	omap_init_wdt();
-	omap_init_vout();
 	return 0;
 }
 arch_initcall(omap_init_devices);

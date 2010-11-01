@@ -245,26 +245,6 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
 
 DEFINE_PER_CPU(struct cpuidle_device, omap3_idle_dev);
 
-void omap3_pm_init_cpuidle(struct cpuidle_params *cpuidle_board_params)
-{
-	int i;
-
-	if (!cpuidle_board_params)
-		return;
-
-	for (i = OMAP3_STATE_C1; i < OMAP3_MAX_STATES; i++) {
-		cpuidle_params_table[i].valid =
-			cpuidle_board_params[i].valid;
-		cpuidle_params_table[i].sleep_latency =
-			cpuidle_board_params[i].sleep_latency;
-		cpuidle_params_table[i].wake_latency =
-			cpuidle_board_params[i].wake_latency;
-		cpuidle_params_table[i].threshold =
-			cpuidle_board_params[i].threshold;
-	}
-	return;
-}
-
 /**
  * omap3_cpuidle_update_states - Update the cpuidle states.
  *
@@ -283,10 +263,30 @@ void omap3_cpuidle_update_states(void)
 			cx->valid = 1;
 		} else {
 			if ((cx->mpu_state == PWRDM_POWER_OFF) ||
-				(cx->core_state == PWRDM_POWER_OFF))
+				(cx->core_state	== PWRDM_POWER_OFF))
 				cx->valid = 0;
 		}
 	}
+}
+
+void omap3_pm_init_cpuidle(struct cpuidle_params *cpuidle_board_params)
+{
+	int i;
+
+	if (!cpuidle_board_params)
+		return;
+
+	for (i = OMAP3_STATE_C1; i < OMAP3_MAX_STATES; i++) {
+		cpuidle_params_table[i].valid =
+			cpuidle_board_params[i].valid;
+		cpuidle_params_table[i].sleep_latency =
+			cpuidle_board_params[i].sleep_latency;
+		cpuidle_params_table[i].wake_latency =
+			cpuidle_board_params[i].wake_latency;
+		cpuidle_params_table[i].threshold =
+			cpuidle_board_params[i].threshold;
+	}
+	return;
 }
 
 /* omap3_init_power_states - Initialises the OMAP3 specific C states.

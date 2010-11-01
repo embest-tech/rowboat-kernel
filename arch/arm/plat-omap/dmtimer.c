@@ -41,14 +41,6 @@
 #include <plat/dmtimer.h>
 #include <mach/irqs.h>
 
-/* register offsets */
-#define _OMAP_TIMER_ID_OFFSET		0x00
-#define _OMAP_TIMER_OCP_CFG_OFFSET	0x10
-#define _OMAP_TIMER_SYS_STAT_OFFSET	0x14
-#define _OMAP_TIMER_STAT_OFFSET		0x18
-#define _OMAP_TIMER_INT_EN_OFFSET	0x1c
-#define _OMAP_TIMER_WAKEUP_EN_OFFSET	0x20
-#define _OMAP_TIMER_CTRL_OFFSET		0x24
 #define		OMAP_TIMER_CTRL_GPOCFG		(1 << 14)
 #define		OMAP_TIMER_CTRL_CAPTMODE	(1 << 13)
 #define		OMAP_TIMER_CTRL_PT		(1 << 12)
@@ -62,10 +54,7 @@
 #define		OMAP_TIMER_CTRL_POSTED		(1 << 2)
 #define		OMAP_TIMER_CTRL_AR		(1 << 1) /* auto-reload enable */
 #define		OMAP_TIMER_CTRL_ST		(1 << 0) /* start timer */
-#define _OMAP_TIMER_COUNTER_OFFSET	0x28
-#define _OMAP_TIMER_LOAD_OFFSET		0x2c
-#define _OMAP_TIMER_TRIGGER_OFFSET	0x30
-#define _OMAP_TIMER_WRITE_PEND_OFFSET	0x34
+
 #define		WP_NONE			0	/* no write pending bit */
 #define		WP_TCLR			(1 << 0)
 #define		WP_TCRR			(1 << 1)
@@ -77,84 +66,87 @@
 #define		WP_TCVR			(1 << 7)
 #define		WP_TOCR			(1 << 8)
 #define		WP_TOWR			(1 << 9)
-#define _OMAP_TIMER_MATCH_OFFSET	0x38
-#define _OMAP_TIMER_CAPTURE_OFFSET	0x3c
-#define _OMAP_TIMER_IF_CTRL_OFFSET	0x40
-#define _OMAP_TIMER_CAPTURE2_OFFSET		0x44	/* TCAR2, 34xx only */
-#define _OMAP_TIMER_TICK_POS_OFFSET		0x48	/* TPIR, 34xx only */
-#define _OMAP_TIMER_TICK_NEG_OFFSET		0x4c	/* TNIR, 34xx only */
-#define _OMAP_TIMER_TICK_COUNT_OFFSET		0x50	/* TCVR, 34xx only */
-#define _OMAP_TIMER_TICK_INT_MASK_SET_OFFSET	0x54	/* TOCR, 34xx only */
-#define _OMAP_TIMER_TICK_INT_MASK_COUNT_OFFSET	0x58	/* TOWR, 34xx only */
+
+enum {
+	OMAP_TIMER_ID_REG = 0,
+	OMAP_TIMER_OCP_CFG_REG,
+	OMAP_TIMER_SYS_STAT_REG,
+	OMAP_TIMER_STAT_REG,
+	OMAP_TIMER_INT_EN_REG,
+	OMAP_TIMER_WAKEUP_EN_REG,
+	OMAP_TIMER_CTRL_REG,
+	OMAP_TIMER_COUNTER_REG,
+	OMAP_TIMER_LOAD_REG,
+	OMAP_TIMER_TRIGGER_REG,
+	OMAP_TIMER_WRITE_PEND_REG,
+	OMAP_TIMER_MATCH_REG,
+	OMAP_TIMER_CAPTURE_REG,
+	OMAP_TIMER_IF_CTRL_REG,
+	OMAP_TIMER_CAPTURE2_REG,		/* TCAR2, 34xx only */
+	OMAP_TIMER_TICK_POS_REG,		/* TPIR, 34xx only */
+	OMAP_TIMER_TICK_NEG_REG,		/* TNIR, 34xx only */
+	OMAP_TIMER_TICK_COUNT_REG,		/* TCVR, 34xx only */
+	OMAP_TIMER_TICK_INT_MASK_SET_REG,	/* TOCR, 34xx only */
+	OMAP_TIMER_TICK_INT_MASK_COUNT_REG,	/* TOWR, 34xx only */
+	OMAP_TIMER_IRQ_EOI_REG,			/* ti816x only */
+	OMAP_TIMER_IRQSTATUS_RAW_REG,		/* ti816x only */
+	OMAP_TIMER_IRQSTATUS_REG,		/* ti816x only */
+	OMAP_TIMER_IRQSTATUS_SET_REG,		/* ti816x only */
+	OMAP_TIMER_IRQSTATUS_CLR_REG,		/* ti816x only */
+};
 
 /* register offsets with the write pending bit encoded */
 #define	WPSHIFT					16
 
-#define OMAP_TIMER_ID_REG			(_OMAP_TIMER_ID_OFFSET \
-							| (WP_NONE << WPSHIFT))
+const static u32 reg_map[] = {
+	[OMAP_TIMER_ID_REG]			= 0x00 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_OCP_CFG_REG]		= 0x10 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_SYS_STAT_REG]		= 0x14 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_STAT_REG]			= 0x18 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_INT_EN_REG]			= 0x1c | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_WAKEUP_EN_REG]		= 0x20 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_CTRL_REG]			= 0x24 | (WP_TCLR << WPSHIFT),
+	[OMAP_TIMER_COUNTER_REG]		= 0x28 | (WP_TCRR << WPSHIFT),
+	[OMAP_TIMER_LOAD_REG]			= 0x2c | (WP_TLDR << WPSHIFT),
+	[OMAP_TIMER_TRIGGER_REG]		= 0x30 | (WP_TTGR << WPSHIFT),
+	[OMAP_TIMER_WRITE_PEND_REG]		= 0x34 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_MATCH_REG]			= 0x38 | (WP_TMAR << WPSHIFT),
+	[OMAP_TIMER_CAPTURE_REG]		= 0x3c | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_IF_CTRL_REG]		= 0x40 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_CAPTURE2_REG]		= 0x44 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_TICK_POS_REG]		= 0x48 | (WP_TPIR << WPSHIFT),
+	[OMAP_TIMER_TICK_NEG_REG]		= 0x4c | (WP_TNIR << WPSHIFT),
+	[OMAP_TIMER_TICK_COUNT_REG]		= 0x50 | (WP_TCVR << WPSHIFT),
+	[OMAP_TIMER_TICK_INT_MASK_SET_REG]	= 0x54 | (WP_TOCR << WPSHIFT),
+	[OMAP_TIMER_TICK_INT_MASK_COUNT_REG]	= 0x58 | (WP_TOWR << WPSHIFT),
+};
 
-#define OMAP_TIMER_OCP_CFG_REG			(_OMAP_TIMER_OCP_CFG_OFFSET \
-							| (WP_NONE << WPSHIFT))
-
-#define OMAP_TIMER_SYS_STAT_REG			(_OMAP_TIMER_SYS_STAT_OFFSET \
-							| (WP_NONE << WPSHIFT))
-
-#define OMAP_TIMER_STAT_REG			(_OMAP_TIMER_STAT_OFFSET \
-							| (WP_NONE << WPSHIFT))
-
-#define OMAP_TIMER_INT_EN_REG			(_OMAP_TIMER_INT_EN_OFFSET \
-							| (WP_NONE << WPSHIFT))
-
-#define OMAP_TIMER_WAKEUP_EN_REG		(_OMAP_TIMER_WAKEUP_EN_OFFSET \
-							| (WP_NONE << WPSHIFT))
-
-#define OMAP_TIMER_CTRL_REG			(_OMAP_TIMER_CTRL_OFFSET \
-							| (WP_TCLR << WPSHIFT))
-
-#define OMAP_TIMER_COUNTER_REG			(_OMAP_TIMER_COUNTER_OFFSET \
-							| (WP_TCRR << WPSHIFT))
-
-#define OMAP_TIMER_LOAD_REG			(_OMAP_TIMER_LOAD_OFFSET \
-							| (WP_TLDR << WPSHIFT))
-
-#define OMAP_TIMER_TRIGGER_REG			(_OMAP_TIMER_TRIGGER_OFFSET \
-							| (WP_TTGR << WPSHIFT))
-
-#define OMAP_TIMER_WRITE_PEND_REG		(_OMAP_TIMER_WRITE_PEND_OFFSET \
-							| (WP_NONE << WPSHIFT))
-
-#define OMAP_TIMER_MATCH_REG			(_OMAP_TIMER_MATCH_OFFSET \
-							| (WP_TMAR << WPSHIFT))
-
-#define OMAP_TIMER_CAPTURE_REG			(_OMAP_TIMER_CAPTURE_OFFSET \
-							| (WP_NONE << WPSHIFT))
-
-#define OMAP_TIMER_IF_CTRL_REG			(_OMAP_TIMER_IF_CTRL_OFFSET \
-							| (WP_NONE << WPSHIFT))
-
-#define OMAP_TIMER_CAPTURE2_REG			(_OMAP_TIMER_CAPTURE2_OFFSET \
-							| (WP_NONE << WPSHIFT))
-
-#define OMAP_TIMER_TICK_POS_REG			(_OMAP_TIMER_TICK_POS_OFFSET \
-							| (WP_TPIR << WPSHIFT))
-
-#define OMAP_TIMER_TICK_NEG_REG			(_OMAP_TIMER_TICK_NEG_OFFSET \
-							| (WP_TNIR << WPSHIFT))
-
-#define OMAP_TIMER_TICK_COUNT_REG		(_OMAP_TIMER_TICK_COUNT_OFFSET \
-							| (WP_TCVR << WPSHIFT))
-
-#define OMAP_TIMER_TICK_INT_MASK_SET_REG				\
-		(_OMAP_TIMER_TICK_INT_MASK_SET_OFFSET | (WP_TOCR << WPSHIFT))
-
-#define OMAP_TIMER_TICK_INT_MASK_COUNT_REG				\
-		(_OMAP_TIMER_TICK_INT_MASK_COUNT_OFFSET | (WP_TOWR << WPSHIFT))
+/* Few register offsets in TI816X are different */
+const static u32 ti816x_reg_map[] = {
+	[OMAP_TIMER_ID_REG]			= 0x00 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_OCP_CFG_REG]		= 0x10 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_SYS_STAT_REG]		= 0x14 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_STAT_REG]			= 0x28 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_INT_EN_REG]			= 0x2c | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_WAKEUP_EN_REG]		= 0x34 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_CTRL_REG]			= 0x38 | (WP_TCLR << WPSHIFT),
+	[OMAP_TIMER_COUNTER_REG]		= 0x3c | (WP_TCRR << WPSHIFT),
+	[OMAP_TIMER_LOAD_REG]			= 0x40 | (WP_TLDR << WPSHIFT),
+	[OMAP_TIMER_TRIGGER_REG]		= 0x44 | (WP_TTGR << WPSHIFT),
+	[OMAP_TIMER_WRITE_PEND_REG]		= 0x48 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_MATCH_REG]			= 0x4c | (WP_TMAR << WPSHIFT),
+	[OMAP_TIMER_CAPTURE_REG]		= 0x50 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_IF_CTRL_REG]		= 0x54 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_CAPTURE2_REG]		= 0x58 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_IRQ_EOI_REG]		= 0x20 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_IRQSTATUS_RAW_REG]		= 0x24 | (WP_NONE << WPSHIFT),
+	[OMAP_TIMER_IRQSTATUS_CLR_REG]		= 0x30 | (WP_NONE << WPSHIFT),
+};
 
 struct omap_dm_timer {
 	unsigned long phys_base;
 	int irq;
-#if defined(CONFIG_ARCH_OMAP2) || defined(CONFIG_ARCH_OMAP3) || \
-			defined(CONFIG_ARCH_OMAP4)
+#ifdef CONFIG_ARCH_OMAP2PLUS
 	struct clk *iclk, *fclk;
 #endif
 	void __iomem *io_base;
@@ -163,20 +155,9 @@ struct omap_dm_timer {
 	unsigned posted:1;
 };
 
+static int dm_timer_count;
+
 #ifdef CONFIG_ARCH_OMAP1
-
-#define omap_dm_clk_enable(x)
-#define omap_dm_clk_disable(x)
-#define omap2_dm_timers			NULL
-#define omap2_dm_source_names		NULL
-#define omap2_dm_source_clocks		NULL
-#define omap3_dm_timers			NULL
-#define omap3_dm_source_names		NULL
-#define omap3_dm_source_clocks		NULL
-#define omap4_dm_timers			NULL
-#define omap4_dm_source_names		NULL
-#define omap4_dm_source_clocks		NULL
-
 static struct omap_dm_timer omap1_dm_timers[] = {
 	{ .phys_base = 0xfffb1400, .irq = INT_1610_GPTIMER1 },
 	{ .phys_base = 0xfffb1c00, .irq = INT_1610_GPTIMER2 },
@@ -188,20 +169,14 @@ static struct omap_dm_timer omap1_dm_timers[] = {
 	{ .phys_base = 0xfffbd400, .irq = INT_1610_GPTIMER8 },
 };
 
-static const int dm_timer_count = ARRAY_SIZE(omap1_dm_timers);
+static const int omap1_dm_timer_count = ARRAY_SIZE(omap1_dm_timers);
 
-#elif defined(CONFIG_ARCH_OMAP2)
-
-#define omap_dm_clk_enable(x)		clk_enable(x)
-#define omap_dm_clk_disable(x)		clk_disable(x)
+#else
 #define omap1_dm_timers			NULL
-#define omap3_dm_timers			NULL
-#define omap3_dm_source_names		NULL
-#define omap3_dm_source_clocks		NULL
-#define omap4_dm_timers			NULL
-#define omap4_dm_source_names		NULL
-#define omap4_dm_source_clocks		NULL
+#define omap1_dm_timer_count		0
+#endif	/* CONFIG_ARCH_OMAP1 */
 
+#ifdef CONFIG_ARCH_OMAP2
 static struct omap_dm_timer omap2_dm_timers[] = {
 	{ .phys_base = 0x48028000, .irq = INT_24XX_GPTIMER1 },
 	{ .phys_base = 0x4802a000, .irq = INT_24XX_GPTIMER2 },
@@ -225,20 +200,16 @@ static const char *omap2_dm_source_names[] __initdata = {
 };
 
 static struct clk *omap2_dm_source_clocks[3];
-static const int dm_timer_count = ARRAY_SIZE(omap2_dm_timers);
+static const int omap2_dm_timer_count = ARRAY_SIZE(omap2_dm_timers);
 
-#elif defined(CONFIG_ARCH_OMAP3)
-
-#define omap_dm_clk_enable(x)		clk_enable(x)
-#define omap_dm_clk_disable(x)		clk_disable(x)
-#define omap1_dm_timers			NULL
+#else
 #define omap2_dm_timers			NULL
+#define omap2_dm_timer_count		0
 #define omap2_dm_source_names		NULL
 #define omap2_dm_source_clocks		NULL
-#define omap4_dm_timers			NULL
-#define omap4_dm_source_names		NULL
-#define omap4_dm_source_clocks		NULL
+#endif	/* CONFIG_ARCH_OMAP2 */
 
+#ifdef CONFIG_ARCH_OMAP3
 static struct omap_dm_timer omap3_dm_timers[] = {
 	{ .phys_base = 0x48318000, .irq = INT_24XX_GPTIMER1 },
 	{ .phys_base = 0x49032000, .irq = INT_24XX_GPTIMER2 },
@@ -261,51 +232,76 @@ static const char *omap3_dm_source_names[] __initdata = {
 };
 
 static struct clk *omap3_dm_source_clocks[2];
-static const int dm_timer_count = ARRAY_SIZE(omap3_dm_timers);
+static const int omap3_dm_timer_count = ARRAY_SIZE(omap3_dm_timers);
 
-#elif defined(CONFIG_ARCH_OMAP4)
-
-#define omap_dm_clk_enable(x)		clk_enable(x)
-#define omap_dm_clk_disable(x)		clk_disable(x)
-#define omap1_dm_timers			NULL
-#define omap2_dm_timers			NULL
-#define omap2_dm_source_names		NULL
-#define omap2_dm_source_clocks		NULL
+#else
 #define omap3_dm_timers			NULL
+#define omap3_dm_timer_count		0
 #define omap3_dm_source_names		NULL
 #define omap3_dm_source_clocks		NULL
+#endif	/* CONFIG_ARCH_OMAP3 */
 
+#ifdef CONFIG_ARCH_OMAP4
 static struct omap_dm_timer omap4_dm_timers[] = {
-	{ .phys_base = 0x4a318000, .irq = INT_44XX_GPTIMER1 },
-	{ .phys_base = 0x48032000, .irq = INT_44XX_GPTIMER2 },
-	{ .phys_base = 0x48034000, .irq = INT_44XX_GPTIMER3 },
-	{ .phys_base = 0x48036000, .irq = INT_44XX_GPTIMER4 },
-	{ .phys_base = 0x40138000, .irq = INT_44XX_GPTIMER5 },
-	{ .phys_base = 0x4013a000, .irq = INT_44XX_GPTIMER6 },
-	{ .phys_base = 0x4013a000, .irq = INT_44XX_GPTIMER7 },
-	{ .phys_base = 0x4013e000, .irq = INT_44XX_GPTIMER8 },
-	{ .phys_base = 0x4803e000, .irq = INT_44XX_GPTIMER9 },
-	{ .phys_base = 0x48086000, .irq = INT_44XX_GPTIMER10 },
-	{ .phys_base = 0x48088000, .irq = INT_44XX_GPTIMER11 },
-	{ .phys_base = 0x4a320000, .irq = INT_44XX_GPTIMER12 },
+	{ .phys_base = 0x4a318000, .irq = OMAP44XX_IRQ_GPT1 },
+	{ .phys_base = 0x48032000, .irq = OMAP44XX_IRQ_GPT2 },
+	{ .phys_base = 0x48034000, .irq = OMAP44XX_IRQ_GPT3 },
+	{ .phys_base = 0x48036000, .irq = OMAP44XX_IRQ_GPT4 },
+	{ .phys_base = 0x40138000, .irq = OMAP44XX_IRQ_GPT5 },
+	{ .phys_base = 0x4013a000, .irq = OMAP44XX_IRQ_GPT6 },
+	{ .phys_base = 0x4013a000, .irq = OMAP44XX_IRQ_GPT7 },
+	{ .phys_base = 0x4013e000, .irq = OMAP44XX_IRQ_GPT8 },
+	{ .phys_base = 0x4803e000, .irq = OMAP44XX_IRQ_GPT9 },
+	{ .phys_base = 0x48086000, .irq = OMAP44XX_IRQ_GPT10 },
+	{ .phys_base = 0x48088000, .irq = OMAP44XX_IRQ_GPT11 },
+	{ .phys_base = 0x4a320000, .irq = OMAP44XX_IRQ_GPT12 },
 };
 static const char *omap4_dm_source_names[] __initdata = {
-	"sys_ck",
-	"omap_32k_fck",
+	"sys_clkin_ck",
+	"sys_32k_ck",
 	NULL
 };
 static struct clk *omap4_dm_source_clocks[2];
-static const int dm_timer_count = ARRAY_SIZE(omap4_dm_timers);
+static const int omap4_dm_timer_count = ARRAY_SIZE(omap4_dm_timers);
 
 #else
+#define omap4_dm_timers			NULL
+#define omap4_dm_timer_count		0
+#define omap4_dm_source_names		NULL
+#define omap4_dm_source_clocks		NULL
+#endif	/* CONFIG_ARCH_OMAP4 */
 
-#error OMAP architecture not supported!
+#ifdef CONFIG_ARCH_TI816X
+static struct omap_dm_timer ti816x_dm_timers[] = {
+	{ .phys_base = 0x4802C000, .irq = TI816X_IRQ_GPT1, .reserved = 1 },
+	{ .phys_base = 0x4802E000, .irq = TI816X_IRQ_GPT2 },
+	{ .phys_base = 0x48040000, .irq = TI816X_IRQ_GPT3 },
+	{ .phys_base = 0x48042000, .irq = TI816X_IRQ_GPT4 },
+	{ .phys_base = 0x48044000, .irq = TI816X_IRQ_GPT5 },
+	{ .phys_base = 0x48046000, .irq = TI816X_IRQ_GPT6 },
+	{ .phys_base = 0x48048000, .irq = TI816X_IRQ_GPT7 },
+	{ .phys_base = 0x4804A000, .irq = TI816X_IRQ_GPT8 },
+};
+static const char *ti816x_dm_source_names[] __initdata = {
+	"sys_clkin_ck",
+	"sys_clk18_ck",
+	"tclkin_ck",
+	NULL
+};
+static struct clk *ti816x_dm_source_clocks[3];
+static const int ti816x_dm_timer_count = ARRAY_SIZE(ti816x_dm_timers);
 
-#endif
+#else
+#define ti816x_dm_timers		NULL
+#define ti816x_dm_timer_count		0
+#define ti816x_dm_source_names		NULL
+#define ti816x_dm_source_clocks		NULL
+#endif	/* CONFIG_ARCH_TI816X */
 
 static struct omap_dm_timer *dm_timers;
 static const char **dm_source_names;
 static struct clk **dm_source_clocks;
+u32 *dm_regs;
 
 static spinlock_t dm_timer_lock;
 
@@ -317,10 +313,11 @@ static spinlock_t dm_timer_lock;
 static inline u32 omap_dm_timer_read_reg(struct omap_dm_timer *timer, u32 reg)
 {
 	if (timer->posted)
-		while (readl(timer->io_base + (OMAP_TIMER_WRITE_PEND_REG & 0xff))
-				& (reg >> WPSHIFT))
+		while (readl(timer->io_base +
+				(dm_regs[OMAP_TIMER_WRITE_PEND_REG] & 0xff)) &
+				(dm_regs[reg] >> WPSHIFT))
 			cpu_relax();
-	return readl(timer->io_base + (reg & 0xff));
+	return readl(timer->io_base + (dm_regs[reg] & 0xff));
 }
 
 /*
@@ -333,10 +330,21 @@ static void omap_dm_timer_write_reg(struct omap_dm_timer *timer, u32 reg,
 						u32 value)
 {
 	if (timer->posted)
-		while (readl(timer->io_base + (OMAP_TIMER_WRITE_PEND_REG & 0xff))
-				& (reg >> WPSHIFT))
+		while (readl(timer->io_base +
+				(dm_regs[OMAP_TIMER_WRITE_PEND_REG] & 0xff)) &
+				(dm_regs[reg] >> WPSHIFT))
 			cpu_relax();
-	writel(value, timer->io_base + (reg & 0xff));
+	writel(value, timer->io_base + (dm_regs[reg] & 0xff));
+}
+
+static inline int is_reset_done(struct omap_dm_timer *timer)
+{
+	if (!cpu_is_ti816x())
+		return ((omap_dm_timer_read_reg(timer,
+					OMAP_TIMER_SYS_STAT_REG) & 1) == 1);
+	else
+		return ((omap_dm_timer_read_reg(timer,
+					OMAP_TIMER_OCP_CFG_REG) & 1) == 0);
 }
 
 static void omap_dm_timer_wait_for_reset(struct omap_dm_timer *timer)
@@ -344,7 +352,8 @@ static void omap_dm_timer_wait_for_reset(struct omap_dm_timer *timer)
 	int c;
 
 	c = 0;
-	while (!(omap_dm_timer_read_reg(timer, OMAP_TIMER_SYS_STAT_REG) & 1)) {
+
+	while (!is_reset_done(timer)) {
 		c++;
 		if (c > 100000) {
 			printk(KERN_ERR "Timer failed to reset\n");
@@ -450,8 +459,12 @@ void omap_dm_timer_enable(struct omap_dm_timer *timer)
 	if (timer->enabled)
 		return;
 
-	omap_dm_clk_enable(timer->fclk);
-	omap_dm_clk_enable(timer->iclk);
+#ifdef CONFIG_ARCH_OMAP2PLUS
+	if (cpu_class_is_omap2()) {
+		clk_enable(timer->fclk);
+		clk_enable(timer->iclk);
+	}
+#endif
 
 	timer->enabled = 1;
 }
@@ -462,8 +475,12 @@ void omap_dm_timer_disable(struct omap_dm_timer *timer)
 	if (!timer->enabled)
 		return;
 
-	omap_dm_clk_disable(timer->iclk);
-	omap_dm_clk_disable(timer->fclk);
+#ifdef CONFIG_ARCH_OMAP2PLUS
+	if (cpu_class_is_omap2()) {
+		clk_disable(timer->iclk);
+		clk_disable(timer->fclk);
+	}
+#endif
 
 	timer->enabled = 0;
 }
@@ -506,8 +523,7 @@ __u32 omap_dm_timer_modify_idlect_mask(__u32 inputmask)
 }
 EXPORT_SYMBOL_GPL(omap_dm_timer_modify_idlect_mask);
 
-#elif defined(CONFIG_ARCH_OMAP2) || defined(CONFIG_ARCH_OMAP3) || \
-				defined(CONFIG_ARCH_OMAP4)
+#else
 
 struct clk *omap_dm_timer_get_fclk(struct omap_dm_timer *timer)
 {
@@ -551,6 +567,7 @@ void omap_dm_timer_stop(struct omap_dm_timer *timer)
 	if (l & OMAP_TIMER_CTRL_ST) {
 		l &= ~0x1;
 		omap_dm_timer_write_reg(timer, OMAP_TIMER_CTRL_REG, l);
+#ifdef CONFIG_ARCH_OMAP2PLUS
 		/* Readback to make sure write has completed */
 		omap_dm_timer_read_reg(timer, OMAP_TIMER_CTRL_REG);
 		 /*
@@ -561,6 +578,7 @@ void omap_dm_timer_stop(struct omap_dm_timer *timer)
 		/* Ack possibly pending interrupt */
 		omap_dm_timer_write_reg(timer, OMAP_TIMER_STAT_REG,
 				OMAP_TIMER_INT_OVERFLOW);
+#endif
 	}
 }
 EXPORT_SYMBOL_GPL(omap_dm_timer_stop);
@@ -759,21 +777,35 @@ int __init omap_dm_timer_init(void)
 
 	spin_lock_init(&dm_timer_lock);
 
+	dm_regs = (u32 *)reg_map;
+
 	if (cpu_class_is_omap1()) {
 		dm_timers = omap1_dm_timers;
+		dm_timer_count = omap1_dm_timer_count;
 		map_size = SZ_2K;
 	} else if (cpu_is_omap24xx()) {
 		dm_timers = omap2_dm_timers;
+		dm_timer_count = omap2_dm_timer_count;
 		dm_source_names = omap2_dm_source_names;
 		dm_source_clocks = omap2_dm_source_clocks;
 	} else if (cpu_is_omap34xx()) {
 		dm_timers = omap3_dm_timers;
+		dm_timer_count = omap3_dm_timer_count;
 		dm_source_names = omap3_dm_source_names;
 		dm_source_clocks = omap3_dm_source_clocks;
 	} else if (cpu_is_omap44xx()) {
 		dm_timers = omap4_dm_timers;
+		dm_timer_count = omap4_dm_timer_count;
 		dm_source_names = omap4_dm_source_names;
 		dm_source_clocks = omap4_dm_source_clocks;
+	} else if (cpu_is_ti816x()) {
+		dm_timers = ti816x_dm_timers;
+		dm_timer_count = ti816x_dm_timer_count;
+		dm_source_names = ti816x_dm_source_names;
+		dm_source_clocks = ti816x_dm_source_clocks;
+
+		/* Few registers/offsets are different */
+		dm_regs = (u32 *)ti816x_reg_map;
 	}
 
 	if (cpu_class_is_omap2())
@@ -790,8 +822,7 @@ int __init omap_dm_timer_init(void)
 		timer->io_base = ioremap(timer->phys_base, map_size);
 		BUG_ON(!timer->io_base);
 
-#if defined(CONFIG_ARCH_OMAP2) || defined(CONFIG_ARCH_OMAP3) || \
-					defined(CONFIG_ARCH_OMAP4)
+#ifdef CONFIG_ARCH_OMAP2PLUS
 		if (cpu_class_is_omap2()) {
 			char clk_name[16];
 			sprintf(clk_name, "gpt%d_ick", i + 1);

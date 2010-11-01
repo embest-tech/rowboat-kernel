@@ -523,16 +523,16 @@ ENDPROC(__und_usr)
 /*
  * The out of line fixup for the ldrt above.
  */
-	.section .fixup, "ax"
+	.pushsection .fixup, "ax"
 4:	mov	pc, r9
-	.previous
-	.section __ex_table,"a"
+	.popsection
+	.pushsection __ex_table,"a"
 	.long	1b, 4b
 #if __LINUX_ARM_ARCH__ >= 7
 	.long	2b, 4b
 	.long	3b, 4b
 #endif
-	.previous
+	.popsection
 
 /*
  * Check whether the instruction is a co-processor instruction.
@@ -676,10 +676,10 @@ do_fpe:
  *  lr  = unrecognised FP instruction return address
  */
 
-	.data
+	.pushsection .data
 ENTRY(fp_enter)
 	.word	no_fp
-	.previous
+	.popsection
 
 ENTRY(no_fp)
 	mov	pc, lr
@@ -741,6 +741,16 @@ ENTRY(__switch_to)
 #endif
 #if defined(CONFIG_HAS_TLS_REG)
 	mcr	p15, 0, r3, c13, c0, 3		@ set TLS register
+/*
+ * On older ARM's the TLS register is emulated (trapped by the kernel) and on
+ * newer ARM's(Cortex) the register actually exists. Android, so far i.e.
+ * kernel-2.6.32, is compiled with the assumption that the TLS register is
+ * emulated and thus expects the kernel to trap it. A non-user defined config
+ * option called HAS_TLS_REG is set based on the processor version that is
+ * configured which controls if the trap code gets added to the kernel. So to get
+ * around the TLS issue, you will need to force the option ON even if the
+ * processor supports the TLS register.
+ */
 //#elif !defined(CONFIG_TLS_REG_EMUL)
 #endif
 	mov	r4, #0xffff0fff
@@ -958,9 +968,7 @@ kuser_cmpxchg_fixup:
 
 #else
 
-#ifdef CONFIG_SMP
-	mcr	p15, 0, r0, c7, c10, 5	@ dmb
-#endif
+	smp_dmb
 1:	ldrex	r3, [r2]
 	subs	r3, r3, r0
 	strexeq	r3, r1, [r2]

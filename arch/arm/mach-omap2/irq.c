@@ -48,7 +48,7 @@ static struct omap_irq_bank {
 	{
 		/* MPU INTC */
 		.base_reg	= 0,
-		.nr_irqs	= 96,
+		.nr_irqs	= INTCPS_NR_IRQS,
 	},
 };
 
@@ -62,7 +62,9 @@ struct omap3_intc_regs {
 	u32 mir[INTCPS_NR_MIR_REGS];
 };
 
+#ifdef CONFIG_ARCH_OMAP3
 static struct omap3_intc_regs intc_context[ARRAY_SIZE(irq_banks)];
+#endif
 
 /* INTC bank register get/set */
 
@@ -194,13 +196,17 @@ void __init omap_init_irq(void)
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(irq_banks); i++) {
-		unsigned long base;
+		unsigned long base = 0;
 		struct omap_irq_bank *bank = irq_banks + i;
 
 		if (cpu_is_omap24xx())
 			base = OMAP24XX_IC_BASE;
 		else if (cpu_is_omap34xx())
 			base = OMAP34XX_IC_BASE;
+		else if (cpu_is_ti816x())
+			base = TI816X_ARM_INTC_BASE;
+
+		BUG_ON(!base);
 
 		/* Static mapping, never released */
 		bank->base_reg = ioremap(base, SZ_4K);

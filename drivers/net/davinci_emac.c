@@ -29,10 +29,6 @@
  *     PHY layer usage
  */
 
-/** Pending Items in this driver:
- * 1. Use Linux cache infrastcture for DMA'ed memory (dma_xxx functions)
- */
-
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/sched.h>
@@ -63,9 +59,13 @@
 #include <linux/io.h>
 #include <linux/uaccess.h>
 #include <linux/davinci_emac.h>
+#include <linux/workqueue.h>
+#include <linux/delay.h>
 
 #include <asm/irq.h>
 #include <asm/page.h>
+
+#undef EMAC_USE_POLLING
 
 static int debug_level;
 module_param(debug_level, int, 0);
@@ -484,6 +484,7 @@ struct emac_priv {
 	u32 periodic_ticks;
 	u32 timer_active;
 	u32 phy_mask;
+	u32 phy_id;
 	/* mii_bus,phy members */
 	struct mii_bus *mii_bus;
 	struct phy_device *phydev;
@@ -491,11 +492,17 @@ struct emac_priv {
 	/*platform specific members*/
 	void (*int_enable) (void);
 	void (*int_disable) (void);
+
+	/* Work queue for polling */
+	struct delayed_work dwork;
+
+	/* snapshot of IRQ numbers */
+	u32 irqs_table[10];
+	u32 num_irqs;
 };
 
 /* clock frequency for EMAC */
 static struct clk *emac_clk;
-static struct clk *emac_phy_clk;
 static unsigned long emac_bus_frequency;
 static unsigned long mdio_max_freq;
 
@@ -505,12 +512,6 @@ static unsigned long mdio_max_freq;
 
 /* Cache macros - Packet buffers would be from skb pool which is cached */
 #define EMAC_VIRT_NOCACHE(addr) (addr)
-#define EMAC_CACHE_INVALIDATE(addr, size) \
-	dma_cache_maint((void *)addr, size, DMA_FROM_DEVICE)
-#define EMAC_CACHE_WRITEBACK(addr, size) \
-	dma_cache_maint((void *)addr, size, DMA_TO_DEVICE)
-#define EMAC_CACHE_WRITEBACK_INVALIDATE(addr, size) \
-	dma_cache_maint((void *)addr, size, DMA_BIDIRECTIONAL)
 
 /* DM644x does not have BD's in cached memory - so no cache functions */
 #define BD_CACHE_INVALIDATE(addr, size)
@@ -543,6 +544,46 @@ static char *emac_rxhost_errcodes[16] = {
 
 #define emac_mdio_read(reg)	  ioread32(bus->priv + (reg))
 #define emac_mdio_write(reg, val) iowrite32(val, (bus->priv + (reg)))
+
+/**
+ * emac_get_phy_addr: Get the phy_addr from phy_mask
+ * @phy_mask: The phy mask of the phy device
+ *
+ * Returns the phy address of the phy device
+ *
+ */
+static int emac_get_phy_addr(u32 phy_mask)
+{
+	int i = -1;
+
+	for (i = 0; (i < PHY_MAX_ADDR) && phy_mask; i++)
+		if (phy_mask & (1 << i))
+			break;
+	return i;
+}
+
+/**
+ * emac_match_bus_id: Match function for devices on mdio_bus
+ * @dev: The device corresponding to the phy_device
+ * @data: EMAC private-data structure
+ *
+ * Returns 1 if a macthing mii bus is found to be registered else 0
+ *
+ */
+static int emac_match_bus_id(struct device *dev, void *data)
+{
+	struct emac_priv *priv = data;
+	struct emac_platform_data *pdata = priv->pdev->dev.platform_data;
+	struct phy_device *phy = to_phy_device(dev);
+	struct mii_bus *bus = phy->bus;
+
+	if (pdata->mii_bus_id[0] == bus->id[0]) {
+		dev_notice(dev, "DaVinci EMAC: mii bus found %x\n", bus->id[0]);
+		priv->mii_bus = bus;
+		return 1;
+	}
+	return 0;
+}
 
 /**
  * emac_dump_regs: Dump important EMAC registers to debug terminal
@@ -650,6 +691,65 @@ static void emac_dump_regs(struct emac_priv *priv)
 /*************************************************************************
  *  EMAC MDIO/Phy Functionality
  *************************************************************************/
+static int emac_mii_read(struct mii_bus *bus, int phy_id, int phy_reg);
+static int emac_mii_write(struct mii_bus *bus, int phy_id,
+			  int phy_reg, u16 phy_data);
+
+#define PHY_CONFIG_REG	22
+static void emac_set_phy_config(struct emac_priv *priv)
+{
+	struct emac_platform_data *pdata = priv->pdev->dev.platform_data;
+	struct phy_device *phydev = NULL;
+	int phy_addr = 0;
+	u16 tmp = 0;
+	u16 reg_val = 0;
+
+	if ((!priv->phy_mask) || (!priv->mii_bus))
+		return;
+
+	phy_addr = emac_get_phy_addr(priv->phy_mask);
+	if (phy_addr < 0)
+		return;
+
+	phydev = priv->mii_bus->phy_map[phy_addr];
+	if (!phydev)
+		return;
+
+	/* This check is required */
+	if (phydev->phy_id != pdata->phy_id)
+		return;
+
+	/* Following lines enable gigbit advertisement capability even in case
+	 * the advertisement is not enabled by default
+	 */
+	reg_val = emac_mii_read(priv->mii_bus, phy_addr, MII_BMCR);
+	reg_val |= (BMCR_SPEED100 | BMCR_ANENABLE | BMCR_FULLDPLX);
+	emac_mii_write(priv->mii_bus, phy_addr, MII_BMCR, reg_val);
+	tmp = emac_mii_read(priv->mii_bus, phy_addr, MII_BMCR);
+
+	tmp = emac_mii_read(priv->mii_bus, phy_addr, MII_BMSR);
+	if (tmp & 0x1) {
+		reg_val = emac_mii_read(priv->mii_bus, phy_addr, MII_CTRL1000);
+		reg_val |= BIT(9);
+		emac_mii_write(priv->mii_bus, phy_addr, MII_CTRL1000, reg_val);
+		tmp = emac_mii_read(priv->mii_bus, phy_addr, MII_CTRL1000);
+	}
+
+	reg_val = emac_mii_read(priv->mii_bus, phy_addr, MII_ADVERTISE);
+	reg_val |= (ADVERTISE_10HALF | ADVERTISE_10FULL | \
+		    ADVERTISE_100HALF | ADVERTISE_100FULL);
+	emac_mii_write(priv->mii_bus, phy_addr, MII_ADVERTISE, reg_val);
+	tmp = emac_mii_read(priv->mii_bus, phy_addr, MII_ADVERTISE);
+
+	/* Following lines enable TX_CLK-ing in case of 10/100 MBps operation */
+	reg_val = emac_mii_read(priv->mii_bus, phy_addr, PHY_CONFIG_REG);
+	reg_val |= BIT(5);
+	emac_mii_write(priv->mii_bus, phy_addr, PHY_CONFIG_REG, reg_val);
+	tmp = emac_mii_read(priv->mii_bus, phy_addr, PHY_CONFIG_REG);
+
+	return;
+}
+
 /**
  * emac_get_drvinfo: Get EMAC driver information
  * @ndev: The DaVinci EMAC network adapter
@@ -958,19 +1058,18 @@ static void emac_dev_mcast_set(struct net_device *ndev)
 	} else {
 		mbp_enable = (mbp_enable & ~EMAC_MBP_RXPROMISC);
 		if ((ndev->flags & IFF_ALLMULTI) ||
-		    (ndev->mc_count > EMAC_DEF_MAX_MULTICAST_ADDRESSES)) {
+		    netdev_mc_count(ndev) > EMAC_DEF_MAX_MULTICAST_ADDRESSES) {
 			mbp_enable = (mbp_enable | EMAC_MBP_RXMCAST);
 			emac_add_mcast(priv, EMAC_ALL_MULTI_SET, NULL);
 		}
-		if (ndev->mc_count > 0) {
+		if (!netdev_mc_empty(ndev)) {
 			struct dev_mc_list *mc_ptr;
 			mbp_enable = (mbp_enable | EMAC_MBP_RXMCAST);
 			emac_add_mcast(priv, EMAC_ALL_MULTI_CLR, NULL);
 			/* program multicast address list into EMAC hardware */
-			for (mc_ptr = ndev->mc_list; mc_ptr;
-			     mc_ptr = mc_ptr->next) {
+			netdev_for_each_mc_addr(mc_ptr, ndev) {
 				emac_add_mcast(priv, EMAC_MULTICAST_ADD,
-					       (u8 *)mc_ptr->dmi_addr);
+					       (u8 *) mc_ptr->dmi_addr);
 			}
 		} else {
 			mbp_enable = (mbp_enable & ~EMAC_MBP_RXMCAST);
@@ -994,6 +1093,7 @@ static void emac_dev_mcast_set(struct net_device *ndev)
  */
 static void emac_int_disable(struct emac_priv *priv)
 {
+
 	if (priv->version == EMAC_VERSION_2) {
 		unsigned long flags;
 
@@ -1013,6 +1113,7 @@ static void emac_int_disable(struct emac_priv *priv)
 		/* Set DM644x control registers for interrupt control */
 		emac_ctrl_write(EMAC_CTRL_EWCTL, 0x0);
 	}
+
 }
 
 /**
@@ -1049,6 +1150,7 @@ static void emac_int_enable(struct emac_priv *priv)
 		/* Set DM644x control registers for interrupt control */
 		emac_ctrl_write(EMAC_CTRL_EWCTL, 0x1);
 	}
+
 }
 
 /**
@@ -1065,6 +1167,7 @@ static irqreturn_t emac_irq(int irq, void *dev_id)
 {
 	struct net_device *ndev = (struct net_device *)dev_id;
 	struct emac_priv *priv = netdev_priv(ndev);
+	int i;
 
 	++priv->isr_count;
 	if (likely(netif_running(priv->ndev))) {
@@ -1073,6 +1176,10 @@ static irqreturn_t emac_irq(int irq, void *dev_id)
 	} else {
 		/* we are closing down, so dont process anything */
 	}
+
+	for (i = 0; i < priv->num_irqs; i++)
+		disable_irq_nosync(priv->irqs_table[i]);
+
 	return IRQ_HANDLED;
 }
 
@@ -1237,6 +1344,10 @@ static void emac_txch_teardown(struct emac_priv *priv, u32 ch)
 	if (1 == txch->queue_active) {
 		curr_bd = txch->active_queue_head;
 		while (curr_bd != NULL) {
+			dma_unmap_single(emac_dev, curr_bd->buff_ptr,
+				curr_bd->off_b_len & EMAC_RX_BD_BUF_SIZE,
+				DMA_TO_DEVICE);
+
 			emac_net_tx_complete(priv, (void __force *)
 					&curr_bd->buf_token, 1, ch);
 			if (curr_bd != txch->active_queue_tail)
@@ -1329,6 +1440,11 @@ static int emac_tx_bdproc(struct emac_priv *priv, u32 ch, u32 budget)
 				txch->queue_active = 0; /* end of queue */
 			}
 		}
+
+		dma_unmap_single(emac_dev, curr_bd->buff_ptr,
+				curr_bd->off_b_len & EMAC_RX_BD_BUF_SIZE,
+				DMA_TO_DEVICE);
+
 		*tx_complete_ptr = (u32) curr_bd->buf_token;
 		++tx_complete_ptr;
 		++tx_complete_cnt;
@@ -1389,8 +1505,8 @@ static int emac_send(struct emac_priv *priv, struct emac_netpktobj *pkt, u32 ch)
 
 	txch->bd_pool_head = curr_bd->next;
 	curr_bd->buf_token = buf_list->buf_token;
-	/* FIXME buff_ptr = dma_map_single(... data_ptr ...) */
-	curr_bd->buff_ptr = virt_to_phys(buf_list->data_ptr);
+	curr_bd->buff_ptr = dma_map_single(&priv->ndev->dev, buf_list->data_ptr,
+			buf_list->length, DMA_TO_DEVICE);
 	curr_bd->off_b_len = buf_list->length;
 	curr_bd->h_next = 0;
 	curr_bd->next = NULL;
@@ -1470,7 +1586,6 @@ static int emac_dev_xmit(struct sk_buff *skb, struct net_device *ndev)
 	tx_buf.length = skb->len;
 	tx_buf.buf_token = (void *)skb;
 	tx_buf.data_ptr = skb->data;
-	EMAC_CACHE_WRITEBACK((unsigned long)skb->data, skb->len);
 	ndev->trans_start = jiffies;
 	ret_code = emac_send(priv, &tx_packet, EMAC_DEF_TX_CH);
 	if (unlikely(ret_code != 0)) {
@@ -1545,7 +1660,6 @@ static void *emac_net_alloc_rx_buf(struct emac_priv *priv, int buf_size,
 	p_skb->dev = ndev;
 	skb_reserve(p_skb, NET_IP_ALIGN);
 	*data_token = (void *) p_skb;
-	EMAC_CACHE_WRITEBACK_INVALIDATE((unsigned long)p_skb->data, buf_size);
 	return p_skb->data;
 }
 
@@ -1614,8 +1728,8 @@ static int emac_init_rxch(struct emac_priv *priv, u32 ch, char *param)
 		/* populate the hardware descriptor */
 		curr_bd->h_next = emac_virt_to_phys(rxch->active_queue_head,
 				priv);
-		/* FIXME buff_ptr = dma_map_single(... data_ptr ...) */
-		curr_bd->buff_ptr = virt_to_phys(curr_bd->data_ptr);
+		curr_bd->buff_ptr = dma_map_single(emac_dev, curr_bd->data_ptr,
+				rxch->buf_size, DMA_FROM_DEVICE);
 		curr_bd->off_b_len = rxch->buf_size;
 		curr_bd->mode = EMAC_CPPI_OWNERSHIP_BIT;
 
@@ -1699,6 +1813,12 @@ static void emac_cleanup_rxch(struct emac_priv *priv, u32 ch)
 		curr_bd = rxch->active_queue_head;
 		while (curr_bd) {
 			if (curr_bd->buf_token) {
+				dma_unmap_single(&priv->ndev->dev,
+					curr_bd->buff_ptr,
+					curr_bd->off_b_len
+						& EMAC_RX_BD_BUF_SIZE,
+					DMA_FROM_DEVICE);
+
 				dev_kfree_skb_any((struct sk_buff *)\
 						  curr_bd->buf_token);
 			}
@@ -1873,8 +1993,8 @@ static void emac_addbd_to_rx_queue(struct emac_priv *priv, u32 ch,
 
 	/* populate the hardware descriptor */
 	curr_bd->h_next = 0;
-	/* FIXME buff_ptr = dma_map_single(... buffer ...) */
-	curr_bd->buff_ptr = virt_to_phys(buffer);
+	curr_bd->buff_ptr = dma_map_single(&priv->ndev->dev, buffer,
+				rxch->buf_size, DMA_FROM_DEVICE);
 	curr_bd->off_b_len = rxch->buf_size;
 	curr_bd->mode = EMAC_CPPI_OWNERSHIP_BIT;
 	curr_bd->next = NULL;
@@ -1929,7 +2049,6 @@ static int emac_net_rx_cb(struct emac_priv *priv,
 	p_skb = (struct sk_buff *)net_pkt_list->pkt_token;
 	/* set length of packet */
 	skb_put(p_skb, net_pkt_list->pkt_length);
-	EMAC_CACHE_INVALIDATE((unsigned long)p_skb->data, p_skb->len);
 	p_skb->protocol = eth_type_trans(p_skb, priv->ndev);
 	netif_receive_skb(p_skb);
 	priv->net_dev_stats.rx_bytes += net_pkt_list->pkt_length;
@@ -1992,6 +2111,11 @@ static int emac_rx_bdproc(struct emac_priv *priv, u32 ch, u32 budget)
 		rx_buf_obj->data_ptr = (char *)curr_bd->data_ptr;
 		rx_buf_obj->length = curr_bd->off_b_len & EMAC_RX_BD_BUF_SIZE;
 		rx_buf_obj->buf_token = curr_bd->buf_token;
+
+		dma_unmap_single(&priv->ndev->dev, curr_bd->buff_ptr,
+				curr_bd->off_b_len & EMAC_RX_BD_BUF_SIZE,
+				DMA_FROM_DEVICE);
+
 		curr_pkt->pkt_token = curr_pkt->buf_list->buf_token;
 		curr_pkt->num_bufs = 1;
 		curr_pkt->pkt_length =
@@ -2144,6 +2268,7 @@ static int emac_poll(struct napi_struct *napi, int budget)
 	struct device *emac_dev = &ndev->dev;
 	u32 status = 0;
 	u32 num_pkts = 0;
+	int i;
 
 	/* Check interrupt vectors and call packet processing */
 	status = emac_read(EMAC_MACINVECTOR);
@@ -2173,6 +2298,11 @@ static int emac_poll(struct napi_struct *napi, int budget)
 	if (num_pkts < budget) {
 		napi_complete(napi);
 		emac_int_enable(priv);
+		#ifdef EMAC_USE_POLLING
+		schedule_delayed_work(&priv->dwork, msecs_to_jiffies(10));
+		#endif
+		for (i = 0; i < priv->num_irqs; i++)
+			enable_irq(priv->irqs_table[i]);
 	}
 
 	mask = EMAC_DM644X_MAC_IN_VECTOR_HOST_INT;
@@ -2229,11 +2359,12 @@ void emac_poll_controller(struct net_device *ndev)
 #endif
 
 /* PHY/MII bus related */
+DECLARE_WAIT_QUEUE_HEAD(mdio_wait);
 
 /* Wait until mdio is ready for next command */
 #define MDIO_WAIT_FOR_USER_ACCESS\
-		while ((emac_mdio_read((MDIO_USERACCESS(0))) &\
-			MDIO_USERACCESS_GO) != 0)
+	       while ((emac_mdio_read((MDIO_USERACCESS(0))) &\
+		       MDIO_USERACCESS_GO) != 0)
 
 static int emac_mii_read(struct mii_bus *bus, int phy_id, int phy_reg)
 {
@@ -2281,7 +2412,7 @@ static int emac_mii_reset(struct mii_bus *bus)
 	unsigned int clk_div;
 	int mdio_bus_freq = emac_bus_frequency;
 
-	if (mdio_max_freq & mdio_bus_freq)
+	if (mdio_max_freq && mdio_bus_freq)
 		clk_div = ((mdio_bus_freq / mdio_max_freq) - 1);
 	else
 		clk_div = 0xFF;
@@ -2365,6 +2496,21 @@ static int emac_devioctl(struct net_device *ndev, struct ifreq *ifrq, int cmd)
 	return -EOPNOTSUPP;
 }
 
+#ifdef EMAC_USE_POLLING
+static void emac_poll_func(struct work_struct *workstruct)
+{
+	struct delayed_work *delay_work =
+			container_of(workstruct, struct delayed_work, work);
+	struct emac_priv *priv =
+			container_of(delay_work, struct emac_priv, dwork);
+
+	 if (likely(netif_running(priv->ndev))) {
+		emac_int_disable(priv);
+		napi_schedule(&priv->napi);
+	}
+}
+#endif
+
 /**
  * emac_dev_open: EMAC device open
  * @ndev: The DaVinci EMAC network adapter
@@ -2379,15 +2525,14 @@ static int emac_dev_open(struct net_device *ndev)
 {
 	struct device *emac_dev = &ndev->dev;
 	u32 rc, cnt, ch;
-	int phy_addr;
 	struct resource *res;
 	int q, m;
-	int i = 0;
+	int i = 0, irq_num = 0;
 	int k = 0;
 	struct emac_priv *priv = netdev_priv(ndev);
 
 	netif_carrier_off(ndev);
-	for (cnt = 0; cnt <= ETH_ALEN; cnt++)
+	for (cnt = 0; cnt < ETH_ALEN; cnt++)
 		ndev->dev_addr[cnt] = priv->mac_addr[cnt];
 
 	/* Configuration items */
@@ -2420,14 +2565,24 @@ static int emac_dev_open(struct net_device *ndev)
 
 	/* Request IRQ */
 
+	priv->num_irqs = 0;
+	#ifndef EMAC_USE_POLLING
 	while ((res = platform_get_resource(priv->pdev, IORESOURCE_IRQ, k))) {
 		for (i = res->start; i <= res->end; i++) {
 			if (request_irq(i, emac_irq, IRQF_DISABLED,
 					ndev->name, ndev))
 				goto rollback;
+			priv->irqs_table[irq_num++] = i;
 		}
 		k++;
 	}
+	priv->num_irqs = irq_num;
+
+	#else
+	INIT_DELAYED_WORK(&priv->dwork, emac_poll_func);
+	/* start polling after all init is complete - 2 sec to be safe */
+	schedule_delayed_work(&priv->dwork, 2000);
+	#endif
 
 	/* Start/Enable EMAC hardware */
 	emac_hw_enable(priv);
@@ -2435,21 +2590,20 @@ static int emac_dev_open(struct net_device *ndev)
 	/* find the first phy */
 	priv->phydev = NULL;
 	if (priv->phy_mask) {
+		u32 phy_addr;
+
 		emac_mii_reset(priv->mii_bus);
-		for (phy_addr = 0; phy_addr < PHY_MAX_ADDR; phy_addr++) {
-			if (priv->mii_bus->phy_map[phy_addr]) {
-				priv->phydev = priv->mii_bus->phy_map[phy_addr];
-				break;
-			}
-		}
+		phy_addr = emac_get_phy_addr(priv->phy_mask);
+
+		priv->phydev = priv->mii_bus->phy_map[phy_addr];
 
 		if (!priv->phydev) {
 			printk(KERN_ERR "%s: no PHY found\n", ndev->name);
 			return -1;
 		}
 
-		priv->phydev = phy_connect(ndev, dev_name(&priv->phydev->dev),
-				&emac_adjust_link, 0, PHY_INTERFACE_MODE_MII);
+		phy_connect_direct(ndev, priv->phydev, &emac_adjust_link,
+			0, PHY_INTERFACE_MODE_MII);
 
 		if (IS_ERR(priv->phydev)) {
 			printk(KERN_ERR "%s: Could not attach to PHY\n",
@@ -2465,7 +2619,7 @@ static int emac_dev_open(struct net_device *ndev)
 			"(mii_bus:phy_addr=%s, id=%x)\n", ndev->name,
 			priv->phydev->drv->name, dev_name(&priv->phydev->dev),
 			priv->phydev->phy_id);
-	} else{
+	} else {
 		/* No PHY , fix the link, speed and duplex settings */
 		priv->link = 1;
 		priv->speed = SPEED_100;
@@ -2524,7 +2678,9 @@ static int emac_dev_stop(struct net_device *ndev)
 	emac_stop_rxch(priv, EMAC_DEF_RX_CH);
 	emac_cleanup_txch(priv, EMAC_DEF_TX_CH);
 	emac_cleanup_rxch(priv, EMAC_DEF_RX_CH);
+
 	emac_write(EMAC_SOFTRESET, 1);
+	emac_mii_reset(priv->mii_bus);
 
 	if (priv->phydev)
 		phy_disconnect(priv->phydev);
@@ -2633,16 +2789,9 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 	struct device *emac_dev;
 
 	/* obtain emac clock from kernel */
-	emac_clk = clk_get(&pdev->dev, "ick");
+	emac_clk = clk_get(&pdev->dev, NULL);
 	if (IS_ERR(emac_clk)) {
 		printk(KERN_ERR "DaVinci EMAC: Failed to get EMAC clock\n");
-		return -EBUSY;
-	}
-	/* obtain emac functional clock from kernel */
-	emac_phy_clk = clk_get(&pdev->dev, "fck");
-	if (IS_ERR(emac_phy_clk)) {
-		printk(KERN_ERR "DaVinci EMAC: Failed to get EMAC Functional clock\n");
-		clk_put(emac_clk);
 		return -EBUSY;
 	}
 	emac_bus_frequency = clk_get_rate(emac_clk);
@@ -2652,7 +2801,6 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 	if (!ndev) {
 		printk(KERN_ERR "DaVinci EMAC: Error allocating net_device\n");
 		clk_put(emac_clk);
-		clk_put(emac_phy_clk);
 		return -ENOMEM;
 	}
 
@@ -2668,7 +2816,7 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 
 	pdata = pdev->dev.platform_data;
 	if (!pdata) {
-		printk(KERN_ERR "DaVinci EMAC: No platfrom data\n");
+		printk(KERN_ERR "DaVinci EMAC: No platform data\n");
 		return -ENODEV;
 	}
 
@@ -2692,8 +2840,7 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 	priv->emac_base_phys = res->start + pdata->ctrl_reg_offset;
 	size = res->end - res->start + 1;
 	if (!request_mem_region(res->start, size, ndev->name)) {
-		dev_err(emac_dev, "DaVinci EMAC: failed request_mem_region() \
-					 for regs\n");
+		dev_err(emac_dev, "DaVinci EMAC: failed request_mem_region() for regs\n");
 		rc = -ENXIO;
 		goto probe_quit;
 	}
@@ -2737,7 +2884,6 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 	SET_ETHTOOL_OPS(ndev, &ethtool_ops);
 	netif_napi_add(ndev, &priv->napi, emac_poll, EMAC_POLL_WEIGHT);
 
-	clk_enable(emac_phy_clk);
 	clk_enable(emac_clk);
 
 	/* register the network device */
@@ -2749,38 +2895,77 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 		goto netdev_reg_err;
 	}
 
+	/* In order to allocate a mii_bus we must be sure that no previous
+	 * registration has happended for the same instance/bus id.
+	 */
+	bus_for_each_dev(&mdio_bus_type, NULL, priv, emac_match_bus_id);
 
-	/* MII/Phy intialisation, mdio bus registration */
-	emac_mii = mdiobus_alloc();
-	if (emac_mii == NULL) {
-		dev_err(emac_dev, "DaVinci EMAC: Error allocating mii_bus\n");
-		rc = -ENOMEM;
-		goto mdio_alloc_err;
+	/* If no previously registered bus found with matching id  go ahead
+	 * and register one now.
+	 */
+	if (!priv->mii_bus) {
+		struct emac_mdio_data *mdio_data = pdata->mdio_data;
+		/* MII/Phy intialisation, mdio bus registration */
+		emac_mii = mdiobus_alloc();
+		if (emac_mii == NULL) {
+			dev_err(emac_dev,
+				"DaVinci EMAC: Error allocating mii_bus\n");
+			rc = -ENOMEM;
+			goto mdio_alloc_err;
+		}
+
+		priv->mii_bus = emac_mii;
+		emac_mii->name  = "emac-mii",
+		emac_mii->read  = emac_mii_read,
+		emac_mii->write = emac_mii_write,
+		emac_mii->reset = emac_mii_reset,
+		emac_mii->irq   = mii_irqs,
+		emac_mii->phy_mask = ~(priv->phy_mask);
+		emac_mii->parent = &pdev->dev;
+		emac_mii->priv = ioremap(mdio_data->regs, mdio_data->size);
+		snprintf(priv->mii_bus->id,
+			MII_BUS_ID_SIZE, "%s", pdata->mii_bus_id);
+		mdio_max_freq = mdio_data->max_freq;
+		emac_mii->reset(emac_mii);
+
+		/* Register the MII bus */
+		rc = mdiobus_register(emac_mii);
+		if (rc)
+			goto mdiobus_quit;
+	} else {
+		/* Here, since we have selected the mii_bus, just scan the bus
+		 * for the required phy as given by the platform data phy_mask
+		 */
+		struct phy_device *phydev;
+		int phyaddr = emac_get_phy_addr(priv->phy_mask);
+
+		/* No phy case will be handled in the netdev open */
+		if (phyaddr < 0)
+			return 0;
+
+		phydev = mdiobus_scan(priv->mii_bus, phyaddr);
+
+		if (IS_ERR(phydev) || phydev == NULL) {
+			dev_notice(emac_dev, "DaVinci EMAC %s PHY not found", \
+			   ndev->name);
+			unregister_netdev(ndev);
+			free_netdev(ndev);
+			return -1;
+		}
+
+		/* book-keeping: update phy_mask of mii_bus with our phy_mask
+		 * which shall indicate that this phy is also probed
+		 */
+		priv->mii_bus->phy_mask &= ~(priv->phy_mask);
 	}
-
-	priv->mii_bus = emac_mii;
-	emac_mii->name  = "emac-mii",
-	emac_mii->read  = emac_mii_read,
-	emac_mii->write = emac_mii_write,
-	emac_mii->reset = emac_mii_reset,
-	emac_mii->irq   = mii_irqs,
-	emac_mii->phy_mask = ~(priv->phy_mask);
-	emac_mii->parent = &pdev->dev;
-	emac_mii->priv = priv->remap_addr + pdata->mdio_reg_offset;
-	snprintf(priv->mii_bus->id, MII_BUS_ID_SIZE, "%x", priv->pdev->id);
-	mdio_max_freq = pdata->mdio_max_freq;
-	emac_mii->reset(emac_mii);
-
-	/* Register the MII bus */
-	rc = mdiobus_register(emac_mii);
-	if (rc)
-		goto mdiobus_quit;
 
 	if (netif_msg_probe(priv)) {
 		dev_notice(emac_dev, "DaVinci EMAC Probe found device "\
 			   "(regs: %p, irq: %d)\n",
 			   (void *)priv->emac_base_phys, ndev->irq);
 	}
+
+	emac_set_phy_config(priv);
 	return 0;
 
 mdiobus_quit:
@@ -2789,7 +2974,6 @@ mdiobus_quit:
 netdev_reg_err:
 mdio_alloc_err:
 	clk_disable(emac_clk);
-	clk_disable(emac_phy_clk);
 no_irq_res:
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	release_mem_region(res->start, res->end - res->start + 1);
@@ -2797,7 +2981,6 @@ no_irq_res:
 
 probe_quit:
 	clk_put(emac_clk);
-	clk_put(emac_phy_clk);
 	free_netdev(ndev);
 	return rc;
 }
@@ -2829,39 +3012,41 @@ static int __devexit davinci_emac_remove(struct platform_device *pdev)
 	iounmap(priv->remap_addr);
 
 	clk_disable(emac_clk);
-	clk_disable(emac_phy_clk);
 	clk_put(emac_clk);
-	clk_put(emac_phy_clk);
 
 	return 0;
 }
 
-static
-int davinci_emac_suspend(struct platform_device *pdev, pm_message_t state)
+static int davinci_emac_suspend(struct device *dev)
 {
-	struct net_device *dev = platform_get_drvdata(pdev);
+	struct platform_device *pdev = to_platform_device(dev);
+	struct net_device *ndev = platform_get_drvdata(pdev);
 
-	if (netif_running(dev))
-		emac_dev_stop(dev);
+	if (netif_running(ndev))
+		emac_dev_stop(ndev);
 
 	clk_disable(emac_clk);
-	clk_disable(emac_phy_clk);
 
 	return 0;
 }
 
-static int davinci_emac_resume(struct platform_device *pdev)
+static int davinci_emac_resume(struct device *dev)
 {
-	struct net_device *dev = platform_get_drvdata(pdev);
+	struct platform_device *pdev = to_platform_device(dev);
+	struct net_device *ndev = platform_get_drvdata(pdev);
 
-	clk_enable(emac_phy_clk);
 	clk_enable(emac_clk);
 
-	if (netif_running(dev))
-		emac_dev_open(dev);
+	if (netif_running(ndev))
+		emac_dev_open(ndev);
 
 	return 0;
 }
+
+static const struct dev_pm_ops davinci_emac_pm_ops = {
+	.suspend	= davinci_emac_suspend,
+	.resume		= davinci_emac_resume,
+};
 
 /**
  * davinci_emac_driver: EMAC platform driver structure
@@ -2870,11 +3055,10 @@ static struct platform_driver davinci_emac_driver = {
 	.driver = {
 		.name	 = "davinci_emac",
 		.owner	 = THIS_MODULE,
+		.pm	 = &davinci_emac_pm_ops,
 	},
 	.probe = davinci_emac_probe,
 	.remove = __devexit_p(davinci_emac_remove),
-	.suspend = davinci_emac_suspend,
-	.resume = davinci_emac_resume,
 };
 
 /**

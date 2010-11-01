@@ -3,6 +3,7 @@
 #ifndef	__ASM_ARCH_OMAP_USB_H
 #define	__ASM_ARCH_OMAP_USB_H
 
+#include <linux/usb/musb.h>
 #include <plat/board.h>
 
 #define OMAP3_HS_USB_PORTS	3
@@ -18,8 +19,6 @@ struct ehci_hcd_omap_platform_data {
 
 	/* have to be valid if phy_reset is true and portx is in phy mode */
 	int	reset_gpio_port[OMAP3_HS_USB_PORTS];
-	/* flag for aux regulators */
-	u8	aux[OMAP3_HS_USB_PORTS];
 };
 
 /*-------------------------------------------------------------------------*/
@@ -44,12 +43,18 @@ struct ehci_hcd_omap_platform_data {
 #define UDC_BASE			OMAP2_UDC_BASE
 #define OMAP_OHCI_BASE			OMAP2_OHCI_BASE
 
-extern void usb_musb_init(void);
+struct omap_musb_board_data {
+	u8	interface_type;
+	u8	mode;
+	u16	power;
+	unsigned extvbus:1;
+};
 
-extern void usb_ehci_init(struct ehci_hcd_omap_platform_data *pdata);
+enum musb_interface    {MUSB_INTERFACE_ULPI, MUSB_INTERFACE_UTMI};
 
-/* This is needed for OMAP3 errata 1.164: enabled autoidle can prevent sleep */
-extern void usb_musb_disable_autoidle(void);
+extern void usb_musb_init(struct omap_musb_board_data *board_data);
+
+extern void usb_ehci_init(const struct ehci_hcd_omap_platform_data *pdata);
 
 #endif
 

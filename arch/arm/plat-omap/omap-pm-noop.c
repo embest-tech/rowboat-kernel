@@ -84,7 +84,6 @@ void omap_pm_set_min_bus_tput(struct device *dev, u8 agent_id, unsigned long r)
 	 * TI CDP code can call constraint_set here on the VDD2 OPP.
 	 */
 }
-EXPORT_SYMBOL(omap_pm_set_min_bus_tput);
 
 void omap_pm_set_max_dev_wakeup_lat(struct device *dev, long t)
 {
@@ -256,8 +255,6 @@ unsigned long omap_pm_cpu_get_freq(void)
 
 int omap_pm_get_dev_context_loss_count(struct device *dev)
 {
-	static u32 counter = 0;
-
 	if (!dev) {
 		WARN_ON(1);
 		return -EINVAL;
@@ -271,10 +268,7 @@ int omap_pm_get_dev_context_loss_count(struct device *dev)
 	 * off counter.
 	 */
 
-	/* For the noop case, we cannot know the off counter, so
-	 * return an increasing counter which will ensure that
-	 * context is always restored. */
-	return counter++;
+	return 0;
 }
 
 

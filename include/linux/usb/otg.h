@@ -9,6 +9,8 @@
 #ifndef __LINUX_USB_OTG_H
 #define __LINUX_USB_OTG_H
 
+#include <linux/notifier.h>
+
 /* OTG defines lots of enumeration states before device reset */
 enum usb_otg_state {
 	OTG_STATE_UNDEFINED = 0,
@@ -31,6 +33,14 @@ enum usb_otg_state {
 	OTG_STATE_A_PERIPHERAL,
 	OTG_STATE_A_WAIT_VFALL,
 	OTG_STATE_A_VBUS_ERR,
+};
+
+enum usb_xceiv_events {
+	USB_EVENT_NONE,         /* no events or cable disconnected */
+	USB_EVENT_VBUS,         /* vbus valid event */
+	USB_EVENT_ID,           /* id was grounded */
+	USB_EVENT_CHARGER,      /* usb dedicated charger */
+	USB_EVENT_ENUMERATED,   /* gadget driver enumerated */
 };
 
 #define USB_OTG_PULLUP_ID		(1 << 0)
@@ -60,6 +70,7 @@ struct otg_transceiver {
 	struct device		*dev;
 	const char		*label;
 	unsigned int		 flags;
+	u8			id;
 
 	u8			default_a;
 	enum usb_otg_state	state;
@@ -69,6 +80,9 @@ struct otg_transceiver {
 
 	struct otg_io_access_ops	*io_ops;
 	void __iomem			*io_priv;
+
+	/* for notification of usb_xceiv_events */
+	struct blocking_notifier_head	notifier;
 
 	/* to pass extra port status to the root hub */
 	u16			port_status;
@@ -109,10 +123,21 @@ struct otg_transceiver {
 
 /* for board-specific init logic */
 extern int otg_set_transceiver(struct otg_transceiver *);
+extern int otg_reset_transceiver(struct otg_transceiver *);
 
+#if defined(CONFIG_NOP_USB_XCEIV) || defined(CONFIG_NOP_USB_XCEIV_MODULE)
 /* sometimes transceivers are accessed only through e.g. ULPI */
-extern void usb_nop_xceiv_register(void);
-extern void usb_nop_xceiv_unregister(void);
+extern void usb_nop_xceiv_register(int id);
+extern void usb_nop_xceiv_unregister(int id);
+#else
+static inline void usb_nop_xceiv_register(void)
+{
+}
+
+static inline void usb_nop_xceiv_unregister(void)
+{
+}
+#endif
 
 /* helpers for direct access thru low-level io interface */
 static inline int otg_io_read(struct otg_transceiver *otg, u32 reg)
@@ -148,7 +173,7 @@ otg_shutdown(struct otg_transceiver *otg)
 }
 
 /* for usb host and peripheral controller drivers */
-extern struct otg_transceiver *otg_get_transceiver(void);
+extern struct otg_transceiver *otg_get_transceiver(int id);
 extern void otg_put_transceiver(struct otg_transceiver *);
 
 /* Context: can sleep */
@@ -203,6 +228,18 @@ otg_start_srp(struct otg_transceiver *otg)
 	return otg->start_srp(otg);
 }
 
+/* notifiers */
+static inline int
+otg_register_notifier(struct otg_transceiver *otg, struct notifier_block *nb)
+{
+	return blocking_notifier_chain_register(&otg->notifier, nb);
+}
+
+static inline void
+otg_unregister_notifier(struct otg_transceiver *otg, struct notifier_block *nb)
+{
+	blocking_notifier_chain_unregister(&otg->notifier, nb);
+}
 
 /* for OTG controller drivers (and maybe other stuff) */
 extern int usb_bus_start_enum(struct usb_bus *bus, unsigned port_num);

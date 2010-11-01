@@ -35,6 +35,12 @@
 #define OMAP4_MMC4_BASE		0x480d1000
 #define OMAP4_MMC5_BASE		0x480d5000
 #define OMAP4_MMC_REG_OFFSET	0x100
+
+#define TI816X_NR_MMC		1
+#define TI816X_HSMMC_SIZE	0x10000
+#define TI816X_MMC1_BASE	0x48060100 /* TI816X MMC/SD config base */
+#define TI816X_MMC1_HL_BASE	0x48060000 /* TI816X HL configuration*/
+
 #define HSMMC5			(1 << 4)
 #define HSMMC4			(1 << 3)
 #define HSMMC3			(1 << 2)
@@ -42,6 +48,11 @@
 #define HSMMC1			(1 << 0)
 
 #define OMAP_MMC_MAX_SLOTS	2
+
+enum {
+	MMC_CTRL_VERSION_1 = 0, /* OMAP class devicess */
+	MMC_CTRL_VERSION_2	/* TI816X class devicess */
+};
 
 struct omap_mmc_platform_data {
 	/* back-link to device */
@@ -55,12 +66,12 @@ struct omap_mmc_platform_data {
 	unsigned int max_freq;
 
 	/* switch the bus to a new slot */
-	int (* switch_slot)(struct device *dev, int slot);
+	int (*switch_slot)(struct device *dev, int slot);
 	/* initialize board-specific MMC functionality, can be NULL if
 	 * not supported */
-	int (* init)(struct device *dev);
-	void (* cleanup)(struct device *dev);
-	void (* shutdown)(struct device *dev);
+	int (*init)(struct device *dev);
+	void (*cleanup)(struct device *dev);
+	void (*shutdown)(struct device *dev);
 
 	/* To handle board related suspend/resume functionality for MMC */
 	int (*suspend)(struct device *dev, int slot);
@@ -96,14 +107,32 @@ struct omap_mmc_platform_data {
 		/* Try to sleep or power off when possible */
 		unsigned power_saving:1;
 
+		/* If using power_saving and the MMC power is not to go off */
+		unsigned no_off:1;
+
+		/* Regulator off remapped to sleep */
+		unsigned vcc_aux_disable_is_sleep:1;
+
+		/* we can put the features above into this variable */
+#define HSMMC_HAS_PBIAS		(1 << 0)
+		unsigned features;
+
 		int switch_pin;			/* gpio (card detect) */
 		int gpio_wp;			/* gpio (write protect) */
 
-		int (* set_bus_mode)(struct device *dev, int slot, int bus_mode);
-		int (* set_power)(struct device *dev, int slot, int power_on, int vdd);
-		int (* get_ro)(struct device *dev, int slot);
+		int (*set_bus_mode)(struct device *dev, int slot, int bus_mode);
+		int (*set_power)(struct device *dev, int slot,
+				 int power_on, int vdd);
+		int (*get_ro)(struct device *dev, int slot);
 		int (*set_sleep)(struct device *dev, int slot, int sleep,
 				 int vdd, int cardsleep);
+		void (*remux)(struct device *dev, int slot, int power_on);
+		/* Call back before enabling / disabling regulators */
+		void (*before_set_reg)(struct device *dev, int slot,
+				       int power_on, int vdd);
+		/* Call back after enabling / disabling regulators */
+		void (*after_set_reg)(struct device *dev, int slot,
+				      int power_on, int vdd);
 
 		/* return MMC cover switch state, can be NULL if not supported.
 		 *
@@ -111,22 +140,25 @@ struct omap_mmc_platform_data {
 		 *   0 - closed
 		 *   1 - open
 		 */
-		int (* get_cover_state)(struct device *dev, int slot);
+		int (*get_cover_state)(struct device *dev, int slot);
 
 		const char *name;
 		u32 ocr_mask;
 
 		/* Card detection IRQs */
 		int card_detect_irq;
-		int (* card_detect)(int irq);
+		int (*card_detect)(struct device *dev, int slot);
 
 		unsigned int ban_openended:1;
 
 	} slots[OMAP_MMC_MAX_SLOTS];
+
+	u8 version;
 };
 
 /* called from board-specific card detection service routine */
-extern void omap_mmc_notify_cover_event(struct device *dev, int slot, int is_closed);
+extern void omap_mmc_notify_cover_event(struct device *dev, int slot,
+					int is_closed);
 
 #if	defined(CONFIG_MMC_OMAP) || defined(CONFIG_MMC_OMAP_MODULE) || \
 	defined(CONFIG_MMC_OMAP_HS) || defined(CONFIG_MMC_OMAP_HS_MODULE)
