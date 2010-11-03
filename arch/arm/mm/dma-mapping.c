@@ -29,7 +29,7 @@
 #error "CONSISTENT_DMA_SIZE must be multiple of 2MiB"
 #endif
 
-#define CONSISTENT_END	(0xffe00000)
+//#define CONSISTENT_END	(0xffe00000)
 #define CONSISTENT_BASE	(CONSISTENT_END - CONSISTENT_DMA_SIZE)
 
 #define CONSISTENT_OFFSET(x)	(((unsigned long)(x) - CONSISTENT_BASE) >> PAGE_SHIFT)

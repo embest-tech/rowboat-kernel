@@ -128,7 +128,7 @@ struct platform_object {
 };
 
 /**
- * platform_device_put - destroy a platform device
+ * platform_device_put
  * @pdev: platform device to free
  *
  * Free all memory associated with a platform device.  This function must
@@ -152,7 +152,7 @@ static void platform_device_release(struct device *dev)
 }
 
 /**
- * platform_device_alloc - create a platform device
+ * platform_device_alloc
  * @name: base name of the device we're adding
  * @id: instance id
  *
@@ -177,7 +177,7 @@ struct platform_device *platform_device_alloc(const char *name, int id)
 EXPORT_SYMBOL_GPL(platform_device_alloc);
 
 /**
- * platform_device_add_resources - add resources to a platform device
+ * platform_device_add_resources
  * @pdev: platform device allocated by platform_device_alloc to add resources to
  * @res: set of resources that needs to be allocated for the device
  * @num: number of resources
@@ -202,7 +202,7 @@ int platform_device_add_resources(struct platform_device *pdev,
 EXPORT_SYMBOL_GPL(platform_device_add_resources);
 
 /**
- * platform_device_add_data - add platform-specific data to a platform device
+ * platform_device_add_data
  * @pdev: platform device allocated by platform_device_alloc to add resources to
  * @data: platform specific data for this platform device
  * @size: size of platform specific data
@@ -344,7 +344,7 @@ void platform_device_unregister(struct platform_device *pdev)
 EXPORT_SYMBOL_GPL(platform_device_unregister);
 
 /**
- * platform_device_register_simple - add a platform-level device and its resources
+ * platform_device_register_simple
  * @name: base name of the device we're adding
  * @id: instance id
  * @res: set of resources that needs to be allocated for the device
@@ -362,8 +362,6 @@ EXPORT_SYMBOL_GPL(platform_device_unregister);
  * enumeration tasks, they don't fully conform to the Linux driver model.
  * In particular, when such drivers are built as modules, they can't be
  * "hotplugged".
- *
- * Returns &struct platform_device pointer on success, or ERR_PTR() on error.
  */
 struct platform_device *platform_device_register_simple(const char *name,
 							int id,
@@ -398,7 +396,7 @@ error:
 EXPORT_SYMBOL_GPL(platform_device_register_simple);
 
 /**
- * platform_device_register_data - add a platform-level device with platform-specific data
+ * platform_device_register_data
  * @parent: parent device for the device we're adding
  * @name: base name of the device we're adding
  * @id: instance id
@@ -410,8 +408,6 @@ EXPORT_SYMBOL_GPL(platform_device_register_simple);
  * allocated for the device allows drivers using such devices to be
  * unloaded without waiting for the last reference to the device to be
  * dropped.
- *
- * Returns &struct platform_device pointer on success, or ERR_PTR() on error.
  */
 struct platform_device *platform_device_register_data(
 		struct device *parent,
@@ -445,7 +441,6 @@ error:
 	platform_device_put(pdev);
 	return ERR_PTR(retval);
 }
-EXPORT_SYMBOL_GPL(platform_device_register_data);
 
 static int platform_drv_probe(struct device *_dev)
 {
@@ -477,7 +472,7 @@ static void platform_drv_shutdown(struct device *_dev)
 }
 
 /**
- * platform_driver_register - register a driver for platform-level devices
+ * platform_driver_register
  * @drv: platform driver structure
  */
 int platform_driver_register(struct platform_driver *drv)
@@ -495,7 +490,7 @@ int platform_driver_register(struct platform_driver *drv)
 EXPORT_SYMBOL_GPL(platform_driver_register);
 
 /**
- * platform_driver_unregister - unregister a driver for platform-level devices
+ * platform_driver_unregister
  * @drv: platform driver structure
  */
 void platform_driver_unregister(struct platform_driver *drv)
@@ -552,66 +547,6 @@ int __init_or_module platform_driver_probe(struct platform_driver *drv,
 }
 EXPORT_SYMBOL_GPL(platform_driver_probe);
 
-/**
- * platform_create_bundle - register driver and create corresponding device
- * @driver: platform driver structure
- * @probe: the driver probe routine, probably from an __init section
- * @res: set of resources that needs to be allocated for the device
- * @n_res: number of resources
- * @data: platform specific data for this platform device
- * @size: size of platform specific data
- *
- * Use this in legacy-style modules that probe hardware directly and
- * register a single platform device and corresponding platform driver.
- *
- * Returns &struct platform_device pointer on success, or ERR_PTR() on error.
- */
-struct platform_device * __init_or_module platform_create_bundle(
-			struct platform_driver *driver,
-			int (*probe)(struct platform_device *),
-			struct resource *res, unsigned int n_res,
-			const void *data, size_t size)
-{
-	struct platform_device *pdev;
-	int error;
-
-	pdev = platform_device_alloc(driver->driver.name, -1);
-	if (!pdev) {
-		error = -ENOMEM;
-		goto err_out;
-	}
-
-	if (res) {
-		error = platform_device_add_resources(pdev, res, n_res);
-		if (error)
-			goto err_pdev_put;
-	}
-
-	if (data) {
-		error = platform_device_add_data(pdev, data, size);
-		if (error)
-			goto err_pdev_put;
-	}
-
-	error = platform_device_add(pdev);
-	if (error)
-		goto err_pdev_put;
-
-	error = platform_driver_probe(driver, probe);
-	if (error)
-		goto err_pdev_del;
-
-	return pdev;
-
-err_pdev_del:
-	platform_device_del(pdev);
-err_pdev_put:
-	platform_device_put(pdev);
-err_out:
-	return ERR_PTR(error);
-}
-EXPORT_SYMBOL_GPL(platform_create_bundle);
-
 /* modalias support enables more hands-off userspace setup:
  * (a) environment variable lets new-style hotplug events work once system is
  *     fully running:  "modprobe $MODALIAS"
@@ -642,7 +577,7 @@ static int platform_uevent(struct device *dev, struct kobj_uevent_env *env)
 }
 
 static const struct platform_device_id *platform_match_id(
-			const struct platform_device_id *id,
+			struct platform_device_id *id,
 			struct platform_device *pdev)
 {
 	while (id->name[0]) {
@@ -1058,11 +993,9 @@ static __initdata LIST_HEAD(early_platform_driver_list);
 static __initdata LIST_HEAD(early_platform_device_list);
 
 /**
- * early_platform_driver_register - register early platform driver
+ * early_platform_driver_register
  * @epdrv: early_platform driver structure
  * @buf: string passed from early_param()
- *
- * Helper function for early_platform_init() / early_platform_init_buffer()
  */
 int __init early_platform_driver_register(struct early_platform_driver *epdrv,
 					  char *buf)
@@ -1114,12 +1047,9 @@ int __init early_platform_driver_register(struct early_platform_driver *epdrv,
 }
 
 /**
- * early_platform_add_devices - adds a number of early platform devices
+ * early_platform_add_devices - add a numbers of early platform devices
  * @devs: array of early platform devices to add
  * @num: number of early platform devices in array
- *
- * Used by early architecture code to register early platform devices and
- * their platform data.
  */
 void __init early_platform_add_devices(struct platform_device **devs, int num)
 {
@@ -1139,12 +1069,8 @@ void __init early_platform_add_devices(struct platform_device **devs, int num)
 }
 
 /**
- * early_platform_driver_register_all - register early platform drivers
+ * early_platform_driver_register_all
  * @class_str: string to identify early platform driver class
- *
- * Used by architecture code to register all early platform drivers
- * for a certain class. If omitted then only early platform drivers
- * with matching kernel command line class parameters will be registered.
  */
 void __init early_platform_driver_register_all(char *class_str)
 {
@@ -1166,7 +1092,7 @@ void __init early_platform_driver_register_all(char *class_str)
 }
 
 /**
- * early_platform_match - find early platform device matching driver
+ * early_platform_match
  * @epdrv: early platform driver structure
  * @id: id to match against
  */
@@ -1184,7 +1110,7 @@ early_platform_match(struct early_platform_driver *epdrv, int id)
 }
 
 /**
- * early_platform_left - check if early platform driver has matching devices
+ * early_platform_left
  * @epdrv: early platform driver structure
  * @id: return true if id or above exists
  */
@@ -1202,7 +1128,7 @@ static  __init int early_platform_left(struct early_platform_driver *epdrv,
 }
 
 /**
- * early_platform_driver_probe_id - probe drivers matching class_str and id
+ * early_platform_driver_probe_id
  * @class_str: string to identify early platform driver class
  * @id: id to match against
  * @nr_probe: number of platform devices to successfully probe before exiting
@@ -1272,14 +1198,10 @@ static int __init early_platform_driver_probe_id(char *class_str,
 }
 
 /**
- * early_platform_driver_probe - probe a class of registered drivers
+ * early_platform_driver_probe
  * @class_str: string to identify early platform driver class
  * @nr_probe: number of platform devices to successfully probe before exiting
  * @user_only: only probe user specified early platform devices
- *
- * Used by architecture code to probe registered early platform drivers
- * within a certain class. For probe to happen a registered early platform
- * device matching a registered early platform driver is needed.
  */
 int __init early_platform_driver_probe(char *class_str,
 				       int nr_probe,
