@@ -19,7 +19,13 @@
 #define DAVINCI_MCASP_H
 
 #include <linux/io.h>
+
+#ifndef CONFIG_ARCH_TI816X
 #include <mach/asp.h>
+#else
+#include <plat/asp.h>
+#endif
+
 #include "davinci-pcm.h"
 
 extern struct snd_soc_dai davinci_mcasp_dai[];
@@ -39,11 +45,17 @@ enum {
 };
 
 struct davinci_audio_dev {
+	/*
+	 * dma_params must be first because rtd->dai->cpu_dai->private_data
+	 * is cast to a pointer of an array of struct davinci_pcm_dma_params in
+	 * davinci_pcm_open.
+	 */
 	struct davinci_pcm_dma_params dma_params[2];
 	void __iomem *base;
 	int sample_rate;
 	struct clk *clk;
 	unsigned int codec_fmt;
+	u8 clk_active;
 
 	/* McASP specific data */
 	int	tdm_slots;
