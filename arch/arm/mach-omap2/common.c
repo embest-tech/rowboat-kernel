@@ -142,10 +142,20 @@ static struct omap_globals ti81xx_globals = {
 	.cm	= TI81XX_PRCM_BASE,
 };
 
-void __init omap2_set_globals_ti816x(void)
+static void __init omap2_set_globals_ti81xx(void)
 {
 	omap2_set_globals_tap(&ti81xx_globals);
 	omap2_set_globals_control(&ti81xx_globals);
 	omap2_set_globals_prcm(&ti81xx_globals);
+}
+
+void __init omap2_set_globals_ti816x(void)
+{
+	omap2_set_globals_ti81xx();
+}
+
+void __init omap2_set_globals_ti814x(void)
+{
+	omap2_set_globals_ti81xx();
 }
 #endif
