@@ -32,3 +32,5 @@ extern void board_onenand_init(struct mtd_partition *onenand_parts,
 					u8 nr_parts, u8 cs);
 extern void board_onenand_init(struct mtd_partition *onenand_parts,
 					u8 nr_parts, u8 cs);
+extern void board_nor_init(struct mtd_partition *nor_parts,
+					u8 nr_parts, u8 cs);
