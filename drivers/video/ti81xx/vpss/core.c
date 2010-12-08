@@ -54,6 +54,8 @@ static int  def_tiedvencs;
 static char *def_clksrc;
 static char *def_sbsize;
 static char *def_sbaddr;
+/* Default HDMI output on fb0 */
+int def_output = 0;
 /*time out value is 2 seconds*/
 static u32  def_timeout = 2000;
 
@@ -182,6 +184,13 @@ module_param_named(timeout, def_timeout, uint, S_IRUGO);
 MODULE_PARM_DESC(def_timeout,
 	"timeout value to be set in the VPSS device \
 		for waiting the response from M3");
+/* Since SGX only supports fb0 at the moment so 
+ * only HDMI or HDCOMP can be selected at a time.
+ * hdcomp_out: 0 --> HDMI, !0 --> HDCOMP output on fb0
+ */
+MODULE_PARM_DESC(hdcomp_out,
+	"Select default output mode for fb0");
+module_param_named(hdcomp_out, def_output, int, S_IRUGO);
 
 subsys_initcall(vps_init);
 module_exit(vps_cleanup);

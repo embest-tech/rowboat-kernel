@@ -109,8 +109,12 @@ obj-$(CONFIG_TCG_TPM)		+= tpm/
 obj-$(CONFIG_DCC_TTY)		+= dcc_tty.o
 obj-$(CONFIG_PS3_FLASH)		+= ps3flash.o
 
+obj-$(CONFIG_TI81XX_HDMI)	+= ti81xx_hdmi/
+
 obj-$(CONFIG_JS_RTC)		+= js-rtc.o
 js-rtc-y = rtc.o
+
+obj-$(CONFIG_TI816X_PCIE_BOOTDRV) += ti816x_pcie_bootdrv.o
 
 # Files generated that shall be removed upon make clean
 clean-files := consolemap_deftbl.c defkeymap.c

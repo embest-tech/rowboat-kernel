@@ -31,6 +31,7 @@
 #define DEBUG
 extern unsigned int vpss_debug;
 #endif
+extern int def_output;
 
 #include <linux/platform_device.h>
 #include <linux/vps_proxyserver.h>

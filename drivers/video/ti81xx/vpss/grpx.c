@@ -1315,15 +1315,22 @@ int __init vps_grpx_init(struct platform_device *pdev)
 		case 0:
 
 			gctrl->snode = VPS_DC_GRPX0_INPUT_PATH;
+			if (def_output == 0)
+				gctrl->enodes[0] = VPS_DC_HDMI_BLEND;
+			else
+#ifdef CONFIG_ARCH_TI816X
+				gctrl->enodes[0] = VPS_DC_HDCOMP_BLEND;
+#else
+				gctrl->enodes[0] = VPS_DC_DVO2_BLEND;
+#endif
+			break;
+		case 1:
+			gctrl->snode = VPS_DC_GRPX1_INPUT_PATH;
 #ifdef CONFIG_ARCH_TI816X
 			gctrl->enodes[0] = VPS_DC_HDCOMP_BLEND;
 #else
 			gctrl->enodes[0] = VPS_DC_DVO2_BLEND;
 #endif
-			break;
-		case 1:
-			gctrl->snode = VPS_DC_GRPX1_INPUT_PATH;
-			gctrl->enodes[0] = VPS_DC_HDMI_BLEND;
 			break;
 		case 2:
 			gctrl->snode = VPS_DC_GRPX2_INPUT_PATH;
