@@ -64,6 +64,17 @@ config AIRO
 
 	  The driver can be compiled as a module and will be named "airo".
 
+config WL1271_WLAN
+	tristate "WL1271 TI's SDIO based wireless card"
+	select WIRELESS_EXT
+	select CRYPTO
+	select WEXT_SPY
+	select WEXT_PRIV
+	---help---
+	This driver support both the standard Linux Wireless Extensions
+	and TI's proprietary API, so both the Linux Wireless Tools and this
+	module support 2.4 GHz 802.11 b/g/n standrd.
+
 config ATMEL
       tristate "Atmel at76c50x chipset  802.11b support"
       depends on (PCI || PCMCIA)

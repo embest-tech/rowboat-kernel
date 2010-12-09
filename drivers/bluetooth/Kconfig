@@ -195,5 +195,13 @@ config BT_MRVL_SDIO
 	  Say Y here to compile support for Marvell BT-over-SDIO driver
 	  into the kernel or say M to compile it as module.
 
+config BT_WL1271
+        bool "WL1271 Bluetooth driver support"
+        depends on BT_HCIUART
+        help
+          The core driver to support WL1271 Bluetooth devices.
+
+          Say Y here to compile WL1271 Bluetooth driver
+          into the kernel.
 endmenu
 

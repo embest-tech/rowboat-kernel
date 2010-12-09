@@ -576,6 +576,15 @@ static struct platform_device omap3_evm_dss_device = {
 	},
 };
 
+#ifdef CONFIG_WL1271_WLAN
+static struct platform_device omap3_evm_wl1271_device = {
+	.name = "tiwlan_pm_driver",
+	.id   = -1,
+	.dev = {
+	.platform_data = NULL,
+	},
+};
+#endif
 /*
  * PWMA/B register offsets (TWL4030_MODULE_PWMA)
  */
@@ -1084,6 +1093,9 @@ static struct platform_device *omap3_evm_devices[] __initdata = {
 	&omap3_evm_dss_device,
 	&omap3evm_camkit_device,
 	&omap3evm_bklight_device,
+#ifdef CONFIG_WL1271_WLAN
+	&omap3_evm_wl1271_device,
+#endif
 };
 
 static struct ehci_hcd_omap_platform_data ehci_pdata __initconst = {

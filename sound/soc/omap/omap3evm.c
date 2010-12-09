@@ -5,6 +5,8 @@
  *
  * Based on sound/soc/omap/beagle.c by Steve Sakoman
  *
+ * Added support for MCBSP1 <-> WL1271 BT by Mistral
+ *
  * Copyright (C) 2008 Texas Instruments, Incorporated
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -32,6 +34,11 @@
 #include "omap-mcbsp.h"
 #include "omap-pcm.h"
 #include "../codecs/twl4030.h"
+
+#if defined(CONFIG_SND_SOC_WL1271BT)
+#include <plat/control.h>
+#include "../codecs/wl1271bt.h"
+#endif
 
 static int omap3evm_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params)
@@ -76,21 +83,62 @@ static struct snd_soc_ops omap3evm_ops = {
 	.hw_params = omap3evm_hw_params,
 };
 
+#if defined(CONFIG_SND_SOC_WL1271BT)
+static int omap3evm_wl1271bt_pcm_hw_params(struct snd_pcm_substream *substream,
+	struct snd_pcm_hw_params *params)
+{
+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+	struct snd_soc_dai *cpu_dai = rtd->dai->cpu_dai;
+	int ret;
+
+	/* Set cpu DAI configuration for WL1271 Bluetooth codec */
+	ret = snd_soc_dai_set_fmt(cpu_dai,
+				  SND_SOC_DAIFMT_DSP_B |
+				  SND_SOC_DAIFMT_NB_NF |
+				  SND_SOC_DAIFMT_CBM_CFM);
+	if (ret < 0) {
+		printk(KERN_ERR "Can't set cpu DAI configuration for " \
+						"WL1271 Bluetooth codec \n");
+		return ret;
+	}
+
+	return 0;
+}
+
+static struct snd_soc_ops omap3evm_wl1271bt_pcm_ops = {
+	.hw_params = omap3evm_wl1271bt_pcm_hw_params,
+};
+
+#endif
+
 /* Digital audio interface glue - connects codec <--> CPU */
-static struct snd_soc_dai_link omap3evm_dai = {
-	.name 		= "TWL4030",
-	.stream_name 	= "TWL4030",
-	.cpu_dai 	= &omap_mcbsp_dai[0],
-	.codec_dai 	= &twl4030_dai[TWL4030_DAI_HIFI],
-	.ops 		= &omap3evm_ops,
+static struct snd_soc_dai_link omap3evm_dai[] = {
+	{
+		.name = "TWL4030",
+		.stream_name = "TWL4030",
+		.cpu_dai = &omap_mcbsp_dai[0],
+		.codec_dai = &twl4030_dai[TWL4030_DAI_HIFI],
+		.ops = &omap3evm_ops,
+	},
+
+#if defined(CONFIG_SND_SOC_WL1271BT)
+	/* Connects WL1271 Bluetooth codec <--> CPU */
+	{
+		.name = "WL1271BTPCM",
+		.stream_name = "WL1271 BT PCM",
+		.cpu_dai = &omap_mcbsp_dai[1],
+		.codec_dai = &wl1271bt_dai,
+		.ops = &omap3evm_wl1271bt_pcm_ops,
+	},
+#endif
 };
 
 /* Audio machine driver */
 static struct snd_soc_card snd_soc_omap3evm = {
 	.name = "omap3evm",
 	.platform = &omap_soc_platform,
-	.dai_link = &omap3evm_dai,
-	.num_links = 1,
+	.dai_link = &omap3evm_dai[0],
+	.num_links = ARRAY_SIZE(omap3evm_dai),
 };
 
 /* twl4030 setup */
@@ -111,6 +159,10 @@ static struct platform_device *omap3evm_snd_device;
 static int __init omap3evm_soc_init(void)
 {
 	int ret;
+#if defined(CONFIG_SND_SOC_WL1271BT)
+	u16 reg;
+	u32 val;
+#endif
 
 	if (!machine_is_omap3evm()) {
 		pr_err("Not OMAP3 EVM!\n");
@@ -124,9 +176,23 @@ static int __init omap3evm_soc_init(void)
 		return -ENOMEM;
 	}
 
+#if defined(CONFIG_SND_SOC_WL1271BT)
+/*
+ * Set DEVCONF0 register to connect
+ * MCBSP1_CLKR -> MCBSP1_CLKX & MCBSP1_FSR -> MCBSP1_FSX
+ */
+	reg = OMAP2_CONTROL_DEVCONF0;
+	val = omap_ctrl_readl(reg);
+	val = val | 0x18;
+	omap_ctrl_writel(val, reg);
+#endif
+
 	platform_set_drvdata(omap3evm_snd_device, &omap3evm_snd_devdata);
 	omap3evm_snd_devdata.dev = &omap3evm_snd_device->dev;
-	*(unsigned int *)omap3evm_dai.cpu_dai->private_data = 1;
+	*(unsigned int *)omap3evm_dai[0].cpu_dai->private_data = 1; /* McBSP2 */
+#if defined(CONFIG_SND_SOC_WL1271BT)
+	*(unsigned int *)omap3evm_dai[1].cpu_dai->private_data = 0; /* McBSP1 */
+#endif
 
 	ret = platform_device_add(omap3evm_snd_device);
 	if (ret)
