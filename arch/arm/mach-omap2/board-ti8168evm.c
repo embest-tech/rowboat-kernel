@@ -36,10 +36,24 @@
 #include <plat/gpio.h>
 #include <plat/gpmc.h>
 #include <plat/nand.h>
+#include <plat/mmc.h>
 
+#include "clock.h"
 #include "mux.h"
 #include "board-flash.h"
 #include <mach/board-ti816x.h>
+#include "hsmmc.h"
+
+static struct omap2_hsmmc_info mmc[] = {
+	{
+		.mmc		= 1,
+		.caps           = MMC_CAP_4_BIT_DATA,
+		.gpio_cd	= -EINVAL,/* Dedicated pins for CD and WP */
+		.gpio_wp	= -EINVAL,
+		.ocr_mask	= MMC_VDD_33_34,
+	},
+	{}	/* Terminator */
+};
 
 static struct mtd_partition ti816x_evm_norflash_partitions[] = {
 	/* bootloader (U-Boot, etc) in first 5 sectors */
@@ -483,6 +497,7 @@ static void __init ti8168_evm_init(void)
 		ARRAY_SIZE(ti816x_evm_norflash_partitions), 0);
 	ti816x_vpss_init();
 	ti816x_spi_init();
+	omap2_hsmmc_init(mmc);
 }
 
 static int __init ti8168_evm_gpio_setup(void)
