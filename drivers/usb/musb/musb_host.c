@@ -1088,8 +1088,6 @@ done:
 }
 
 
-#ifdef CONFIG_USB_INVENTRA_DMA
-
 /* Host side TX (OUT) using Mentor DMA works as follows:
 	submit_urb ->
 		- if queue was empty, Program Endpoint
@@ -1101,8 +1099,6 @@ done:
 		- TxPktRdy has to be set in mode 0 or for
 			short packets in mode 1.
 */
-
-#endif
 
 /* Service a Tx-Available or dma completion irq for the endpoint */
 void musb_host_tx(struct musb *musb, u8 epnum)
@@ -1345,8 +1341,6 @@ void musb_host_tx(struct musb *musb, u8 epnum)
 }
 
 
-#ifdef CONFIG_USB_INVENTRA_DMA
-
 /* Host side RX (IN) using Mentor DMA works as follows:
 	submit_urb ->
 		- if queue was empty, ProgramEndpoint
@@ -1381,8 +1375,6 @@ void musb_host_tx(struct musb *musb, u8 epnum)
  *	thus be a great candidate for using mode 1 ... for all but the
  *	last packet of one URB's transfer.
  */
-
-#endif
 
 /* Schedule next QH from musb->in_bulk and move the current qh to
  * the end; avoids starvation for other endpoints.
