@@ -92,19 +92,11 @@
 
 /* ----------------------------------------------------------------------- */
 
-#define is_buffer_mapped(req) (is_dma_capable() && \
-					(req->map_state != UN_MAPPED))
-
 /* Maps the buffer to dma  */
 
 static inline void map_dma_buffer(struct musb_request *request,
-			struct musb *musb, struct musb_ep *musb_ep)
+				struct musb *musb)
 {
-	request->map_state = UN_MAPPED;
-
-	if (!is_dma_capable() || !musb_ep->dma)
-		return;
-
 	if (request->request.dma == DMA_ADDR_INVALID) {
 		request->request.dma = dma_map_single(
 				musb->controller,
@@ -113,7 +105,7 @@ static inline void map_dma_buffer(struct musb_request *request,
 				request->tx
 					? DMA_TO_DEVICE
 					: DMA_FROM_DEVICE);
-		request->map_state = MUSB_MAPPED;
+		request->mapped = 1;
 	} else {
 		dma_sync_single_for_device(musb->controller,
 			request->request.dma,
@@ -121,7 +113,7 @@ static inline void map_dma_buffer(struct musb_request *request,
 			request->tx
 				? DMA_TO_DEVICE
 				: DMA_FROM_DEVICE);
-		request->map_state = PRE_MAPPED;
+		request->mapped = 0;
 	}
 }
 
@@ -129,14 +121,11 @@ static inline void map_dma_buffer(struct musb_request *request,
 static inline void unmap_dma_buffer(struct musb_request *request,
 				struct musb *musb)
 {
-	if (!is_buffer_mapped(request))
-		return;
-
 	if (request->request.dma == DMA_ADDR_INVALID) {
 		DBG(20, "not unmapping a never mapped buffer\n");
 		return;
 	}
-	if (request->map_state == MUSB_MAPPED) {
+	if (request->mapped) {
 		dma_unmap_single(musb->controller,
 			request->request.dma,
 			request->request.length,
@@ -144,15 +133,16 @@ static inline void unmap_dma_buffer(struct musb_request *request,
 				? DMA_TO_DEVICE
 				: DMA_FROM_DEVICE);
 		request->request.dma = DMA_ADDR_INVALID;
-	} else { /* PRE_MAPPED */
+		request->mapped = 0;
+	} else {
 		dma_sync_single_for_cpu(musb->controller,
 			request->request.dma,
 			request->request.length,
 			request->tx
 				? DMA_TO_DEVICE
 				: DMA_FROM_DEVICE);
+
 	}
-	request->map_state = UN_MAPPED;
 }
 
 /*
@@ -182,7 +172,8 @@ __acquires(ep->musb->lock)
 
 	ep->busy = 1;
 	spin_unlock(&musb->lock);
-	unmap_dma_buffer(req, musb);
+	if (is_dma_capable() && ep->dma)
+		unmap_dma_buffer(req, musb);
 	if (request->status == 0)
 		DBG(5, "%s done request %p,  %d/%d\n",
 				ep->end_point.name, request,
@@ -340,7 +331,7 @@ static void txstate(struct musb *musb, struct musb_request *req)
 			csr);
 
 #ifndef	CONFIG_MUSB_PIO_ONLY
-	if (is_buffer_mapped(req)) {
+	if (is_dma_capable() && musb_ep->dma) {
 		struct dma_controller	*c = musb->dma_controller;
 		size_t request_size;
 
@@ -455,7 +446,8 @@ static void txstate(struct musb *musb, struct musb_request *req)
 		 * Unmap the dma buffer back to cpu if dma channel
 		 * programming fails
 		 */
-		unmap_dma_buffer(req, musb);
+		if (is_dma_capable() && musb_ep->dma)
+			unmap_dma_buffer(req, musb);
 
 		musb->ops->write_fifo(musb_ep->hw_ep, fifo_count,
 				(u8 *) (request->buf + request->actual));
@@ -643,7 +635,7 @@ static void rxstate(struct musb *musb, struct musb_request *req)
 	}
 
 	if ((is_cppi_enabled(musb) || is_cppi41_enabled(musb)) &&
-					is_buffer_mapped(req)) {
+					musb_ep->dma) {
 		struct dma_controller	*c = musb->dma_controller;
 		struct dma_channel	*channel = musb_ep->dma;
 
@@ -673,7 +665,8 @@ static void rxstate(struct musb *musb, struct musb_request *req)
 	if (csr & MUSB_RXCSR_RXPKTRDY) {
 		len = musb_readw(epio, MUSB_RXCOUNT);
 		if (request->actual < request->length) {
-			if (is_buffer_mapped(req) && is_inventra_dma(musb)) {
+			if (is_inventra_dma(musb) && is_dma_capable()
+				&& musb_ep->dma) {
 				struct dma_controller	*c;
 				struct dma_channel	*channel;
 				int			use_dma = 0;
@@ -755,7 +748,7 @@ static void rxstate(struct musb *musb, struct musb_request *req)
 
 			fifo_count = min_t(unsigned, len, fifo_count);
 
-			if (tusb_dma_omap(musb) && is_buffer_mapped(req)) {
+			if (tusb_dma_omap(musb) && musb_ep->dma) {
 				struct dma_controller *c = musb->dma_controller;
 				struct dma_channel *channel = musb_ep->dma;
 				u32 dma_addr = request->dma + request->actual;
@@ -775,7 +768,7 @@ static void rxstate(struct musb *musb, struct musb_request *req)
 			 * programming fails. This buffer is mapped if the
 			 * channel allocation is successful
 			 */
-			 if (is_buffer_mapped(req)) {
+			 if (is_dma_capable() && musb_ep->dma) {
 				unmap_dma_buffer(req, musb);
 
 				/*
@@ -1232,7 +1225,10 @@ static int musb_gadget_queue(struct usb_ep *ep, struct usb_request *req,
 	request->epnum = musb_ep->current_epnum;
 	request->tx = musb_ep->is_in;
 
-	map_dma_buffer(request, musb, musb_ep);
+	if (is_dma_capable() && musb_ep->dma)
+		map_dma_buffer(request, musb);
+	else
+		request->mapped = 0;
 
 	spin_lock_irqsave(&musb->lock, lockflags);
 
