@@ -630,7 +630,7 @@ static int mt9v113_detect(struct mt9v113_decoder *decoder)
 		 * MT9V113.
 		 */
 		v4l_err(decoder->client,
-			"chip id mismatch read 0x%x,
+			"chip id mismatch read 0x%x,\
 				 expecting 0x%x\n", val, MT9V113_CHIP_ID);
 		return -ENODEV;
 	}
