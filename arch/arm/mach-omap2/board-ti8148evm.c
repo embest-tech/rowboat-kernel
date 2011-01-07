@@ -18,6 +18,7 @@
 #include <linux/platform_device.h>
 #include <linux/i2c.h>
 #include <linux/i2c/at24.h>
+#include <linux/mtd/nand.h>
 
 #include <mach/hardware.h>
 #include <asm/mach-types.h>
@@ -29,6 +30,12 @@
 #include <plat/common.h>
 #include <plat/asp.h>
 #include <plat/usb.h>
+#include <plat/gpmc.h>
+#include <plat/nand.h>
+#include <plat/mmc.h>
+
+#include "board-flash.h"
+
 
 static struct at24_platform_data eeprom_info = {
 	.byte_len       = (256*1024) / 8,
@@ -82,6 +89,43 @@ static struct snd_platform_data ti8148_evm_snd_data = {
 	.rxnumevt	= 1,
 };
 
+/* NAND flash information */
+static struct mtd_partition ti814x_nand_partitions[] = {
+/* All the partition sizes are listed in terms of NAND block size */
+	{
+		.name           = "U-Boot-min",
+		.offset         = 0,    /* Offset = 0x0 */
+		.size           = SZ_128K,
+		.mask_flags     = MTD_WRITEABLE,        /* force read-only */
+	},
+	{
+		.name           = "U-Boot",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x0 + 128K */
+		.size           = 18 * SZ_128K,
+		.mask_flags     = MTD_WRITEABLE,        /* force read-only */
+	},
+	{
+		.name           = "U-Boot Env",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x260000 */
+		.size           = 1 * SZ_128K,
+	},
+	{
+		.name           = "Kernel",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x280000 */
+		.size           = 34 * SZ_128K,
+	},
+	{
+		.name           = "File System",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x6C0000 */
+		.size           = 1601 * SZ_128K,
+	},
+	{
+		.name           = "Reserved",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0xCEE0000 */
+		.size           = MTDPART_SIZ_FULL,
+	},
+};
+
 static struct omap_musb_board_data musb_board_data = {
 	.interface_type		= MUSB_INTERFACE_ULPI,
 #ifdef CONFIG_USB_MUSB_OTG
@@ -106,7 +150,6 @@ static void __init ti8148_evm_init_irq(void)
 	omap2_init_common_infrastructure();
 	omap2_init_common_devices(NULL, NULL);
 	omap_init_irq();
-	gpmc_init();
 }
 
 static void __init ti814x_vpss_init(void)
@@ -125,6 +168,8 @@ static void __init ti8148_evm_init(void)
 	ti814x_evm_i2c_init();
 	ti81xx_register_mcasp(0, &ti8148_evm_snd_data);
 
+	board_nand_init(ti814x_nand_partitions,
+		ARRAY_SIZE(ti814x_nand_partitions), 0, NAND_BUSWIDTH_16);
 	/* initialize usb */
 	usb_musb_init(&musb_board_data);
 
