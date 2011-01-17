@@ -47,6 +47,7 @@
 
 #include "mux.h"
 #include "sdram-micron-mt46h32m32lf-6.h"
+#include "sdram-hynix-h8kds0un0mer-4em.h"
 #include "hsmmc.h"
 
 #define OMAP3_EVM_TS_GPIO	175
@@ -630,7 +631,10 @@ static void __init omap3_evm_init_irq(void)
 	omap_board_config = omap3_evm_config;
 	omap_board_config_size = ARRAY_SIZE(omap3_evm_config);
 	omap2_init_common_infrastructure();
-	omap2_init_common_devices(mt46h32m32lf6_sdrc_params, NULL);
+	if (cpu_is_omap3630())
+		omap2_init_common_devices(h8kds0un0mer4em_sdrc_params, NULL);
+	else
+		omap2_init_common_devices(mt46h32m32lf6_sdrc_params, NULL);
 	omap_init_irq();
 }
 
