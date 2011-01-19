@@ -35,6 +35,7 @@
 #include <plat/common.h>
 #include <plat/usb.h>
 #include <plat/mmc.h>
+#include <plat/gpmc.h>
 
 #include "mux.h"
 #include "hsmmc.h"
@@ -249,6 +250,7 @@ static void __init omap_4430sdp_init_irq(void)
 	omap2_gp_clockevent_set_gptimer(1);
 #endif
 	gic_init_irq();
+	gpmc_init();
 }
 
 static const struct ehci_hcd_omap_platform_data ehci_pdata __initconst = {
