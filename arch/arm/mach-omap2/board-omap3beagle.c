@@ -679,10 +679,11 @@ static int __init omap3_beagle_i2c_init(void)
 		printk(KERN_INFO "Beagle expansionboard: registering i2c2 bus for zippy/zippy2\n");
 		omap_register_i2c_bus(2, 400,  beagle_zippy_i2c2_boardinfo,
 				ARRAY_SIZE(beagle_zippy_i2c2_boardinfo));
-	} else
-	{
+	} else if (cpu_is_omap3630()) {
 		omap_register_i2c_bus(2, 400,  beagle_i2c2_boardinfo,
 				ARRAY_SIZE(beagle_i2c2_boardinfo));
+	} else {
+		omap_register_i2c_bus(2, 100, NULL, 0);
 	}
 	/* Bus 3 is attached to the DVI port where devices like the pico DLP
 	 * projector don't work reliably with 400kHz */
