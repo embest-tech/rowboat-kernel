@@ -416,6 +416,8 @@
 
 #define NR_IRQS			TWL_IRQ_END
 
+#define TI816X_IH_GPIO_BASE	128
+
 #define OMAP_IRQ_BIT(irq)	(1 << ((irq) % 32))
 
 #define INTCPS_NR_MIR_REGS	3
