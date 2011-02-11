@@ -29,6 +29,7 @@
 #include <plat/board.h>
 #include <plat/common.h>
 #include <plat/asp.h>
+#include <plat/gpio.h>
 
 #include "mux.h"
 #include "board-flash.h"
@@ -213,6 +214,16 @@ static void __init ti8168_evm_init(void)
 		ARRAY_SIZE(ti816x_evm_norflash_partitions), 0);
 }
 
+static void __init ti8168_evm_gpio_setup(void)
+{
+	/* GPIO-20 should be low for NOR access beyond 4KiB */
+	gpio_request(20, "nor");
+	gpio_direction_output(20, 0x0);
+}
+/* GPIO setup should be as subsys_initcall() as gpio driver
+ * is registered in arch_initcall()
+ */
+subsys_initcall(ti8168_evm_gpio_setup);
 
 static void __init ti8168_evm_map_io(void)
 {
