@@ -42,6 +42,20 @@
 
 #include "board-flash.h"
 
+#include "clock.h"
+#include "hsmmc.h"
+
+
+static struct omap2_hsmmc_info mmc[] = {
+       {
+               .mmc            = 1,
+               .caps           = MMC_CAP_4_BIT_DATA,
+               .gpio_cd        = -EINVAL,/* Dedicated pins for CD and WP */
+               .gpio_wp        = -EINVAL,
+               .ocr_mask       = MMC_VDD_33_34,
+       },
+       {}      /* Terminator */
+};
 
 static struct at24_platform_data eeprom_info = {
 	.byte_len       = (256*1024) / 8,
@@ -232,6 +246,8 @@ static void __init ti8148_evm_init(void)
 
 	board_nand_init(ti814x_nand_partitions,
 		ARRAY_SIZE(ti814x_nand_partitions), 0);
+	omap2_hsmmc_init(mmc);
+
 	/* initialize usb */
 	usb_musb_init(&musb_board_data);
 
