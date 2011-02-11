@@ -94,11 +94,28 @@ static struct omap_musb_board_data musb_board_data = {
 	.power			= 500,
 };
 
+static struct platform_device vpss_device = {
+	.name = "vpss",
+	.id = -1,
+	.dev = {
+		.platform_data = NULL,
+	},
+};
 static void __init ti8148_evm_init_irq(void)
 {
 	omap2_init_common_infrastructure();
 	omap2_init_common_devices(NULL, NULL);
 	omap_init_irq();
+}
+
+static void __init ti814x_vpss_init(void)
+{
+	/*FIXME add platform data here*/
+
+	if (platform_device_register(&vpss_device))
+		printk(KERN_ERR "failed to register ti814x_vpss device\n");
+	else
+		printk(KERN_INFO "registered ti814x_vpss device\n");
 }
 
 static void __init ti8148_evm_init(void)
@@ -109,6 +126,8 @@ static void __init ti8148_evm_init(void)
 
 	/* initialize usb */
 	usb_musb_init(&musb_board_data);
+
+	ti814x_vpss_init();
 }
 
 static void __init ti8148_evm_map_io(void)
@@ -121,6 +140,7 @@ MACHINE_START(TI8148EVM, "ti8148evm")
 	/* Maintainer: Texas Instruments */
 	.boot_params	= 0x80000100,
 	.map_io		= ti8148_evm_map_io,
+	.reserve         = ti81xx_reserve,
 	.init_irq	= ti8148_evm_init_irq,
 	.init_machine	= ti8148_evm_init,
 	.timer		= &omap_timer,

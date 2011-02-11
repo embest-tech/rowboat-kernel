@@ -40,6 +40,7 @@ extern int __init omap_init_clocksource_32k(void);
 extern unsigned long long notrace omap_32k_sched_clock(void);
 
 extern void omap_reserve(void);
+extern void ti81xx_reserve(void);
 
 /*
  * IO bases for various OMAP processors
