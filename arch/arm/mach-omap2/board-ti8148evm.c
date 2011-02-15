@@ -169,7 +169,7 @@ static void __init ti8148_evm_init(void)
 	ti81xx_register_mcasp(0, &ti8148_evm_snd_data);
 
 	board_nand_init(ti814x_nand_partitions,
-		ARRAY_SIZE(ti814x_nand_partitions), 0, NAND_BUSWIDTH_16);
+		ARRAY_SIZE(ti814x_nand_partitions), 0);
 	/* initialize usb */
 	usb_musb_init(&musb_board_data);
 

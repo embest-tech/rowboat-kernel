@@ -247,7 +247,17 @@ static inline void omap_init_sti(void) {}
 
 #if defined(CONFIG_SND_SOC) || defined(CONFIG_SND_SOC_MODULE)
 
-#if !defined(CONFIG_ARCH_TI81xx)
+#if defined(CONFIG_ARCH_TI81XX)
+struct platform_device ti81xx_pcm_device = {
+	.name		= "davinci-pcm-audio",
+	.id		= -1,
+};
+
+static void ti81xx_init_pcm(void)
+{
+	platform_device_register(&ti81xx_pcm_device);
+}
+#else
 static struct platform_device omap_pcm = {
 	.name	= "omap-pcm-audio",
 	.id	= -1,
@@ -279,28 +289,17 @@ static void omap_init_audio(void)
 	platform_device_register(&omap_pcm);
 }
 
+#endif /* defined(CONFIG_ARCH_TI81XX) */
+
+#else
+
+#if defined(CONFIG_ARCH_TI81XX)
+static inline void ti81xx_init_pcm(void) {}
 #else
 static inline void omap_init_audio(void) {}
 #endif
 
-#if defined(CONFIG_ARCH_TI81XX)
-
-struct platform_device ti81xx_pcm_device = {
-	.name		= "davinci-pcm-audio",
-	.id		= -1,
-};
-
-static void ti81xx_init_pcm(void)
-{
-	platform_device_register(&ti81xx_pcm_device);
-}
-
-#else
-static inline void ti81xx_init_pcm(void) {}
-#endif
-
-#endif
-
+#endif /* defined(CONFIG_SND_SOC) || defined(CONFIG_SND_SOC_MODULE) */
 
 #if defined(CONFIG_SPI_OMAP24XX) || defined(CONFIG_SPI_OMAP24XX_MODULE)
 
@@ -1822,7 +1821,9 @@ static int __init omap2_init_devices(void)
 	 * in alphabetical order so they're easier to sort through.
 	 */
 	omap_hsmmc_reset();
-	omap_init_audio();
+#if !defined(CONFIG_ARCH_TI81XX)
+        omap_init_audio();
+#endif
 	omap_init_camera();
 	omap_init_mbox();
 	omap_init_mcspi();
