@@ -47,6 +47,7 @@ static void __init am335x_evm_init_irq(void)
 static void __init am335x_evm_init(void)
 {
 	am335x_mux_init(board_mux);
+	omap_serial_init();
 }
 
 static void __init am335x_evm_map_io(void)
