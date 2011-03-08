@@ -29,6 +29,16 @@
 #include "prm-regbits-AM335x.h"
 #include "prmAM335x.h"
 
+/* XXX: In struct omap_hwmod, "masters" field has not been updated.
+ * Code analysis so far didn't brought to notice any instance where
+ * "masters" field would be used. It is not sure whether PM code
+ * does use this field, PM code is yet to be explored to find it.
+ * This leads to the question why link between interconnects has
+ * been done in HWMOD database (for other SoC's), perhaps it may
+ * be that dependency between interconnects are not implemented in
+ * the present Kernel, but work may be proceeding in this direction,
+ * more investigation would be required to ascertain this.
+ */
 
 /* Base offset for all AM335x interrupts external to MPUSS */
 #define AM335x_IRQ_GIC_START	0
