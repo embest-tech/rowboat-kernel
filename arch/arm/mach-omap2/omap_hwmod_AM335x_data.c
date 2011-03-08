@@ -60,6 +60,7 @@ static struct omap_hwmod_class AM335x_l4wkup_hwmod_class = {
 static struct omap_hwmod AM335x_l4wkup_hwmod = {
 	.name		= "l4wkup",
 	.class		= &AM335x_l4wkup_hwmod_class,
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 
