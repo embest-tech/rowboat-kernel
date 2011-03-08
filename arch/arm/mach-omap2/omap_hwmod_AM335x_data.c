@@ -1203,6 +1203,7 @@ static struct omap_hwmod AM335x_uart1_hwmod = {
 	},
 	.slaves		= am335x_uart1_slaves,
 	.slaves_cnt	= ARRAY_SIZE(am335x_uart1_slaves),
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart2 */
