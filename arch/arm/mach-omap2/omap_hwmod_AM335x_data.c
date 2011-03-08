@@ -37,6 +37,7 @@
 #define AM335x_DMA_REQ_START  1
 
 /* Backward references (IPs with Bus Master capability) */
+static struct omap_hwmod AM335x_uart1_hwmod;
 static struct omap_hwmod AM335x_cpgmac0_hwmod;
 static struct omap_hwmod AM335x_icss_hwmod;
 static struct omap_hwmod AM335x_ieee5000_hwmod;
@@ -1225,8 +1226,29 @@ static struct omap_hwmod_class uart_class = {
 };
 
 /* uart1 */
+
+static struct omap_hwmod_addr_space am335x_uart1_addr_space[] = {
+	{
+		.pa_start	= AM335X_UART1_BASE,
+		.pa_end		= AM335X_UART1_BASE + SZ_8K - 1,
+		.flags		= ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_wkup__uart1 = {
+	.slave		= &AM335x_uart1_hwmod,
+	.clk		= "uart1_ick",
+	.addr		= am335x_uart1_addr_space,
+	.addr_cnt	= ARRAY_SIZE(am335x_uart1_addr_space),
+	.user		= OCP_USER_MPU,
+};
+
 static struct omap_hwmod_irq_info am335x_uart1_irqs[] = {
 	{ .irq = 72 + AM335x_IRQ_GIC_START },
+};
+
+static struct omap_hwmod_ocp_if *am335x_uart1_slaves[] = {
+	&am335x_l4_wkup__uart1,
 };
 
 static struct omap_hwmod AM335x_uart1_hwmod = {
@@ -1240,6 +1262,8 @@ static struct omap_hwmod AM335x_uart1_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_UART0_CLKCTRL,
 		},
 	},
+	.slaves		= am335x_uart1_slaves,
+	.slaves_cnt	= ARRAY_SIZE(am335x_uart1_slaves),
 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
