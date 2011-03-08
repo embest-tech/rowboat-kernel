@@ -31,7 +31,7 @@
 
 
 /* Base offset for all AM335x interrupts external to MPUSS */
-#define AM335x_IRQ_GIC_START	32
+#define AM335x_IRQ_GIC_START	0
 
 /* Base offset for all AM335x dma requests */
 #define AM335x_DMA_REQ_START  1
