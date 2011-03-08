@@ -568,11 +568,13 @@ static struct omap_hwmod_class AM335x_l4ls_hwmod_class = {
 static struct omap_hwmod AM335x_l4ls_hwmod = {
 	.name		= "l4ls",
 	.class		= &AM335x_l4ls_hwmod_class,
+	.main_clk	= "l4ls_fck",
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335x_CM_PER_L4LS_CLKCTRL,
 		},
 	},
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'lcdc' class */
