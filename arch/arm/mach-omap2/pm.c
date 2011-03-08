@@ -176,7 +176,7 @@ static unsigned long omap3_l3_get_rate(struct device *dev)
 static void omap2_init_processor_devices(void)
 {
 	_init_omap_device("mpu", &mpu_dev);
-	if (!cpu_is_am335x())
+	if (omap3_has_iva())
 		_init_omap_device("iva", &iva_dev);
 	if (cpu_is_omap44xx()) {
 		_init_omap_device("l3_main_1", &l3_dev);
