@@ -381,8 +381,8 @@ void __init omap2_init_common_infrastructure(void)
 		omap2_clockdomains_init();
 		omap3xxx_hwmod_init();
 	} else if (cpu_is_ti81xx()) {
-		omap2_clockdomains_init();
 		ti81xx_powerdomains_init();
+		omap2_clockdomains_init();
 		ti81xx_hwmod_init();
 	} else if (cpu_is_omap44xx()) {
 		omap44xx_powerdomains_init();
