@@ -1208,8 +1208,20 @@ static struct omap_hwmod AM335x_tptc2_hwmod = {
 
 /* 'uart' class */
 
-static struct omap_hwmod_class AM335x_uart_hwmod_class = {
+static struct omap_hwmod_class_sysconfig uart_sysc = {
+	.rev_offs	= 0x50,
+	.sysc_offs	= 0x54,
+	.syss_offs	= 0x58,
+	.sysc_flags	= (SYSC_HAS_SIDLEMODE |
+			   SYSC_HAS_ENAWAKEUP | SYSC_HAS_SOFTRESET |
+			   SYSC_HAS_AUTOIDLE),
+	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART),
+	.sysc_fields    = &omap_hwmod_sysc_type1,
+};
+
+static struct omap_hwmod_class uart_class = {
 	.name = "uart",
+	.sysc = &uart_sysc,
 };
 
 /* uart1 */
@@ -1219,7 +1231,7 @@ static struct omap_hwmod_irq_info am335x_uart1_irqs[] = {
 
 static struct omap_hwmod AM335x_uart1_hwmod = {
 	.name		= "uart1",
-	.class		= &AM335x_uart_hwmod_class,
+	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart1_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart1_irqs),
 	.main_clk	= "uart1_fck",
@@ -1238,7 +1250,7 @@ static struct omap_hwmod_irq_info am335x_uart2_irqs[] = {
 
 static struct omap_hwmod AM335x_uart2_hwmod = {
 	.name		= "uart2",
-	.class		= &AM335x_uart_hwmod_class,
+	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart2_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart2_irqs),
 	.main_clk	= "i2c_clk",
@@ -1257,7 +1269,7 @@ static struct omap_hwmod_irq_info am335x_uart3_irqs[] = {
 
 static struct omap_hwmod AM335x_uart3_hwmod = {
 	.name		= "uart3",
-	.class		= &AM335x_uart_hwmod_class,
+	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart3_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart3_irqs),
 	.main_clk	= "i2c_clk",
@@ -1276,7 +1288,7 @@ static struct omap_hwmod_irq_info am335x_uart4_irqs[] = {
 
 static struct omap_hwmod AM335x_uart4_hwmod = {
 	.name		= "uart4",
-	.class		= &AM335x_uart_hwmod_class,
+	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart4_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart4_irqs),
 	.main_clk	= "i2c_clk",
@@ -1295,7 +1307,7 @@ static struct omap_hwmod_irq_info am335x_uart5_irqs[] = {
 
 static struct omap_hwmod AM335x_uart5_hwmod = {
 	.name		= "uart4",
-	.class		= &AM335x_uart_hwmod_class,
+	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart5_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart5_irqs),
 	.main_clk	= "i2c_clk",
@@ -1314,7 +1326,7 @@ static struct omap_hwmod_irq_info am335x_uart6_irqs[] = {
 
 static struct omap_hwmod AM335x_uart6_hwmod = {
 	.name		= "uart5",
-	.class		= &AM335x_uart_hwmod_class,
+	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart6_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart6_irqs),
 	.main_clk	= "i2c_clk",
