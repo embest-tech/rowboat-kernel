@@ -1212,17 +1212,17 @@ static struct omap_hwmod_class AM335x_uart_hwmod_class = {
 	.name = "uart",
 };
 
-/* uart0 */
-static struct omap_hwmod_irq_info am335x_uart0_irqs[] = {
+/* uart1 */
+static struct omap_hwmod_irq_info am335x_uart1_irqs[] = {
 	{ .irq = 72 + AM335x_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_uart0_hwmod = {
-	.name		= "uart0",
+static struct omap_hwmod AM335x_uart1_hwmod = {
+	.name		= "uart1",
 	.class		= &AM335x_uart_hwmod_class,
-	.mpu_irqs       = am335x_uart0_irqs,
-	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart0_irqs),
-	.main_clk	= "uart0_fck",
+	.mpu_irqs       = am335x_uart1_irqs,
+	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart1_irqs),
+	.main_clk	= "uart1_fck",
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335x_CM_WKUP_UART0_CLKCTRL,
@@ -1231,28 +1231,9 @@ static struct omap_hwmod AM335x_uart0_hwmod = {
 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
-/* uart1 */
-static struct omap_hwmod_irq_info am335x_uart1_irqs[] = {
-	{ .irq = 73 + AM335x_IRQ_GIC_START },
-};
-
-static struct omap_hwmod AM335x_uart1_hwmod = {
-	.name		= "uart1",
-	.class		= &AM335x_uart_hwmod_class,
-	.mpu_irqs       = am335x_uart1_irqs,
-	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart1_irqs),
-	.main_clk	= "i2c_clk",
-	.prcm = {
-		.omap4 = {
-			.clkctrl_reg = AM335x_CM_PER_UART1_CLKCTRL,
-		},
-	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
-};
-
 /* uart2 */
 static struct omap_hwmod_irq_info am335x_uart2_irqs[] = {
-	{ .irq = 74 + AM335x_IRQ_GIC_START },
+	{ .irq = 73 + AM335x_IRQ_GIC_START },
 };
 
 static struct omap_hwmod AM335x_uart2_hwmod = {
@@ -1263,7 +1244,7 @@ static struct omap_hwmod AM335x_uart2_hwmod = {
 	.main_clk	= "i2c_clk",
 	.prcm = {
 		.omap4 = {
-			.clkctrl_reg = AM335x_CM_PER_UART2_CLKCTRL,
+			.clkctrl_reg = AM335x_CM_PER_UART1_CLKCTRL,
 		},
 	},
 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
@@ -1271,7 +1252,7 @@ static struct omap_hwmod AM335x_uart2_hwmod = {
 
 /* uart3 */
 static struct omap_hwmod_irq_info am335x_uart3_irqs[] = {
-	{ .irq = 44 + AM335x_IRQ_GIC_START },
+	{ .irq = 74 + AM335x_IRQ_GIC_START },
 };
 
 static struct omap_hwmod AM335x_uart3_hwmod = {
@@ -1282,7 +1263,7 @@ static struct omap_hwmod AM335x_uart3_hwmod = {
 	.main_clk	= "i2c_clk",
 	.prcm = {
 		.omap4 = {
-			.clkctrl_reg = AM335x_CM_PER_UART3_CLKCTRL,
+			.clkctrl_reg = AM335x_CM_PER_UART2_CLKCTRL,
 		},
 	},
 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
@@ -1290,7 +1271,7 @@ static struct omap_hwmod AM335x_uart3_hwmod = {
 
 /* uart4 */
 static struct omap_hwmod_irq_info am335x_uart4_irqs[] = {
-	{ .irq = 45 + AM335x_IRQ_GIC_START },
+	{ .irq = 44 + AM335x_IRQ_GIC_START },
 };
 
 static struct omap_hwmod AM335x_uart4_hwmod = {
@@ -1301,7 +1282,7 @@ static struct omap_hwmod AM335x_uart4_hwmod = {
 	.main_clk	= "i2c_clk",
 	.prcm = {
 		.omap4 = {
-			.clkctrl_reg = AM335x_CM_PER_UART4_CLKCTRL,
+			.clkctrl_reg = AM335x_CM_PER_UART3_CLKCTRL,
 		},
 	},
 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
@@ -1309,14 +1290,33 @@ static struct omap_hwmod AM335x_uart4_hwmod = {
 
 /* uart5 */
 static struct omap_hwmod_irq_info am335x_uart5_irqs[] = {
-	{ .irq = 46 + AM335x_IRQ_GIC_START },
+	{ .irq = 45 + AM335x_IRQ_GIC_START },
 };
 
 static struct omap_hwmod AM335x_uart5_hwmod = {
-	.name		= "uart5",
+	.name		= "uart4",
 	.class		= &AM335x_uart_hwmod_class,
 	.mpu_irqs       = am335x_uart5_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart5_irqs),
+	.main_clk	= "i2c_clk",
+	.prcm = {
+		.omap4 = {
+			.clkctrl_reg = AM335x_CM_PER_UART4_CLKCTRL,
+		},
+	},
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
+};
+
+/* uart6 */
+static struct omap_hwmod_irq_info am335x_uart6_irqs[] = {
+	{ .irq = 46 + AM335x_IRQ_GIC_START },
+};
+
+static struct omap_hwmod AM335x_uart6_hwmod = {
+	.name		= "uart5",
+	.class		= &AM335x_uart_hwmod_class,
+	.mpu_irqs       = am335x_uart6_irqs,
+	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart6_irqs),
 	.main_clk	= "i2c_clk",
 	.prcm = {
 		.omap4 = {
@@ -1514,12 +1514,12 @@ static __initdata struct omap_hwmod *am335x_hwmods[] = {
 	&AM335x_tptc1_hwmod,
 	&AM335x_tptc2_hwmod,
 	/* uart class */
-	&AM335x_uart0_hwmod,
 	&AM335x_uart1_hwmod,
 	&AM335x_uart2_hwmod,
 	&AM335x_uart3_hwmod,
 	&AM335x_uart4_hwmod,
 	&AM335x_uart5_hwmod,
+	&AM335x_uart6_hwmod,
 	/* usb0 class */
 	&AM335x_usb0_hwmod,
 	/* wd_timer1 class */
