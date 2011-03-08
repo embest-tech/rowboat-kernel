@@ -709,12 +709,14 @@ static struct omap_hwmod_class AM335x_mpu_hwmod_class = {
 static struct omap_hwmod AM335x_mpu_hwmod = {
 	.name		= "mpu",
 	.class		= &AM335x_mpu_hwmod_class,
+	.flags		= (HWMOD_INIT_NO_IDLE | HWMOD_INIT_NO_RESET),
 	.main_clk	= "mpu_fck",
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335x_CM_MPU_MPU_CLKCTRL,
 		},
 	},
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'ocmcram' class */
