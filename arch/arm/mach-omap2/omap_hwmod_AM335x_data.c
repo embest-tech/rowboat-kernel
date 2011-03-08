@@ -48,6 +48,11 @@
 
 /* Backward references (IPs with Bus Master capability) */
 static struct omap_hwmod AM335x_uart1_hwmod;
+static struct omap_hwmod AM335x_uart2_hwmod;
+static struct omap_hwmod AM335x_uart3_hwmod;
+static struct omap_hwmod AM335x_uart4_hwmod;
+static struct omap_hwmod AM335x_uart5_hwmod;
+static struct omap_hwmod AM335x_uart6_hwmod;
 static struct omap_hwmod AM335x_cpgmac0_hwmod;
 static struct omap_hwmod AM335x_icss_hwmod;
 static struct omap_hwmod AM335x_ieee5000_hwmod;
@@ -1229,8 +1234,28 @@ static struct omap_hwmod AM335x_uart1_hwmod = {
 };
 
 /* uart2 */
+static struct omap_hwmod_addr_space am335x_uart2_addr_space[] = {
+	{
+		.pa_start	= TI81XX_UART2_BASE,
+		.pa_end		= TI81XX_UART2_BASE + SZ_8K - 1,
+		.flags		= ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_ls__uart2 = {
+	.slave		= &AM335x_uart2_hwmod,
+	.clk		= "uart2_ick",
+	.addr		= am335x_uart2_addr_space,
+	.addr_cnt	= ARRAY_SIZE(am335x_uart2_addr_space),
+	.user		= OCP_USER_MPU,
+};
+
 static struct omap_hwmod_irq_info am335x_uart2_irqs[] = {
 	{ .irq = 73 + AM335x_IRQ_GIC_START },
+};
+
+static struct omap_hwmod_ocp_if *am335x_uart2_slaves[] = {
+	&am335x_l4_ls__uart2,
 };
 
 static struct omap_hwmod AM335x_uart2_hwmod = {
@@ -1238,17 +1263,42 @@ static struct omap_hwmod AM335x_uart2_hwmod = {
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart2_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart2_irqs),
-	.main_clk	= "i2c_clk",
+	.main_clk	= "uart2_fck",
+	.sdma_reqs	= uart1_edma_reqs,
+	.sdma_reqs_cnt	= ARRAY_SIZE(uart1_edma_reqs),
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335x_CM_PER_UART1_CLKCTRL,
 		},
 	},
+	.slaves		= am335x_uart2_slaves,
+	.slaves_cnt	= ARRAY_SIZE(am335x_uart2_slaves),
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart3 */
+static struct omap_hwmod_addr_space am335x_uart3_addr_space[] = {
+	{
+		.pa_start	= TI81XX_UART3_BASE,
+		.pa_end		= TI81XX_UART3_BASE + SZ_8K - 1,
+		.flags		= ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_ls__uart3 = {
+	.slave		= &AM335x_uart3_hwmod,
+	.clk		= "uart3_ick",
+	.addr		= am335x_uart3_addr_space,
+	.addr_cnt	= ARRAY_SIZE(am335x_uart3_addr_space),
+	.user		= OCP_USER_MPU,
+};
+
 static struct omap_hwmod_irq_info am335x_uart3_irqs[] = {
 	{ .irq = 74 + AM335x_IRQ_GIC_START },
+};
+
+static struct omap_hwmod_ocp_if *am335x_uart3_slaves[] = {
+	&am335x_l4_ls__uart3,
 };
 
 static struct omap_hwmod AM335x_uart3_hwmod = {
@@ -1256,17 +1306,42 @@ static struct omap_hwmod AM335x_uart3_hwmod = {
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart3_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart3_irqs),
-	.main_clk	= "i2c_clk",
+	.main_clk	= "uart3_fck",
+	.sdma_reqs	= uart1_edma_reqs,
+	.sdma_reqs_cnt	= ARRAY_SIZE(uart1_edma_reqs),
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335x_CM_PER_UART2_CLKCTRL,
 		},
 	},
+	.slaves		= am335x_uart3_slaves,
+	.slaves_cnt	= ARRAY_SIZE(am335x_uart3_slaves),
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart4 */
+static struct omap_hwmod_addr_space am335x_uart4_addr_space[] = {
+	{
+		.pa_start	= TI814X_UART4_BASE,
+		.pa_end		= TI814X_UART4_BASE + SZ_8K - 1,
+		.flags		= ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_ls__uart4 = {
+	.slave		= &AM335x_uart4_hwmod,
+	.clk		= "uart4_ick",
+	.addr		= am335x_uart4_addr_space,
+	.addr_cnt	= ARRAY_SIZE(am335x_uart4_addr_space),
+	.user		= OCP_USER_MPU,
+};
+
 static struct omap_hwmod_irq_info am335x_uart4_irqs[] = {
 	{ .irq = 44 + AM335x_IRQ_GIC_START },
+};
+
+static struct omap_hwmod_ocp_if *am335x_uart4_slaves[] = {
+	&am335x_l4_ls__uart4,
 };
 
 static struct omap_hwmod AM335x_uart4_hwmod = {
@@ -1274,48 +1349,103 @@ static struct omap_hwmod AM335x_uart4_hwmod = {
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart4_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart4_irqs),
-	.main_clk	= "i2c_clk",
+	.main_clk	= "uart4_fck",
+	.sdma_reqs	= uart1_edma_reqs,
+	.sdma_reqs_cnt	= ARRAY_SIZE(uart1_edma_reqs),
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335x_CM_PER_UART3_CLKCTRL,
 		},
 	},
+	.slaves		= am335x_uart4_slaves,
+	.slaves_cnt	= ARRAY_SIZE(am335x_uart4_slaves),
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart5 */
+static struct omap_hwmod_addr_space am335x_uart5_addr_space[] = {
+	{
+		.pa_start	= TI814X_UART5_BASE,
+		.pa_end		= TI814X_UART5_BASE + SZ_8K - 1,
+		.flags		= ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_ls__uart5 = {
+	.slave		= &AM335x_uart5_hwmod,
+	.clk		= "uart5_ick",
+	.addr		= am335x_uart5_addr_space,
+	.addr_cnt	= ARRAY_SIZE(am335x_uart5_addr_space),
+	.user		= OCP_USER_MPU,
+};
+
 static struct omap_hwmod_irq_info am335x_uart5_irqs[] = {
 	{ .irq = 45 + AM335x_IRQ_GIC_START },
 };
 
+static struct omap_hwmod_ocp_if *am335x_uart5_slaves[] = {
+	&am335x_l4_ls__uart5,
+};
+
 static struct omap_hwmod AM335x_uart5_hwmod = {
-	.name		= "uart4",
+	.name		= "uart5",
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart5_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart5_irqs),
-	.main_clk	= "i2c_clk",
+	.main_clk	= "uart5_fck",
+	.sdma_reqs	= uart1_edma_reqs,
+	.sdma_reqs_cnt	= ARRAY_SIZE(uart1_edma_reqs),
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335x_CM_PER_UART4_CLKCTRL,
 		},
 	},
+	.slaves		= am335x_uart5_slaves,
+	.slaves_cnt	= ARRAY_SIZE(am335x_uart5_slaves),
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart6 */
+static struct omap_hwmod_addr_space am335x_uart6_addr_space[] = {
+	{
+		.pa_start	= TI814X_UART6_BASE,
+		.pa_end		= TI814X_UART6_BASE + SZ_8K - 1,
+		.flags		= ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_ls__uart6 = {
+	.slave		= &AM335x_uart6_hwmod,
+	.clk		= "uart6_ick",
+	.addr		= am335x_uart6_addr_space,
+	.addr_cnt	= ARRAY_SIZE(am335x_uart6_addr_space),
+	.user		= OCP_USER_MPU,
+};
+
 static struct omap_hwmod_irq_info am335x_uart6_irqs[] = {
 	{ .irq = 46 + AM335x_IRQ_GIC_START },
 };
 
+static struct omap_hwmod_ocp_if *am335x_uart6_slaves[] = {
+	&am335x_l4_ls__uart6,
+};
+
 static struct omap_hwmod AM335x_uart6_hwmod = {
-	.name		= "uart5",
+	.name		= "uart6",
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart6_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart6_irqs),
-	.main_clk	= "i2c_clk",
+	.main_clk	= "uart6_fck",
+	.sdma_reqs	= uart1_edma_reqs,
+	.sdma_reqs_cnt	= ARRAY_SIZE(uart1_edma_reqs),
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335x_CM_PER_UART5_CLKCTRL,
 		},
 	},
+	.slaves		= am335x_uart6_slaves,
+	.slaves_cnt	= ARRAY_SIZE(am335x_uart6_slaves),
+	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'usb0' class */
