@@ -60,7 +60,6 @@ static struct omap_hwmod_class AM335x_l4wkup_hwmod_class = {
 static struct omap_hwmod AM335x_l4wkup_hwmod = {
 	.name		= "l4wkup",
 	.class		= &AM335x_l4wkup_hwmod_class,
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 
@@ -86,7 +85,6 @@ static struct omap_hwmod AM335x_adc_tsc_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_ADC_TSC_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'aes' class */
@@ -111,7 +109,6 @@ static struct omap_hwmod AM335x_aes0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_AES0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'cefuse' class */
@@ -130,7 +127,6 @@ static struct omap_hwmod AM335x_cefuse_hwmod = {
 			.clkctrl_reg = AM335x_CM_CEFUSE_CEFUSE_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'clkdiv32k' class */
@@ -149,7 +145,6 @@ static struct omap_hwmod AM335x_clkdiv32k_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_CLK_24MHZ_CLKSTCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'control' class */
@@ -174,7 +169,6 @@ static struct omap_hwmod AM335x_control_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_CONTROL_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'cpgmac0' class */
@@ -193,7 +187,6 @@ static struct omap_hwmod AM335x_cpgmac0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_CPGMAC0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'dcan' class */
@@ -218,7 +211,6 @@ static struct omap_hwmod AM335x_dcan0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_DCAN0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* dcan1 */
@@ -236,7 +228,6 @@ static struct omap_hwmod AM335x_dcan1_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_DCAN1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'debugss' class */
@@ -254,7 +245,6 @@ static struct omap_hwmod AM335x_debugss_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_DEBUGSS_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'efuse' class */
@@ -272,7 +262,6 @@ static struct omap_hwmod AM335x_efuse_hwmod = {
 			.clkctrl_reg = AM335x_CM_CEFUSE_CEFUSE_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'elm' class */
@@ -290,7 +279,6 @@ static struct omap_hwmod AM335x_elm_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_ELM_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'emif_fw' class */
@@ -309,7 +297,6 @@ static struct omap_hwmod AM335x_emif_fw_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_EMIF_FW_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'epwmss' class */
@@ -327,7 +314,6 @@ static struct omap_hwmod AM335x_epwmss0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_EPWMSS0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* epwmss1 */
@@ -339,7 +325,6 @@ static struct omap_hwmod AM335x_epwmss1_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_EPWMSS1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* epwmss2 */
@@ -351,7 +336,6 @@ static struct omap_hwmod AM335x_epwmss2_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_EPWMSS2_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'gpio' class */
@@ -370,7 +354,6 @@ static struct omap_hwmod AM335x_gpio0_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_GPIO0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* gpio1 */
@@ -382,7 +365,6 @@ static struct omap_hwmod AM335x_gpio1_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_GPIO1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* gpio2 */
@@ -400,7 +382,6 @@ static struct omap_hwmod AM335x_gpio2_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_GPIO2_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* gpio3 */
@@ -412,7 +393,6 @@ static struct omap_hwmod AM335x_gpio3_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_GPIO3_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'gpmc' class */
@@ -430,7 +410,6 @@ static struct omap_hwmod AM335x_gpmc_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_GPMC_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'i2c' class */
@@ -455,7 +434,6 @@ static struct omap_hwmod AM335x_i2c0_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_I2C0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* i2c1 */
@@ -474,7 +452,6 @@ static struct omap_hwmod AM335x_i2c1_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_I2C1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* i2c2 */
@@ -487,7 +464,6 @@ static struct omap_hwmod AM335x_i2c2_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_I2C2_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'icss' class */
@@ -506,7 +482,6 @@ static struct omap_hwmod AM335x_icss_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_ICSS_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'ieee5000' class */
@@ -524,7 +499,6 @@ static struct omap_hwmod AM335x_ieee5000_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_IEEE5000_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'l3' class */
@@ -542,7 +516,6 @@ static struct omap_hwmod AM335x_l4_hs_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_L4HS_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* l3_instr */
@@ -554,7 +527,6 @@ static struct omap_hwmod AM335x_l3_instr_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_L3_INSTR_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* l3_main */
@@ -566,7 +538,6 @@ static struct omap_hwmod AM335x_l3_main_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_L3_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'l4fw' class */
@@ -584,7 +555,6 @@ static struct omap_hwmod AM335x_l4fw_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_L4FW_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'l4ls' class */
@@ -602,7 +572,6 @@ static struct omap_hwmod AM335x_l4ls_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_L4LS_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'lcdc' class */
@@ -627,7 +596,6 @@ static struct omap_hwmod AM335x_lcdc_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_LCDC_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'mcasp' class */
@@ -652,7 +620,6 @@ static struct omap_hwmod AM335x_mcasp0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_MCASP0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'mlb' class */
@@ -670,7 +637,6 @@ static struct omap_hwmod AM335x_mlb_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_MLB_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'mmc' class */
@@ -695,7 +661,6 @@ static struct omap_hwmod AM335x_mmc0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_MMC0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* mmc1 */
@@ -714,7 +679,6 @@ static struct omap_hwmod AM335x_mmc1_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_MMC1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* mmc2 */
@@ -733,7 +697,6 @@ static struct omap_hwmod AM335x_mmc2_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_MMC2_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'mpu' class */
@@ -752,7 +715,6 @@ static struct omap_hwmod AM335x_mpu_hwmod = {
 			.clkctrl_reg = AM335x_CM_MPU_MPU_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'ocmcram' class */
@@ -770,7 +732,6 @@ static struct omap_hwmod AM335x_ocmcram_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_OCMCRAM_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'ocpwp' class */
@@ -788,7 +749,6 @@ static struct omap_hwmod AM335x_ocpwp_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_OCPWP_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'rtc' class */
@@ -813,7 +773,6 @@ static struct omap_hwmod AM335x_rtc_hwmod = {
 			.clkctrl_reg = AM335x_CM_RTC_RTC_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'sha0' class */
@@ -838,7 +797,6 @@ static struct omap_hwmod AM335x_sha0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_SHA0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'smartreflex' class */
@@ -863,7 +821,6 @@ static struct omap_hwmod AM335x_smartreflex0_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_SMARTREFLEX0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* smartreflex1 */
@@ -882,7 +839,6 @@ static struct omap_hwmod AM335x_smartreflex1_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_SMARTREFLEX1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'spare' class */
@@ -900,7 +856,6 @@ static struct omap_hwmod AM335x_spare0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_SPARE0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* spare1 */
@@ -912,7 +867,6 @@ static struct omap_hwmod AM335x_spare1_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_SPARE1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'spi' class */
@@ -937,7 +891,6 @@ static struct omap_hwmod AM335x_spi0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_SPI0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* spi1 */
@@ -950,7 +903,6 @@ static struct omap_hwmod AM335x_spi1_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_SPI1_CLKCTRL,
 		},
 	},
-	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'spinlock' class */
@@ -968,7 +920,6 @@ static struct omap_hwmod AM335x_spinlock_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_SPINLOCK_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'timer' class */
@@ -987,7 +938,6 @@ static struct omap_hwmod AM335x_timer0_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_TIMER0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* timer1 */
@@ -1006,7 +956,6 @@ static struct omap_hwmod AM335x_timer1_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_TIMER1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* timer2 */
@@ -1025,7 +974,6 @@ static struct omap_hwmod AM335x_timer2_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TIMER2_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* timer3 */
@@ -1044,7 +992,6 @@ static struct omap_hwmod AM335x_timer3_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TIMER3_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* timer4 */
@@ -1063,7 +1010,6 @@ static struct omap_hwmod AM335x_timer4_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TIMER4_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* timer5 */
@@ -1082,7 +1028,6 @@ static struct omap_hwmod AM335x_timer5_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TIMER5_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* timer6 */
@@ -1101,7 +1046,6 @@ static struct omap_hwmod AM335x_timer6_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TIMER6_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* timer7 */
@@ -1120,7 +1064,6 @@ static struct omap_hwmod AM335x_timer7_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TIMER7_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'tpcc' class */
@@ -1144,7 +1087,6 @@ static struct omap_hwmod AM335x_tpcc_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TPCC_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'tptc' class */
@@ -1168,7 +1110,6 @@ static struct omap_hwmod AM335x_tptc0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TPTC0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* tptc1 */
@@ -1186,7 +1127,6 @@ static struct omap_hwmod AM335x_tptc1_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TPTC1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* tptc2 */
@@ -1204,7 +1144,6 @@ static struct omap_hwmod AM335x_tptc2_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_TPTC2_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'uart' class */
@@ -1264,7 +1203,6 @@ static struct omap_hwmod AM335x_uart1_hwmod = {
 	},
 	.slaves		= am335x_uart1_slaves,
 	.slaves_cnt	= ARRAY_SIZE(am335x_uart1_slaves),
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart2 */
@@ -1283,7 +1221,6 @@ static struct omap_hwmod AM335x_uart2_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_UART1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart3 */
@@ -1302,7 +1239,6 @@ static struct omap_hwmod AM335x_uart3_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_UART2_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart4 */
@@ -1321,7 +1257,6 @@ static struct omap_hwmod AM335x_uart4_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_UART3_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart5 */
@@ -1340,7 +1275,6 @@ static struct omap_hwmod AM335x_uart5_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_UART4_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* uart6 */
@@ -1359,7 +1293,6 @@ static struct omap_hwmod AM335x_uart6_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_UART5_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'usb0' class */
@@ -1384,7 +1317,6 @@ static struct omap_hwmod AM335x_usb0_hwmod = {
 			.clkctrl_reg = AM335x_CM_PER_USB0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'wd_timer1' class */
@@ -1403,7 +1335,6 @@ static struct omap_hwmod AM335x_wd_timer1_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_WDT1_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'wdt' class */
@@ -1428,7 +1359,6 @@ static struct omap_hwmod AM335x_wdt0_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_WDT0_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'wkup_m3' class */
@@ -1446,7 +1376,6 @@ static struct omap_hwmod AM335x_wkup_m3_hwmod = {
 			.clkctrl_reg = AM335x_CM_WKUP_WKUP_M3_CLKCTRL,
 		},
 	},
-	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 static __initdata struct omap_hwmod *am335x_hwmods[] = {
