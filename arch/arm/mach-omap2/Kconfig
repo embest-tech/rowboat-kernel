@@ -88,6 +88,11 @@ config ARCH_TI814X
 	depends on ARCH_TI81XX
 	default y
 
+config ARCH_AM335X
+	bool "AM335X support"
+	depends on ARCH_TI81XX
+	default y
+
 config OMAP_PACKAGE_ZAF
        bool
 
