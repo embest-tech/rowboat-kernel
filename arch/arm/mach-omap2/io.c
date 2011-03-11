@@ -243,14 +243,12 @@ static struct map_desc ti81xx_io_desc[] __initdata = {
 		.length		= TI81XX_L2_MC_SIZE,
 		.type		= MT_STRONGLY_ORDERED
 	},
-#ifdef CONFIG_ARCH_AM335X
 	{
 		.virtual	= L4_WK_AM335X_VIRT,
 		.pfn		= __phys_to_pfn(L4_WK_AM335X_PHYS),
 		.length		= L4_WK_AM335X_SIZE,
 		.type		= MT_DEVICE
 	},
-#endif
 };
 #endif
 
