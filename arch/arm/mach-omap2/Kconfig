@@ -338,6 +338,11 @@ config MACH_TI8168EVM
 	default y
 	depends on ARCH_TI816X
 
+config MACH_AM335XEVM
+	bool "AM335X Evaluation Module"
+	default y
+	depends on ARCH_AM335X
+
 config OMAP3_EMU
 	bool "OMAP3 debugging peripherals"
 	depends on ARCH_OMAP3
