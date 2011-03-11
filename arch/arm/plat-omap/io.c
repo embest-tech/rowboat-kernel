@@ -131,6 +131,10 @@ void __iomem *omap_ioremap(unsigned long p, size_t size, unsigned int type)
 					L4_SLOW_TI81XX_VIRT);
 		if (BETWEEN(p, TI81XX_L2_MC_PHYS, TI81XX_L2_MC_SIZE))
 			return XLATE(p, TI81XX_L2_MC_PHYS, TI81XX_L2_MC_VIRT);
+#ifdef CONFIG_ARCH_AM335X
+		if (BETWEEN(p, L4_WK_AM335X_PHYS, L4_WK_AM335X_SIZE))
+			return XLATE(p, L4_WK_AM335X_PHYS, L4_WK_AM335X_VIRT);
+#endif
 	}
 #endif
 	return __arm_ioremap_caller(p, size, type, __builtin_return_address(0));

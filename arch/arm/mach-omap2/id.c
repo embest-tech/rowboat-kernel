@@ -383,6 +383,11 @@ void __init ti81xx_check_revision(void)
 		omap_chip.oc |= CHIP_IS_TI814X;
 		pr_info("OMAP chip is TI8148\n");
 		return;
+	} else if ((partnum == 0xb944)) {
+		omap_revision = AM335X_REV_ES1_0;
+		omap_chip.oc |= CHIP_IS_AM335X;
+		pr_info("OMAP chip is AM335X\n");
+		return;
 	}
 
 	pr_err("Unknown TI81XX CPU id\n");

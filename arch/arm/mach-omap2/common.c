@@ -158,4 +158,14 @@ void __init omap2_set_globals_ti814x(void)
 {
 	omap2_set_globals_ti81xx();
 }
+
+void __init omap2_set_globals_am335x(void)
+{
+	ti81xx_globals.tap = AM335X_L4_WK_IO_ADDRESS(AM335X_SCM_BASE);
+	ti81xx_globals.ctrl = AM335X_CTRL_BASE;
+	ti81xx_globals.prm = AM335X_PRCM_BASE;
+	ti81xx_globals.cm = AM335X_PRCM_BASE;
+
+	omap2_set_globals_ti814x();
+}
 #endif
