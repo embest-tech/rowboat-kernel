@@ -152,7 +152,7 @@ ENDPROC(printhex4)
 
 ENTRY(printhex2)
 		mov	r1, #2
-printhex:	adr	r2, hexbuf
+printhex:	ldr	r2, =hexbuf
 		add	r3, r2, r1
 		mov	r1, #0
 		strb	r1, [r3]
