@@ -12,6 +12,7 @@
 #include "mux34xx.h"
 #include "mux44xx.h"
 #include "mux81xx.h"
+#include "mux335x.h"
 
 #define OMAP_MUX_TERMINATOR	0xffff
 
