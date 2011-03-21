@@ -1011,8 +1011,32 @@ int __init ti81xx_mux_init(struct omap_board_mux *board_subset)
 			TI816X_CONTROL_PADCONF_MUX_SIZE, ti816x_muxmodes,
 			NULL, board_subset, NULL);
 }
+
+#define _AM335X_MUXENTRY(M0, g, m0, m1, m2, m3, m4, m5, m6, m7)		\
+{									\
+	.reg_offset	= (AM335X_CONTROL_PADCONF_##M0##_OFFSET),	\
+	.gpio		= (g),						\
+	.muxnames	= { m0, m1, m2, m3, m4, m5, m6, m7 },		\
+}
+
+/* AM335X pin mux super set */
+static struct omap_mux __initdata am335x_muxmodes[] = {
+	{ .reg_offset = OMAP_MUX_TERMINATOR },
+};
+
+int __init am335x_mux_init(struct omap_board_mux *board_subset)
+{
+	return omap_mux_init("core", 0, AM335X_CONTROL_PADCONF_MUX_PBASE,
+			AM335X_CONTROL_PADCONF_MUX_SIZE, am335x_muxmodes,
+			NULL, board_subset, NULL);
+}
 #else
 int __init ti81xx_mux_init(struct omap_board_mux *board_subset)
+{
+	return 0;
+}
+
+int __init am335x_mux_init(struct omap_board_mux *board_subset)
 {
 	return 0;
 }

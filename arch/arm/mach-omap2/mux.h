@@ -332,6 +332,12 @@ int omap4_mux_init(struct omap_board_mux *board_mux, int flags);
 int ti81xx_mux_init(struct omap_board_mux *board_mux);
 
 /**
+ * am335x_mux_init() - initialize mux system along with board specific set
+ * @board_mux:		Board specific mux table
+ */
+int am335x_mux_init(struct omap_board_mux *board_mux);
+
+/**
  * omap_mux_init - private mux init function, do not call
  */
 int omap_mux_init(const char *name, u32 flags,
