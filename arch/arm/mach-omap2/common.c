@@ -140,9 +140,6 @@ static struct omap_globals ti816x_globals = {
 	.ctrl	= TI816X_CTRL_BASE,
 	.prm	= TI816X_PRCM_BASE,
 	.cm	= TI816X_PRCM_BASE,
-	.uart1_phys	= TI816X_UART1_BASE,
-	.uart2_phys	= TI816X_UART2_BASE,
-	.uart3_phys	= TI816X_UART3_BASE,
 };
 
 void __init omap2_set_globals_ti816x(void)
