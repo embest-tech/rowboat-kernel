@@ -92,7 +92,6 @@ static struct omap_musb_board_data musb_board_data = {
 	.mode           = MUSB_PERIPHERAL,
 #endif
 	.power			= 500,
-	.instances              = 1,
 };
 
 static void __init ti8148_evm_init_irq(void)
