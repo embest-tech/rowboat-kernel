@@ -29,8 +29,9 @@
 
 #include <plat/ti81xx.h>
 #include <plat/irqs-ti81xx.h>
-#include <plat/smartreflex.h>
 #include <plat/gpio.h>
+
+#include "smartreflex.h"
 
 #define GPIO_VAL_INIT		(0xFF)
 #define NUM_GPIO_BITS		(4)
