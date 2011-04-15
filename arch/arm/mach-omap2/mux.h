@@ -43,6 +43,28 @@
 /* 44xx specific mux bit defines */
 #define OMAP_WAKEUP_EVENT		(1 << 15)
 
+/* am335x specific mux bit defines */
+#define AM335X_INPUT_EN			(1 << 5)
+#define AM335X_PULL_UP			(1 << 4)
+/* bit 3: 0 - enable, 1 - disable for pull enable */
+#define AM335X_PULL_DISA		(1 << 3)
+
+/* As bit 3 is pull disable rather than pull enable, AM335X_PIN_OUTPUT is not
+ * defined, otherwise if user wants to configure a pin as output then bit 3
+ * would be set to 1 to turn off pull for saving power & for a bidectional pin,
+ * upon combining with AM335X_PIN_INPUT_XX, pull would get disabled, while
+ * user intention is not so, Hence if a pin has to be made output only,
+ * do not mention anything and if pin needs to be bidirectional, only
+ * define input characterestics. But a caveat is that for output only pin
+ * this arrangment retains existing pull enable setting, but if user wants to
+ * make sure that pull resistor is disabled for output pin, new macros for
+ * output & biderctional capability would have to be defined instead of user
+ * combining input & output macros to take care of the above mentioned issue
+ */
+#define	AM335X_PIN_INPUT		(AM335X_INPUT_EN | AM335X_PULL_DISA)
+#define	AM335X_PIN_INPUT_PULLUP		(AM335X_INPUT_EN | AM335X_PULL_UP)
+#define	AM335X_PIN_INPUT_PULLDOWN	(AM335X_INPUT_EN)
+
 /* Active pin states */
 #define OMAP_PIN_OUTPUT			0
 #define OMAP_PIN_INPUT			OMAP_INPUT_EN
