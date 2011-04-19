@@ -1510,6 +1510,8 @@ static struct clk mcasp0_fck = {
 	.clksel_mask	= TI81XX_CLKSEL_0_1_MASK,
 	.clkdm_name	= "alwon_l3_slow_clkdm",
 	.recalc		= &omap2_clksel_recalc,
+	.round_rate	= &omap2_clksel_round_rate,
+	.set_rate	= &ti816x_clksel_set_rate,
 };
 
 static struct clk mcasp1_fck = {
@@ -1524,6 +1526,8 @@ static struct clk mcasp1_fck = {
 	.clksel_mask	= TI81XX_CLKSEL_0_1_MASK,
 	.clkdm_name	= "alwon_l3_slow_clkdm",
 	.recalc		= &omap2_clksel_recalc,
+	.round_rate	= &omap2_clksel_round_rate,
+	.set_rate	= &ti816x_clksel_set_rate,
 };
 
 static struct clk mcasp2_fck = {
@@ -1538,6 +1542,8 @@ static struct clk mcasp2_fck = {
 	.clksel_mask	= TI81XX_CLKSEL_0_1_MASK,
 	.clkdm_name	= "alwon_l3_slow_clkdm",
 	.recalc		= &omap2_clksel_recalc,
+	.round_rate	= &omap2_clksel_round_rate,
+	.set_rate	= &ti816x_clksel_set_rate,
 };
 
 /*
