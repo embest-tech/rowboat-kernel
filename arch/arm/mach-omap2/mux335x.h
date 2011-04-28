@@ -18,10 +18,14 @@
 
 #define AM335X_CONTROL_PADCONF_MUX_PBASE			0x44E10000LU
 
+/* If pin is not defined as input, pull would get disabled.
+ * If defined as input, flags supplied will determine pull on/off.
+ */
 #define AM335X_MUX(mode0, mux_value)					\
 {									\
 	.reg_offset	= (AM335X_CONTROL_PADCONF_##mode0##_OFFSET),	\
-	.value		= (mux_value),					\
+	.value		= (((mux_value) & AM335X_INPUT_EN) ? (mux_value)\
+				: ((mux_value) | AM335X_PULL_DISA)),	\
 }
 
 /*
