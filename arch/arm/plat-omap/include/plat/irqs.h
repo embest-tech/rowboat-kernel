@@ -34,6 +34,9 @@
 /* All TI816X specific defines are in irqs-ti816x.h */
 #include "irqs-ti81xx.h"
 
+/* AM335X specific defines */
+#include "irqs-am335x.h"
+
 /*
  * IRQ numbers for interrupt handler 1
  *
