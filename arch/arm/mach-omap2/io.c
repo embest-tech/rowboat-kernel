@@ -387,9 +387,11 @@ void __init omap2_init_common_infrastructure(void)
 		omap44xx_powerdomains_init();
 		omap44xx_clockdomains_init();
 		omap44xx_hwmod_init();
+	} else if (cpu_is_am335x()) {
+		am335x_powerdomains_init();
 	} else {
 		pr_err("Could not init hwmod data - unknown SoC\n");
-        }
+	}
 
 	/* Set the default postsetup state for all hwmods */
 #ifdef CONFIG_PM_RUNTIME

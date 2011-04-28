@@ -110,6 +110,10 @@ obj-$(CONFIG_ARCH_TI81XX)		+= $(powerdomain-common) \
 					   powerdomain2xxx_3xxx.o \
 					   powerdomains3xxx_data.o \
 					   powerdomains2xxx_3xxx_data.o
+obj-$(CONFIG_ARCH_AM335X)               += $(powerdomain-common) \
+                                           powerdomainAM335x.o \
+                                           powerdomainsAM335x_data.o
+
 
 # PRCM clockdomain control
 obj-$(CONFIG_ARCH_OMAP2)		+= clockdomain.o \
