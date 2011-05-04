@@ -55,6 +55,7 @@ struct clkops {
 #define RATE_IN_4430		(1 << 5)
 #define RATE_IN_TI814X		(1 << 6)
 #define RATE_IN_TI816X		(1 << 7)
+#define RATE_IN_AM335X          (1 << 7)
 
 #define RATE_IN_24XX		(RATE_IN_242X | RATE_IN_243X)
 #define RATE_IN_34XX		(RATE_IN_3430ES1 | RATE_IN_3430ES2PLUS)
@@ -156,7 +157,7 @@ struct dpll_data {
 	u8			min_divider;
 	u8			max_divider;
 	u8			modes;
-#if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4)
+#if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4) || defined(CONFIG_ARCH_AM335X)
 	void __iomem		*autoidle_reg;
 	void __iomem		*idlest_reg;
 	u32			autoidle_mask;
