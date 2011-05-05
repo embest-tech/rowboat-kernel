@@ -155,6 +155,7 @@ obj-$(CONFIG_ARCH_OMAP2430)		+= omap_hwmod_2430_data.o
 obj-$(CONFIG_ARCH_OMAP3)		+= omap_hwmod_3xxx_data.o
 obj-$(CONFIG_ARCH_OMAP4)		+= omap_hwmod_44xx_data.o
 obj-$(CONFIG_ARCH_TI81XX)		+= omap_hwmod_81xx_data.o
+obj-$(CONFIG_ARCH_AM335X)               += omap_hwmod_AM335x_data.o
 
 # EMU peripherals
 obj-$(CONFIG_OMAP3_EMU)			+= emu.o
