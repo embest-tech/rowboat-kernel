@@ -23,6 +23,7 @@
 #include <linux/mmc/sdio_ids.h>
 #include <linux/err.h>
 
+#include <generated/mach-types.h>
 #include <asm/gpio.h>
 #include <asm/io.h>
 #include <linux/wifi_tiwlan.h>
@@ -77,7 +78,11 @@ static int sdp4430_wifi_power_state;
 int sdp4430_wifi_power(int on)
 {
 	printk(KERN_WARNING"%s: %d\n", __func__, on);
-	gpio_set_value(SDP4430_WIFI_PMENA_GPIO, on);
+	if (machine_is_omap_4430sdp())
+		gpio_set_value(SDP4430_WIFI_PMENA_GPIO, on);
+	else
+		gpio_set_value(PANDA_WIFI_PMENA_GPIO, on);
+
 	sdp4430_wifi_power_state = on;
 	return 0;
 }

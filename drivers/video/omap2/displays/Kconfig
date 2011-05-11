@@ -8,6 +8,13 @@ config PANEL_GENERIC
 	  Generic panel driver.
 	  Used for DVI output for Beagle and OMAP3 SDP.
 
+config PANEL_WUXGA
+	tristate "WUXGA Panel"
+	depends on OMAP2_DSS
+	default y
+	help
+	  WUXGA Panel for Panda Book
+
 config PANEL_SHARP_LS037V7DW01
         tristate "Sharp LS037V7DW01 LCD Panel"
         depends on OMAP2_DSS

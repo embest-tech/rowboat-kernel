@@ -3879,6 +3879,12 @@ static void dispc_set_lcd_divisor(enum omap_channel channel, u16 lck_div,
 	else
 		dispc_write_reg(DISPC_DIVISOR,
 			FLD_VAL(lck_div, 23, 16) | FLD_VAL(pck_div, 7, 0));
+	
+	// DISPC_DIVISOR1 is actually mapped to DISPC_DIVISOR memory block (see #define at the beginning of this file);
+	// We need to write the value 1 (as opposed to default value 4); otherwise, we can't hit thepixel clock needed for
+	// higher resolutions and will have a stairstep / tearing display
+	dispc_write_reg(DISPC_DIVISOR1, FLD_VAL(1, 23, 16) | FLD_VAL(1, 7, 0));
+
 	enable_clocks(0);
 }
 

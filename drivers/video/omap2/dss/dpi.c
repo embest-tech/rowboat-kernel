@@ -59,9 +59,11 @@ static int dpi_set_dsi_clk(enum omap_channel channel, bool is_tft,
 			return r;
 	} else {
 		dsi_cinfo.regn = 17;
-		dsi_cinfo.regm = 150;
-		dsi_cinfo.regm_dispc = 4;
+		//dsi_cinfo.regm = 150;
+		//dsi_cinfo.regm_dispc = 4;
 		dsi_cinfo.regm_dsi = 4;
+		dsi_cinfo.regm = 137;
+		dsi_cinfo.regm_dispc = 1;
 		dsi_cinfo.use_dss2_fck = true;
 		r = dsi_calc_clock_rates(&dsi_cinfo);
 		if (r)
@@ -74,9 +76,12 @@ static int dpi_set_dsi_clk(enum omap_channel channel, bool is_tft,
 	if (r)
 		return r;
 
-	if (cpu_is_omap44xx())
-		dss_select_dispc_clk_source(ix, (ix == DSI1) ?
-			DSS_SRC_PLL1_CLK1 : DSS_SRC_PLL2_CLK1);
+	if (cpu_is_omap44xx()){
+		    dss_select_dispc_clk_source(ix, DSS_SRC_DSS1_ALWON_FCLK);
+		    dss_select_lcd_clk_source(ix, DSS_SRC_PLL2_CLK1);
+		//dss_select_dispc_clk_source(ix, (ix == DSI1) ?
+		//DSS_SRC_PLL1_CLK1 : DSS_SRC_PLL2_CLK1);
+	}
 	else
 		dss_select_dispc_clk_source(ix, DSS_SRC_DSI1_PLL_FCLK);
 
@@ -222,7 +227,8 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
 	dpi_basic_init(dssdev);
 
 #ifdef CONFIG_OMAP2_DSS_USE_DSI_PLL
-	r = dsi_pll_init(dssdev, 0, 1);
+	//r = dsi_pll_init(dssdev, 0, 1);
+	r = dsi_pll_init(dssdev, 1, 1);
 	if (r)
 		goto err1;
 #endif /* CONFIG_OMAP2_DSS_USE_DSI_PLL */

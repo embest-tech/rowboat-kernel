@@ -64,8 +64,9 @@
 #define GPIO_BOARD_ID1 101
 #define GPIO_BOARD_ID2 171
 
-static int board_revision;
+#define PANDA_DVI_CHIP_ENABLE_GPIO 0
 
+static int board_revision;
 /* wl127x BT, FM, GPS connectivity chip */
 static int gpios[] = {46, -1, -1};
 static struct platform_device wl127x_device = {
@@ -144,8 +145,48 @@ static struct omap_dss_device panda_hdmi_device = {
 	.channel = OMAP_DSS_CHANNEL_DIGIT,
 };
 
+static int panda_enable_dvi(struct omap_dss_device *dssdev)
+{
+	//if (gpio_is_valid(dssdev->reset_gpio))
+	//	gpio_set_value(dssdev->reset_gpio, 1);
+	//gpio_direction_output(dssdev->reset_gpio, 1);
+	int r;
+	r = gpio_request(PANDA_DVI_CHIP_ENABLE_GPIO, "DVI_GPIO_0");
+	if (r) {
+		dev_err(&dssdev->dev, "GPIO request failed\n");    
+		return -1;                        
+        }
+
+	gpio_direction_output(PANDA_DVI_CHIP_ENABLE_GPIO,1);
+	//gpio_set_value(PANDA_DVI_CHIP_ENABLE_GPIO, 1);
+
+	return 0;
+}
+
+static void panda_disable_dvi(struct omap_dss_device *dssdev)
+{
+	//if (gpio_is_valid(dssdev->reset_gpio))
+	//	gpio_set_value(dssdev->reset_gpio, 0);
+	//gpio_direction_output(dssdev->reset_gpio, 0);
+
+	gpio_set_value(PANDA_DVI_CHIP_ENABLE_GPIO, 0);
+	return;
+}
+
+static struct omap_dss_device panda_dvi_device = {
+	.name       		= "dvi",
+	.driver_name        	= "wuxga_panel",
+	.type			= OMAP_DISPLAY_TYPE_DPI,
+	.phy.dpi.data_lines    	= 24,
+	.platform_enable    	= panda_enable_dvi,
+	.platform_disable   	= panda_disable_dvi,
+	.channel          	= OMAP_DSS_CHANNEL_LCD2,
+	//.reset_gpio       	= PANDA_DVI_CHIP_ENABLE_GPIO,
+};
+
 static struct omap_dss_device *panda_dss_devices[] = {
 	&panda_hdmi_device,
+	&panda_dvi_device,
 };
 
 static struct omap_dss_board_info panda_dss_data = {
@@ -168,6 +209,14 @@ static void __init omap4_display_init(void)
 	/* Turning on DSI PHY Mux*/
 	__raw_writel(dsimux, phymux_base+0x618);
 	dsimux = __raw_readl(phymux_base+0x618);
+	//int r = 0;
+	//omap_mux_init_gpio(panda_dvi_device.reset_gpio, OMAP_PULL_UP | OMAP_PULL_ENA | OMAP_MUX_MODE3);
+	//r = gpio_request(panda_dvi_device.reset_gpio, "DVI reset");
+	//if (r) {
+	//	printk(KERN_ERR "failed to get DVI reset GPIO\n");
+	//	return;
+	 //}
+	//gpio_direction_output(panda_dvi_device.reset_gpio, 0);
 }
 #else
 
@@ -207,6 +256,7 @@ static struct omap2_hsmmc_info mmc[] = {
 		.mmc		= 1,
 		.caps		= MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA,
 		.gpio_wp	= -EINVAL,
+		.gpio_cd	= -EINVAL,
 	},
 	{
 		.mmc            = 5,
@@ -733,6 +783,13 @@ static struct omap_board_mux board_mux[] __initdata = {
 #else
 #define board_mux	NULL
 #endif
+
+/* Dummy keypad to get compilation going for panda */
+/*void keyboard_mux_init(void)
+{
+    return;
+}*/
+
 
 /*
  * As OMAP4430 mux HSI and USB signals, when HSI is used (for instance HSI
