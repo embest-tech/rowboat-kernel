@@ -610,7 +610,7 @@ unsigned long omap3_clkoutx2_recalc(struct clk *clk)
 		if (v == AM335X_EN_DPLL_LOCKED)
 			rate = clk->parent->rate * 2;
 		else
-			rate = 0;
+			rate = dd->clk_ref->rate;
 	} else {
 		if ((v != OMAP3XXX_EN_DPLL_LOCKED) || (dd->flags & DPLL_J_TYPE))
 			rate = clk->parent->rate;
