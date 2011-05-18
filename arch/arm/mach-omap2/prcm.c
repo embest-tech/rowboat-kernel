@@ -33,6 +33,7 @@
 #include "cm2xxx_3xxx.h"
 #include "prm2xxx_3xxx.h"
 #include "prm44xx.h"
+#include "prmam335x.h"
 #include "prminst44xx.h"
 #include "prm-regbits-24xx.h"
 #include "prm-regbits-44xx.h"
@@ -70,9 +71,13 @@ void omap_prcm_arch_reset(char mode, const char *cmd)
 		omap3_ctrl_write_boot_mode((cmd ? (u8)*cmd : 0));
 	} else if (cpu_is_omap44xx()) {
 		omap4_prm_global_warm_sw_reset(); /* never returns */
-	} else if (cpu_is_ti81xx()) {
+	} else if (cpu_is_ti814x() || cpu_is_ti816x()) {
 		omap2_prm_set_mod_reg_bits(TI81XX_GLOBAL_RST_COLD, prcm_offs,
 						TI81XX_PRM_DEVICE_RSTCTRL);
+	} else if (cpu_is_am335x()) {
+		prcm_offs = AM335X_PRM_DEVICE_MOD;
+		omap2_prm_set_mod_reg_bits(TI81XX_GLOBAL_RST_COLD, prcm_offs,
+						AM335X_PRM_RSTCTRL_OFFSET);
 	} else {
 		WARN_ON(1);
 	}
