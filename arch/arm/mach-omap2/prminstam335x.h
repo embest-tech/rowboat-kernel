@@ -1,5 +1,5 @@
 /*
- * AM335x Power/Reset Management (PRM) function prototypes
+ * AM335X Power/Reset Management (PRM) function prototypes
  *
  * Copyright (C) {YEAR} Texas Instruments Incorporated - http://www.ti.com/
  *

@@ -25,17 +25,17 @@
  * 'invalid' partition in case someone forgets to add a
  * .prcm_partition field.
  */
-#define AM335x_INVALID_PRCM_PARTITION		0
-#define AM335x_PRM_PARTITION			1
-#define AM335x_CM_PARTITION                     2
-#define AM335x_SCRM_PARTITION			3
-#define AM335x_PRCM_MPU_PARTITION		4
+#define AM335X_INVALID_PRCM_PARTITION		0
+#define AM335X_PRM_PARTITION			1
+#define AM335X_CM_PARTITION                     2
+#define AM335X_SCRM_PARTITION			3
+#define AM335X_PRCM_MPU_PARTITION		4
 
 /*
  * OMAP4_MAX_PRCM_PARTITIONS: set to the highest value of the PRCM partition
  * IDs, plus one
  */
-#define AM335x_MAX_PRCM_PARTITIONS		5
+#define AM335X_MAX_PRCM_PARTITIONS		5
 
 
 #endif

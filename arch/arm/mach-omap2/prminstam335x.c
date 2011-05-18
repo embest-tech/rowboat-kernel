@@ -1,5 +1,5 @@
 /*
- * AM335x PRM instance functions
+ * AM335X PRM instance functions
  *
  * Copyright (C) {YEAR} Texas Instruments Incorporated - http://www.ti.com/
  *
@@ -27,18 +27,18 @@
 #include "prcmam335x.h"
 
 #define AM335X_PRM_MOD_SIZE	0x100
-#define AM335X_PRM_MOD_START	AM335x_PRM_PER_MOD
+#define AM335X_PRM_MOD_START	AM335X_PRM_PER_MOD
 #define PRM_REG_SZ	0x4
 
 static u16 off_fixup[][2] = {
-	{ 0xC, 0x8 },	/* AM335x_PRM_PER_MOD */
-	{ 0x4, 0x8 },	/* AM335x_PRM_WKUP_MOD */
-	{ 0x0, 0x4 },	/* AM335x_PRM_MPU_MOD */
+	{ 0xC, 0x8 },	/* AM335X_PRM_PER_MOD */
+	{ 0x4, 0x8 },	/* AM335X_PRM_WKUP_MOD */
+	{ 0x0, 0x4 },	/* AM335X_PRM_MPU_MOD */
 	/* XXX: PRM_DEVICE: offsets are invalid for powerdomain*/
-	{ 0x0, 0x0 },	/* AM335x_PRM_DEVICE_MOD */
-	{ 0x0, 0x4 },	/* AM335x_PRM_RTC_MOD */
-	{ 0x0, 0x10 },	/* AM335x_PRM_GFX_MOD */
-	{ 0x0, 0x4 },	/* AM335x_PRM_CEFUSE_MOD */
+	{ 0x0, 0x0 },	/* AM335X_PRM_DEVICE_MOD */
+	{ 0x0, 0x4 },	/* AM335X_PRM_RTC_MOD */
+	{ 0x0, 0x10 },	/* AM335X_PRM_GFX_MOD */
+	{ 0x0, 0x4 },	/* AM335X_PRM_CEFUSE_MOD */
 };
 
 /* Read a register in a PRM instance */

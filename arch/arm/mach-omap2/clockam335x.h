@@ -20,8 +20,8 @@
  * XXX Missing values for the OMAP4 DPLL_USB
  * XXX Missing min_multiplier values for all OMAP4 DPLLs
  */
-#define AM335x_MAX_DPLL_MULT  2047
-#define AM335x_MAX_DPLL_DIV   128
+#define AM335X_MAX_DPLL_MULT  2047
+#define AM335X_MAX_DPLL_DIV   128
 
 
 int am335x_clk_init(void);
