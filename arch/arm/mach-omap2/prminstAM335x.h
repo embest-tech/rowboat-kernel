@@ -22,9 +22,9 @@
  * In an ideal world, we would not export these low-level functions,
  * but this will probably take some time to fix properly
  */
-extern u32 am335x_prminst_read_inst_reg(u8 part, s16 inst, u16 idx);
-extern void am335x_prminst_write_inst_reg(u32 val, u8 part, s16 inst, u16 idx);
-extern u32 am335x_prminst_rmw_inst_reg_bits(u32 mask, u32 bits, u8 part,
+extern u32 am335x_prminst_read_inst_reg(s16 inst, u16 idx);
+extern void am335x_prminst_write_inst_reg(u32 val, s16 inst, u16 idx);
+extern u32 am335x_prminst_rmw_inst_reg_bits(u32 mask, u32 bits,
 					   s16 inst, s16 idx);
 
 extern void am335x_prm_global_warm_sw_reset(void);

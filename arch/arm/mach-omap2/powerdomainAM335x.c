@@ -30,7 +30,6 @@ static int am335x_pwrdm_set_next_pwrst(struct powerdomain *pwrdm, u8 pwrst)
 {
 	am335x_prminst_rmw_inst_reg_bits(OMAP_POWERSTATE_MASK,
 					(pwrst << OMAP_POWERSTATE_SHIFT),
-					pwrdm->prcm_partition,
 					pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
 	return 0;
 }
@@ -39,8 +38,7 @@ static int am335x_pwrdm_read_next_pwrst(struct powerdomain *pwrdm)
 {
 	u32 v;
 
-	v = am335x_prminst_read_inst_reg(pwrdm->prcm_partition,
-					pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
+	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
 	v &= OMAP_POWERSTATE_MASK;
 	v >>= OMAP_POWERSTATE_SHIFT;
 
@@ -51,8 +49,7 @@ static int am335x_pwrdm_read_pwrst(struct powerdomain *pwrdm)
 {
 	u32 v;
 
-	v = am335x_prminst_read_inst_reg(pwrdm->prcm_partition,
-					pwrdm->prcm_offs, AM335x_PM_PWSTST);
+	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTST);
 	v &= OMAP_POWERSTATEST_MASK;
 	v >>= OMAP_POWERSTATEST_SHIFT;
 
@@ -63,8 +60,7 @@ static int am335x_pwrdm_read_prev_pwrst(struct powerdomain *pwrdm)
 {
 	u32 v;
 
-	v = am335x_prminst_read_inst_reg(pwrdm->prcm_partition,
-					pwrdm->prcm_offs, AM335x_PM_PWSTST);
+	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTST);
 	v &= AM335x_LASTPOWERSTATEENTERED_MASK;
 	v >>= AM335x_LASTPOWERSTATEENTERED_SHIFT;
 
@@ -75,7 +71,6 @@ static int am335x_pwrdm_set_lowpwrstchange(struct powerdomain *pwrdm)
 {
 	am335x_prminst_rmw_inst_reg_bits(AM335x_LOWPOWERSTATECHANGE_MASK,
 					(1 << AM335x_LOWPOWERSTATECHANGE_SHIFT),
-					pwrdm->prcm_partition,
 					pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
 	return 0;
 }
@@ -84,7 +79,6 @@ static int am335x_pwrdm_clear_all_prev_pwrst(struct powerdomain *pwrdm)
 {
 	am335x_prminst_rmw_inst_reg_bits(AM335x_LASTPOWERSTATEENTERED_MASK,
 					AM335x_LASTPOWERSTATEENTERED_MASK,
-					pwrdm->prcm_partition,
 					pwrdm->prcm_offs, AM335x_PM_PWSTST);
 	return 0;
 }
@@ -95,7 +89,7 @@ static int am335x_pwrdm_set_logic_retst(struct powerdomain *pwrdm, u8 pwrst)
 
 	v = pwrst << __ffs(AM335x_LOGICRETSTATE_MASK);
 	am335x_prminst_rmw_inst_reg_bits(AM335x_LOGICRETSTATE_MASK, v,
-					pwrdm->prcm_partition, pwrdm->prcm_offs,
+					pwrdm->prcm_offs,
 					AM335x_PM_PWSTCTRL);
 
 	return 0;
@@ -109,7 +103,7 @@ static int am335x_pwrdm_set_mem_onst(struct powerdomain *pwrdm, u8 bank,
 	m = omap2_pwrdm_get_mem_bank_onstate_mask(bank);
 
 	am335x_prminst_rmw_inst_reg_bits(m, (pwrst << __ffs(m)),
-					pwrdm->prcm_partition, pwrdm->prcm_offs,
+					pwrdm->prcm_offs,
 					AM335x_PM_PWSTCTRL);
 
 	return 0;
@@ -123,7 +117,7 @@ static int am335x_pwrdm_set_mem_retst(struct powerdomain *pwrdm, u8 bank,
 	m = omap2_pwrdm_get_mem_bank_retst_mask(bank);
 
 	am335x_prminst_rmw_inst_reg_bits(m, (pwrst << __ffs(m)),
-					pwrdm->prcm_partition, pwrdm->prcm_offs,
+					pwrdm->prcm_offs,
 					AM335x_PM_PWSTCTRL);
 
 	return 0;
@@ -133,8 +127,7 @@ static int am335x_pwrdm_read_logic_pwrst(struct powerdomain *pwrdm)
 {
 	u32 v;
 
-	v = am335x_prminst_read_inst_reg(pwrdm->prcm_partition,
-				pwrdm->prcm_offs, AM335x_PM_PWSTST);
+	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTST);
 	v &= AM335x_LOGICSTATEST_MASK;
 	v >>= AM335x_LOGICSTATEST_SHIFT;
 
@@ -145,8 +138,7 @@ static int am335x_pwrdm_read_logic_retst(struct powerdomain *pwrdm)
 {
 	u32 v;
 
-	v = am335x_prminst_read_inst_reg(pwrdm->prcm_partition,
-				pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
+	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
 	v &= AM335x_LOGICRETSTATE_MASK;
 	v >>= AM335x_LOGICRETSTATE_SHIFT;
 
@@ -159,8 +151,7 @@ static int am335x_pwrdm_read_mem_pwrst(struct powerdomain *pwrdm, u8 bank)
 
 	m = omap2_pwrdm_get_mem_bank_stst_mask(bank);
 
-	v = am335x_prminst_read_inst_reg(pwrdm->prcm_partition,
-				pwrdm->prcm_offs, AM335x_PM_PWSTST);
+	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTST);
 	v &= m;
 	v >>= __ffs(m);
 
@@ -173,8 +164,7 @@ static int am335x_pwrdm_read_mem_retst(struct powerdomain *pwrdm, u8 bank)
 
 	m = omap2_pwrdm_get_mem_bank_retst_mask(bank);
 
-	v = am335x_prminst_read_inst_reg(pwrdm->prcm_partition,
-				pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
+	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
 	v &= m;
 	v >>= __ffs(m);
 
@@ -192,10 +182,8 @@ static int am335x_pwrdm_wait_transition(struct powerdomain *pwrdm)
 	 */
 
 	/* XXX Is this udelay() value meaningful? */
-	while ((am335x_prminst_read_inst_reg(pwrdm->prcm_partition,
-					    pwrdm->prcm_offs,
-					    AM335x_PM_PWSTST) &
-		OMAP_INTRANSITION_MASK) &&
+	while ((am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTST)
+		& OMAP_INTRANSITION_MASK) &&
 	       (c++ < PWRDM_TRANSITION_BAILOUT))
 		udelay(1);
 
