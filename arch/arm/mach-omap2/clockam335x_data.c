@@ -995,6 +995,54 @@ static struct clk uart6_fck = {
 	.recalc         = &omap_fixed_divisor_recalc,
 };
 
+static struct clk uart1_ick = {
+	.name           = "uart1_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
+};
+
+static struct clk uart2_ick = {
+	.name           = "uart2_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
+};
+
+static struct clk uart3_ick = {
+	.name           = "uart3_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
+};
+
+static struct clk uart4_ick = {
+	.name           = "uart4_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
+};
+
+static struct clk uart5_ick = {
+	.name           = "uart5_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
+};
+
+static struct clk uart6_ick = {
+	.name           = "uart6_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
+};
+
 static struct clk usb0_fck = {
 	.name		= "usb0_fck",
 	.ops		= &clkops_omap2_dflt,
@@ -1592,6 +1640,12 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"uart4_fck",		&uart4_fck,	CK_AM335X),
 	CLK(NULL,	"uart5_fck",		&uart5_fck,	CK_AM335X),
 	CLK(NULL,	"uart6_fck",		&uart6_fck,	CK_AM335X),
+	CLK(NULL,	"uart1_ick",		&uart1_ick,	CK_AM335X),
+	CLK(NULL,	"uart2_ick",		&uart2_ick,	CK_AM335X),
+	CLK(NULL,	"uart3_ick",		&uart3_ick,	CK_AM335X),
+	CLK(NULL,	"uart4_ick",		&uart4_ick,	CK_AM335X),
+	CLK(NULL,	"uart5_ick",		&uart5_ick,	CK_AM335X),
+	CLK(NULL,	"uart6_ick",		&uart6_ick,	CK_AM335X),
 	CLK(NULL,	"usb0_fck",		&usb0_fck,	CK_AM335X),
 	CLK(NULL,	"wd_timer1_fck",	&wd_timer1_fck,	CK_AM335X),
 	CLK(NULL,	"wdt0_fck",		&wdt0_fck,	CK_AM335X),
