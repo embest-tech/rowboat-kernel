@@ -47,20 +47,20 @@
 #define AM335X_DMA_REQ_START  1
 
 /* Backward references (IPs with Bus Master capability) */
-static struct omap_hwmod AM335x_uart1_hwmod;
-static struct omap_hwmod AM335x_uart2_hwmod;
-static struct omap_hwmod AM335x_uart3_hwmod;
-static struct omap_hwmod AM335x_uart4_hwmod;
-static struct omap_hwmod AM335x_uart5_hwmod;
-static struct omap_hwmod AM335x_uart6_hwmod;
-static struct omap_hwmod AM335x_cpgmac0_hwmod;
-static struct omap_hwmod AM335x_icss_hwmod;
-static struct omap_hwmod AM335x_ieee5000_hwmod;
-static struct omap_hwmod AM335x_l4wkup_hwmod;
-static struct omap_hwmod AM335x_tptc0_hwmod;
-static struct omap_hwmod AM335x_tptc1_hwmod;
-static struct omap_hwmod AM335x_tptc2_hwmod;
-static struct omap_hwmod AM335x_usb0_hwmod;
+static struct omap_hwmod am335x_uart1_hwmod;
+static struct omap_hwmod am335x_uart2_hwmod;
+static struct omap_hwmod am335x_uart3_hwmod;
+static struct omap_hwmod am335x_uart4_hwmod;
+static struct omap_hwmod am335x_uart5_hwmod;
+static struct omap_hwmod am335x_uart6_hwmod;
+static struct omap_hwmod am335x_cpgmac0_hwmod;
+static struct omap_hwmod am335x_icss_hwmod;
+static struct omap_hwmod am335x_ieee5000_hwmod;
+static struct omap_hwmod am335x_l4wkup_hwmod;
+static struct omap_hwmod am335x_tptc0_hwmod;
+static struct omap_hwmod am335x_tptc1_hwmod;
+static struct omap_hwmod am335x_tptc2_hwmod;
+static struct omap_hwmod am335x_usb0_hwmod;
 
 	/*
 	* Interconnects hwmod structures
@@ -68,20 +68,20 @@ static struct omap_hwmod AM335x_usb0_hwmod;
 	*/
 
 /* l4wkup interface data */
-static struct omap_hwmod_class AM335x_l4wkup_hwmod_class = {
+static struct omap_hwmod_class am335x_l4wkup_hwmod_class = {
 	.name = "l4wkup",
 };
 
-static struct omap_hwmod AM335x_l4wkup_hwmod = {
+static struct omap_hwmod am335x_l4wkup_hwmod = {
 	.name		= "l4wkup",
-	.class		= &AM335x_l4wkup_hwmod_class,
+	.class		= &am335x_l4wkup_hwmod_class,
 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 
 /* 'adc_tsc' class */
 
-static struct omap_hwmod_class AM335x_adc_tsc_hwmod_class = {
+static struct omap_hwmod_class am335x_adc_tsc_hwmod_class = {
 	.name = "adc_tsc",
 };
 
@@ -90,9 +90,9 @@ static struct omap_hwmod_irq_info am335x_adc_tsc_irqs[] = {
 	{ .irq = 115 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_adc_tsc_hwmod = {
+static struct omap_hwmod am335x_adc_tsc_hwmod = {
 	.name		= "adc_tsc",
-	.class		= &AM335x_adc_tsc_hwmod_class,
+	.class		= &am335x_adc_tsc_hwmod_class,
 	.mpu_irqs       = am335x_adc_tsc_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_adc_tsc_irqs),
 	.main_clk	= "adc_tsc_fck",
@@ -105,7 +105,7 @@ static struct omap_hwmod AM335x_adc_tsc_hwmod = {
 
 /* 'aes' class */
 
-static struct omap_hwmod_class AM335x_aes_hwmod_class = {
+static struct omap_hwmod_class am335x_aes_hwmod_class = {
 	.name = "aes",
 };
 
@@ -114,9 +114,9 @@ static struct omap_hwmod_irq_info am335x_aes0_irqs[] = {
 	{ .irq = 102 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_aes0_hwmod = {
+static struct omap_hwmod am335x_aes0_hwmod = {
 	.name		= "aes0",
-	.class		= &AM335x_aes_hwmod_class,
+	.class		= &am335x_aes_hwmod_class,
 	.mpu_irqs       = am335x_aes0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_aes0_irqs),
 	.main_clk	= "sysclk_div_ck",
@@ -129,14 +129,14 @@ static struct omap_hwmod AM335x_aes0_hwmod = {
 
 /* 'cefuse' class */
 
-static struct omap_hwmod_class AM335x_cefuse_hwmod_class = {
+static struct omap_hwmod_class am335x_cefuse_hwmod_class = {
 	.name = "cefuse",
 };
 
 /* cefuse */
-static struct omap_hwmod AM335x_cefuse_hwmod = {
+static struct omap_hwmod am335x_cefuse_hwmod = {
 	.name		= "cefuse",
-	.class		= &AM335x_cefuse_hwmod_class,
+	.class		= &am335x_cefuse_hwmod_class,
 	.main_clk	= "cefuse_fck",
 	.prcm = {
 		.omap4 = {
@@ -147,15 +147,15 @@ static struct omap_hwmod AM335x_cefuse_hwmod = {
 
 /* 'clkdiv32k' class */
 
-static struct omap_hwmod_class AM335x_clkdiv32k_hwmod_class = {
+static struct omap_hwmod_class am335x_clkdiv32k_hwmod_class = {
 	.name = "clkdiv32k",
 };
 
 /* clkdiv32k */
 
-static struct omap_hwmod AM335x_clkdiv32k_hwmod = {
+static struct omap_hwmod am335x_clkdiv32k_hwmod = {
 	.name		= "clkdiv32k",
-	.class		= &AM335x_clkdiv32k_hwmod_class,
+	.class		= &am335x_clkdiv32k_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_CLK_24MHZ_CLKSTCTRL,
@@ -165,7 +165,7 @@ static struct omap_hwmod AM335x_clkdiv32k_hwmod = {
 
 /* 'control' class */
 
-static struct omap_hwmod_class AM335x_control_hwmod_class = {
+static struct omap_hwmod_class am335x_control_hwmod_class = {
 	.name = "control",
 };
 
@@ -174,9 +174,9 @@ static struct omap_hwmod_irq_info am335x_control_irqs[] = {
 	{ .irq = 8 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_control_hwmod = {
+static struct omap_hwmod am335x_control_hwmod = {
 	.name		= "control",
-	.class		= &AM335x_control_hwmod_class,
+	.class		= &am335x_control_hwmod_class,
 	.mpu_irqs       = am335x_control_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_control_irqs),
 	.main_clk	= "control_fck",
@@ -189,14 +189,14 @@ static struct omap_hwmod AM335x_control_hwmod = {
 
 /* 'cpgmac0' class */
 
-static struct omap_hwmod_class AM335x_cpgmac0_hwmod_class = {
+static struct omap_hwmod_class am335x_cpgmac0_hwmod_class = {
 	.name = "cpgmac0",
 };
 
 /* cpgmac0 */
-static struct omap_hwmod AM335x_cpgmac0_hwmod = {
+static struct omap_hwmod am335x_cpgmac0_hwmod = {
 	.name		= "cpgmac0",
-	.class		= &AM335x_cpgmac0_hwmod_class,
+	.class		= &am335x_cpgmac0_hwmod_class,
 	.main_clk	= "cpsw_50m_clkdiv_ck",
 	.prcm = {
 		.omap4 = {
@@ -207,7 +207,7 @@ static struct omap_hwmod AM335x_cpgmac0_hwmod = {
 
 /* 'dcan' class */
 
-static struct omap_hwmod_class AM335x_dcan_hwmod_class = {
+static struct omap_hwmod_class am335x_dcan_hwmod_class = {
 	.name = "dcan",
 };
 
@@ -216,9 +216,9 @@ static struct omap_hwmod_irq_info am335x_dcan0_irqs[] = {
 	{ .irq = 52 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_dcan0_hwmod = {
+static struct omap_hwmod am335x_dcan0_hwmod = {
 	.name		= "dcan0",
-	.class		= &AM335x_dcan_hwmod_class,
+	.class		= &am335x_dcan_hwmod_class,
 	.mpu_irqs       = am335x_dcan0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_dcan0_irqs),
 	.main_clk	= "sys_clkin_ck",
@@ -233,9 +233,9 @@ static struct omap_hwmod AM335x_dcan0_hwmod = {
 static struct omap_hwmod_irq_info am335x_dcan1_irqs[] = {
 	{ .irq = 55 + AM335X_IRQ_GIC_START },
 };
-static struct omap_hwmod AM335x_dcan1_hwmod = {
+static struct omap_hwmod am335x_dcan1_hwmod = {
 	.name		= "dcan1",
-	.class		= &AM335x_dcan_hwmod_class,
+	.class		= &am335x_dcan_hwmod_class,
 	.mpu_irqs       = am335x_dcan1_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_dcan1_irqs),
 	.main_clk	= "sys_clkin_ck",
@@ -248,14 +248,14 @@ static struct omap_hwmod AM335x_dcan1_hwmod = {
 
 /* 'debugss' class */
 
-static struct omap_hwmod_class AM335x_debugss_hwmod_class = {
+static struct omap_hwmod_class am335x_debugss_hwmod_class = {
 	.name = "debugss",
 };
 
 /* debugss */
-static struct omap_hwmod AM335x_debugss_hwmod = {
+static struct omap_hwmod am335x_debugss_hwmod = {
 	.name		= "debugss",
-	.class		= &AM335x_debugss_hwmod_class,
+	.class		= &am335x_debugss_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_WKUP_DEBUGSS_CLKCTRL,
@@ -265,14 +265,14 @@ static struct omap_hwmod AM335x_debugss_hwmod = {
 
 /* 'efuse' class */
 
-static struct omap_hwmod_class AM335x_efuse_hwmod_class = {
+static struct omap_hwmod_class am335x_efuse_hwmod_class = {
 	.name = "efuse",
 };
 
 /* efuse */
-static struct omap_hwmod AM335x_efuse_hwmod = {
+static struct omap_hwmod am335x_efuse_hwmod = {
 	.name		= "efuse",
-	.class		= &AM335x_efuse_hwmod_class,
+	.class		= &am335x_efuse_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_CEFUSE_CEFUSE_CLKCTRL,
@@ -282,14 +282,14 @@ static struct omap_hwmod AM335x_efuse_hwmod = {
 
 /* 'elm' class */
 
-static struct omap_hwmod_class AM335x_elm_hwmod_class = {
+static struct omap_hwmod_class am335x_elm_hwmod_class = {
 	.name = "elm",
 };
 
 /* elm */
-static struct omap_hwmod AM335x_elm_hwmod = {
+static struct omap_hwmod am335x_elm_hwmod = {
 	.name		= "elm",
-	.class		= &AM335x_elm_hwmod_class,
+	.class		= &am335x_elm_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_ELM_CLKCTRL,
@@ -299,14 +299,14 @@ static struct omap_hwmod AM335x_elm_hwmod = {
 
 /* 'emif_fw' class */
 
-static struct omap_hwmod_class AM335x_emif_fw_hwmod_class = {
+static struct omap_hwmod_class am335x_emif_fw_hwmod_class = {
 	.name = "emif_fw",
 };
 
 /* emif_fw */
-static struct omap_hwmod AM335x_emif_fw_hwmod = {
+static struct omap_hwmod am335x_emif_fw_hwmod = {
 	.name		= "emif_fw",
-	.class		= &AM335x_emif_fw_hwmod_class,
+	.class		= &am335x_emif_fw_hwmod_class,
 	.main_clk	= "core_100m_ck",
 	.prcm = {
 		.omap4 = {
@@ -317,14 +317,14 @@ static struct omap_hwmod AM335x_emif_fw_hwmod = {
 
 /* 'epwmss' class */
 
-static struct omap_hwmod_class AM335x_epwmss_hwmod_class = {
+static struct omap_hwmod_class am335x_epwmss_hwmod_class = {
 	.name = "epwmss",
 };
 
 /* epwmss0 */
-static struct omap_hwmod AM335x_epwmss0_hwmod = {
+static struct omap_hwmod am335x_epwmss0_hwmod = {
 	.name		= "epwmss0",
-	.class		= &AM335x_epwmss_hwmod_class,
+	.class		= &am335x_epwmss_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_EPWMSS0_CLKCTRL,
@@ -333,9 +333,9 @@ static struct omap_hwmod AM335x_epwmss0_hwmod = {
 };
 
 /* epwmss1 */
-static struct omap_hwmod AM335x_epwmss1_hwmod = {
+static struct omap_hwmod am335x_epwmss1_hwmod = {
 	.name		= "epwmss1",
-	.class		= &AM335x_epwmss_hwmod_class,
+	.class		= &am335x_epwmss_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_EPWMSS1_CLKCTRL,
@@ -344,9 +344,9 @@ static struct omap_hwmod AM335x_epwmss1_hwmod = {
 };
 
 /* epwmss2 */
-static struct omap_hwmod AM335x_epwmss2_hwmod = {
+static struct omap_hwmod am335x_epwmss2_hwmod = {
 	.name		= "epwmss2",
-	.class		= &AM335x_epwmss_hwmod_class,
+	.class		= &am335x_epwmss_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_EPWMSS2_CLKCTRL,
@@ -356,14 +356,14 @@ static struct omap_hwmod AM335x_epwmss2_hwmod = {
 
 /* 'gpio' class */
 
-static struct omap_hwmod_class AM335x_gpio_hwmod_class = {
+static struct omap_hwmod_class am335x_gpio_hwmod_class = {
 	.name = "gpio",
 };
 
 /* gpio0 */
-static struct omap_hwmod AM335x_gpio0_hwmod = {
+static struct omap_hwmod am335x_gpio0_hwmod = {
 	.name		= "gpio0",
-	.class		= &AM335x_gpio_hwmod_class,
+	.class		= &am335x_gpio_hwmod_class,
 	.main_clk	= "gpio0_fck",
 	.prcm = {
 		.omap4 = {
@@ -373,9 +373,9 @@ static struct omap_hwmod AM335x_gpio0_hwmod = {
 };
 
 /* gpio1 */
-static struct omap_hwmod AM335x_gpio1_hwmod = {
+static struct omap_hwmod am335x_gpio1_hwmod = {
 	.name		= "gpio1",
-	.class		= &AM335x_gpio_hwmod_class,
+	.class		= &am335x_gpio_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_GPIO1_CLKCTRL,
@@ -388,9 +388,9 @@ static struct omap_hwmod_irq_info am335x_gpio2_irqs[] = {
 	{ .irq = 32 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_gpio2_hwmod = {
+static struct omap_hwmod am335x_gpio2_hwmod = {
 	.name		= "gpio2",
-	.class		= &AM335x_gpio_hwmod_class,
+	.class		= &am335x_gpio_hwmod_class,
 	.mpu_irqs       = am335x_gpio2_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_gpio2_irqs),
 	.prcm = {
@@ -401,9 +401,9 @@ static struct omap_hwmod AM335x_gpio2_hwmod = {
 };
 
 /* gpio3 */
-static struct omap_hwmod AM335x_gpio3_hwmod = {
+static struct omap_hwmod am335x_gpio3_hwmod = {
 	.name		= "gpio3",
-	.class		= &AM335x_gpio_hwmod_class,
+	.class		= &am335x_gpio_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_GPIO3_CLKCTRL,
@@ -413,14 +413,14 @@ static struct omap_hwmod AM335x_gpio3_hwmod = {
 
 /* 'gpmc' class */
 
-static struct omap_hwmod_class AM335x_gpmc_hwmod_class = {
+static struct omap_hwmod_class am335x_gpmc_hwmod_class = {
 	.name = "gpmc",
 };
 
 /* gpmc */
-static struct omap_hwmod AM335x_gpmc_hwmod = {
+static struct omap_hwmod am335x_gpmc_hwmod = {
 	.name		= "gpmc",
-	.class		= &AM335x_gpmc_hwmod_class,
+	.class		= &am335x_gpmc_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_GPMC_CLKCTRL,
@@ -430,7 +430,7 @@ static struct omap_hwmod AM335x_gpmc_hwmod = {
 
 /* 'i2c' class */
 
-static struct omap_hwmod_class AM335x_i2c_hwmod_class = {
+static struct omap_hwmod_class am335x_i2c_hwmod_class = {
 	.name = "i2c",
 };
 
@@ -439,9 +439,9 @@ static struct omap_hwmod_irq_info am335x_i2c0_irqs[] = {
 	{ .irq = 70 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_i2c0_hwmod = {
+static struct omap_hwmod am335x_i2c0_hwmod = {
 	.name		= "i2c0",
-	.class		= &AM335x_i2c_hwmod_class,
+	.class		= &am335x_i2c_hwmod_class,
 	.mpu_irqs       = am335x_i2c0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_i2c0_irqs),
 	.main_clk	= "i2c0_fck",
@@ -457,9 +457,9 @@ static struct omap_hwmod_irq_info am335x_i2c1_irqs[] = {
 	{ .irq = 71 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_i2c1_hwmod = {
+static struct omap_hwmod am335x_i2c1_hwmod = {
 	.name		= "i2c1",
-	.class		= &AM335x_i2c_hwmod_class,
+	.class		= &am335x_i2c_hwmod_class,
 	.mpu_irqs       = am335x_i2c1_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_i2c1_irqs),
 	.main_clk	= "i2c_clk",
@@ -471,9 +471,9 @@ static struct omap_hwmod AM335x_i2c1_hwmod = {
 };
 
 /* i2c2 */
-static struct omap_hwmod AM335x_i2c2_hwmod = {
+static struct omap_hwmod am335x_i2c2_hwmod = {
 	.name		= "i2c2",
-	.class		= &AM335x_i2c_hwmod_class,
+	.class		= &am335x_i2c_hwmod_class,
 	.main_clk	= "i2c_clk",
 	.prcm = {
 		.omap4 = {
@@ -484,14 +484,14 @@ static struct omap_hwmod AM335x_i2c2_hwmod = {
 
 /* 'icss' class */
 
-static struct omap_hwmod_class AM335x_icss_hwmod_class = {
+static struct omap_hwmod_class am335x_icss_hwmod_class = {
 	.name = "icss",
 };
 
 /* icss */
-static struct omap_hwmod AM335x_icss_hwmod = {
+static struct omap_hwmod am335x_icss_hwmod = {
 	.name		= "icss",
-	.class		= &AM335x_icss_hwmod_class,
+	.class		= &am335x_icss_hwmod_class,
 	.main_clk	= "dpll_per_m2_ck",
 	.prcm = {
 		.omap4 = {
@@ -502,14 +502,14 @@ static struct omap_hwmod AM335x_icss_hwmod = {
 
 /* 'ieee5000' class */
 
-static struct omap_hwmod_class AM335x_ieee5000_hwmod_class = {
+static struct omap_hwmod_class am335x_ieee5000_hwmod_class = {
 	.name = "ieee5000",
 };
 
 /* ieee5000 */
-static struct omap_hwmod AM335x_ieee5000_hwmod = {
+static struct omap_hwmod am335x_ieee5000_hwmod = {
 	.name		= "ieee5000",
-	.class		= &AM335x_ieee5000_hwmod_class,
+	.class		= &am335x_ieee5000_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_IEEE5000_CLKCTRL,
@@ -519,14 +519,14 @@ static struct omap_hwmod AM335x_ieee5000_hwmod = {
 
 /* 'l3' class */
 
-static struct omap_hwmod_class AM335x_l3_hwmod_class = {
+static struct omap_hwmod_class am335x_l3_hwmod_class = {
 	.name = "l3",
 };
 
 /* l4_hs */
-static struct omap_hwmod AM335x_l4_hs_hwmod = {
+static struct omap_hwmod am335x_l4_hs_hwmod = {
 	.name		= "l4_hs",
-	.class		= &AM335x_l3_hwmod_class,
+	.class		= &am335x_l3_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_L4HS_CLKCTRL,
@@ -535,9 +535,9 @@ static struct omap_hwmod AM335x_l4_hs_hwmod = {
 };
 
 /* l3_instr */
-static struct omap_hwmod AM335x_l3_instr_hwmod = {
+static struct omap_hwmod am335x_l3_instr_hwmod = {
 	.name		= "l3_instr",
-	.class		= &AM335x_l3_hwmod_class,
+	.class		= &am335x_l3_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_L3_INSTR_CLKCTRL,
@@ -546,9 +546,9 @@ static struct omap_hwmod AM335x_l3_instr_hwmod = {
 };
 
 /* l3_main */
-static struct omap_hwmod AM335x_l3_main_hwmod = {
+static struct omap_hwmod am335x_l3_main_hwmod = {
 	.name		= "l3_main",
-	.class		= &AM335x_l3_hwmod_class,
+	.class		= &am335x_l3_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_L3_CLKCTRL,
@@ -558,14 +558,14 @@ static struct omap_hwmod AM335x_l3_main_hwmod = {
 
 /* 'l4fw' class */
 
-static struct omap_hwmod_class AM335x_l4fw_hwmod_class = {
+static struct omap_hwmod_class am335x_l4fw_hwmod_class = {
 	.name = "l4fw",
 };
 
 /* l4fw */
-static struct omap_hwmod AM335x_l4fw_hwmod = {
+static struct omap_hwmod am335x_l4fw_hwmod = {
 	.name		= "l4fw",
-	.class		= &AM335x_l4fw_hwmod_class,
+	.class		= &am335x_l4fw_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_L4FW_CLKCTRL,
@@ -575,14 +575,14 @@ static struct omap_hwmod AM335x_l4fw_hwmod = {
 
 /* 'l4ls' class */
 
-static struct omap_hwmod_class AM335x_l4ls_hwmod_class = {
+static struct omap_hwmod_class am335x_l4ls_hwmod_class = {
 	.name = "l4ls",
 };
 
 /* l4ls */
-static struct omap_hwmod AM335x_l4ls_hwmod = {
+static struct omap_hwmod am335x_l4ls_hwmod = {
 	.name		= "l4ls",
-	.class		= &AM335x_l4ls_hwmod_class,
+	.class		= &am335x_l4ls_hwmod_class,
 	.main_clk	= "l4ls_fck",
 	.prcm = {
 		.omap4 = {
@@ -594,7 +594,7 @@ static struct omap_hwmod AM335x_l4ls_hwmod = {
 
 /* 'lcdc' class */
 
-static struct omap_hwmod_class AM335x_lcdc_hwmod_class = {
+static struct omap_hwmod_class am335x_lcdc_hwmod_class = {
 	.name = "lcdc",
 };
 
@@ -603,9 +603,9 @@ static struct omap_hwmod_irq_info am335x_lcdc_irqs[] = {
 	{ .irq = 36 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_lcdc_hwmod = {
+static struct omap_hwmod am335x_lcdc_hwmod = {
 	.name		= "lcdc",
-	.class		= &AM335x_lcdc_hwmod_class,
+	.class		= &am335x_lcdc_hwmod_class,
 	.mpu_irqs       = am335x_lcdc_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_lcdc_irqs),
 	.main_clk	= "lcd_clk_mux_ck",
@@ -618,7 +618,7 @@ static struct omap_hwmod AM335x_lcdc_hwmod = {
 
 /* 'mcasp' class */
 
-static struct omap_hwmod_class AM335x_mcasp_hwmod_class = {
+static struct omap_hwmod_class am335x_mcasp_hwmod_class = {
 	.name = "mcasp",
 };
 
@@ -627,9 +627,9 @@ static struct omap_hwmod_irq_info am335x_mcasp0_irqs[] = {
 	{ .irq = 80 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_mcasp0_hwmod = {
+static struct omap_hwmod am335x_mcasp0_hwmod = {
 	.name		= "mcasp0",
-	.class		= &AM335x_mcasp_hwmod_class,
+	.class		= &am335x_mcasp_hwmod_class,
 	.mpu_irqs       = am335x_mcasp0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_mcasp0_irqs),
 	.main_clk	= "sys_clkin_ck",
@@ -642,14 +642,14 @@ static struct omap_hwmod AM335x_mcasp0_hwmod = {
 
 /* 'mlb' class */
 
-static struct omap_hwmod_class AM335x_mlb_hwmod_class = {
+static struct omap_hwmod_class am335x_mlb_hwmod_class = {
 	.name = "mlb",
 };
 
 /* mlb */
-static struct omap_hwmod AM335x_mlb_hwmod = {
+static struct omap_hwmod am335x_mlb_hwmod = {
 	.name		= "mlb",
-	.class		= &AM335x_mlb_hwmod_class,
+	.class		= &am335x_mlb_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_MLB_CLKCTRL,
@@ -659,7 +659,7 @@ static struct omap_hwmod AM335x_mlb_hwmod = {
 
 /* 'mmc' class */
 
-static struct omap_hwmod_class AM335x_mmc_hwmod_class = {
+static struct omap_hwmod_class am335x_mmc_hwmod_class = {
 	.name = "mmc",
 };
 
@@ -668,9 +668,9 @@ static struct omap_hwmod_irq_info am335x_mmc0_irqs[] = {
 	{ .irq = 64 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_mmc0_hwmod = {
+static struct omap_hwmod am335x_mmc0_hwmod = {
 	.name		= "mmc0",
-	.class		= &AM335x_mmc_hwmod_class,
+	.class		= &am335x_mmc_hwmod_class,
 	.mpu_irqs       = am335x_mmc0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_mmc0_irqs),
 	.main_clk	= "mmc_clk",
@@ -686,9 +686,9 @@ static struct omap_hwmod_irq_info am335x_mmc1_irqs[] = {
 	{ .irq = 28 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_mmc1_hwmod = {
+static struct omap_hwmod am335x_mmc1_hwmod = {
 	.name		= "mmc1",
-	.class		= &AM335x_mmc_hwmod_class,
+	.class		= &am335x_mmc_hwmod_class,
 	.mpu_irqs       = am335x_mmc1_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_mmc1_irqs),
 	.main_clk	= "mmc_clk",
@@ -704,9 +704,9 @@ static struct omap_hwmod_irq_info am335x_mmc2_irqs[] = {
 	{ .irq = 29 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_mmc2_hwmod = {
+static struct omap_hwmod am335x_mmc2_hwmod = {
 	.name		= "mmc2",
-	.class		= &AM335x_mmc_hwmod_class,
+	.class		= &am335x_mmc_hwmod_class,
 	.mpu_irqs       = am335x_mmc2_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_mmc2_irqs),
 	.main_clk	= "mmc_clk",
@@ -719,14 +719,14 @@ static struct omap_hwmod AM335x_mmc2_hwmod = {
 
 /* 'mpu' class */
 
-static struct omap_hwmod_class AM335x_mpu_hwmod_class = {
+static struct omap_hwmod_class am335x_mpu_hwmod_class = {
 	.name = "mpu",
 };
 
 /* mpu */
-static struct omap_hwmod AM335x_mpu_hwmod = {
+static struct omap_hwmod am335x_mpu_hwmod = {
 	.name		= "mpu",
-	.class		= &AM335x_mpu_hwmod_class,
+	.class		= &am335x_mpu_hwmod_class,
 	.flags		= (HWMOD_INIT_NO_IDLE | HWMOD_INIT_NO_RESET),
 	.main_clk	= "mpu_fck",
 	.prcm = {
@@ -739,14 +739,14 @@ static struct omap_hwmod AM335x_mpu_hwmod = {
 
 /* 'ocmcram' class */
 
-static struct omap_hwmod_class AM335x_ocmcram_hwmod_class = {
+static struct omap_hwmod_class am335x_ocmcram_hwmod_class = {
 	.name = "ocmcram",
 };
 
 /* ocmcram */
-static struct omap_hwmod AM335x_ocmcram_hwmod = {
+static struct omap_hwmod am335x_ocmcram_hwmod = {
 	.name		= "ocmcram",
-	.class		= &AM335x_ocmcram_hwmod_class,
+	.class		= &am335x_ocmcram_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_OCMCRAM_CLKCTRL,
@@ -756,14 +756,14 @@ static struct omap_hwmod AM335x_ocmcram_hwmod = {
 
 /* 'ocpwp' class */
 
-static struct omap_hwmod_class AM335x_ocpwp_hwmod_class = {
+static struct omap_hwmod_class am335x_ocpwp_hwmod_class = {
 	.name = "ocpwp",
 };
 
 /* ocpwp */
-static struct omap_hwmod AM335x_ocpwp_hwmod = {
+static struct omap_hwmod am335x_ocpwp_hwmod = {
 	.name		= "ocpwp",
-	.class		= &AM335x_ocpwp_hwmod_class,
+	.class		= &am335x_ocpwp_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_OCPWP_CLKCTRL,
@@ -773,7 +773,7 @@ static struct omap_hwmod AM335x_ocpwp_hwmod = {
 
 /* 'rtc' class */
 
-static struct omap_hwmod_class AM335x_rtc_hwmod_class = {
+static struct omap_hwmod_class am335x_rtc_hwmod_class = {
 	.name = "rtc",
 };
 
@@ -782,9 +782,9 @@ static struct omap_hwmod_irq_info am335x_rtc_irqs[] = {
 	{ .irq = 75 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_rtc_hwmod = {
+static struct omap_hwmod am335x_rtc_hwmod = {
 	.name		= "rtc",
-	.class		= &AM335x_rtc_hwmod_class,
+	.class		= &am335x_rtc_hwmod_class,
 	.mpu_irqs       = am335x_rtc_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_rtc_irqs),
 	.main_clk	= "clk_32khz_ck",
@@ -797,7 +797,7 @@ static struct omap_hwmod AM335x_rtc_hwmod = {
 
 /* 'sha0' class */
 
-static struct omap_hwmod_class AM335x_sha0_hwmod_class = {
+static struct omap_hwmod_class am335x_sha0_hwmod_class = {
 	.name = "sha0",
 };
 
@@ -806,9 +806,9 @@ static struct omap_hwmod_irq_info am335x_sha0_irqs[] = {
 	{ .irq = 108 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_sha0_hwmod = {
+static struct omap_hwmod am335x_sha0_hwmod = {
 	.name		= "sha0",
-	.class		= &AM335x_sha0_hwmod_class,
+	.class		= &am335x_sha0_hwmod_class,
 	.mpu_irqs       = am335x_sha0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_sha0_irqs),
 	.main_clk	= "sysclk_div_ck",
@@ -821,7 +821,7 @@ static struct omap_hwmod AM335x_sha0_hwmod = {
 
 /* 'smartreflex' class */
 
-static struct omap_hwmod_class AM335x_smartreflex_hwmod_class = {
+static struct omap_hwmod_class am335x_smartreflex_hwmod_class = {
 	.name = "smartreflex",
 };
 
@@ -830,9 +830,9 @@ static struct omap_hwmod_irq_info am335x_smartreflex0_irqs[] = {
 	{ .irq = 120 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_smartreflex0_hwmod = {
+static struct omap_hwmod am335x_smartreflex0_hwmod = {
 	.name		= "smartreflex0",
-	.class		= &AM335x_smartreflex_hwmod_class,
+	.class		= &am335x_smartreflex_hwmod_class,
 	.mpu_irqs       = am335x_smartreflex0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_smartreflex0_irqs),
 	.main_clk	= "smartreflex0_fck",
@@ -848,9 +848,9 @@ static struct omap_hwmod_irq_info am335x_smartreflex1_irqs[] = {
 	{ .irq = 121 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_smartreflex1_hwmod = {
+static struct omap_hwmod am335x_smartreflex1_hwmod = {
 	.name		= "smartreflex1",
-	.class		= &AM335x_smartreflex_hwmod_class,
+	.class		= &am335x_smartreflex_hwmod_class,
 	.mpu_irqs       = am335x_smartreflex1_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_smartreflex1_irqs),
 	.main_clk	= "smartreflex1_fck",
@@ -863,14 +863,14 @@ static struct omap_hwmod AM335x_smartreflex1_hwmod = {
 
 /* 'spare' class */
 
-static struct omap_hwmod_class AM335x_spare_hwmod_class = {
+static struct omap_hwmod_class am335x_spare_hwmod_class = {
 	.name = "spare",
 };
 
 /* spare0 */
-static struct omap_hwmod AM335x_spare0_hwmod = {
+static struct omap_hwmod am335x_spare0_hwmod = {
 	.name		= "spare0",
-	.class		= &AM335x_spare_hwmod_class,
+	.class		= &am335x_spare_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_SPARE0_CLKCTRL,
@@ -879,9 +879,9 @@ static struct omap_hwmod AM335x_spare0_hwmod = {
 };
 
 /* spare1 */
-static struct omap_hwmod AM335x_spare1_hwmod = {
+static struct omap_hwmod am335x_spare1_hwmod = {
 	.name		= "spare1",
-	.class		= &AM335x_spare_hwmod_class,
+	.class		= &am335x_spare_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_SPARE1_CLKCTRL,
@@ -891,7 +891,7 @@ static struct omap_hwmod AM335x_spare1_hwmod = {
 
 /* 'spi' class */
 
-static struct omap_hwmod_class AM335x_spi_hwmod_class = {
+static struct omap_hwmod_class am335x_spi_hwmod_class = {
 	.name = "spi",
 };
 
@@ -900,9 +900,9 @@ static struct omap_hwmod_irq_info am335x_spi0_irqs[] = {
 	{ .irq = 65 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_spi0_hwmod = {
+static struct omap_hwmod am335x_spi0_hwmod = {
 	.name		= "spi0",
-	.class		= &AM335x_spi_hwmod_class,
+	.class		= &am335x_spi_hwmod_class,
 	.mpu_irqs       = am335x_spi0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_spi0_irqs),
 	.main_clk	= "i2c_clk",
@@ -914,9 +914,9 @@ static struct omap_hwmod AM335x_spi0_hwmod = {
 };
 
 /* spi1 */
-static struct omap_hwmod AM335x_spi1_hwmod = {
+static struct omap_hwmod am335x_spi1_hwmod = {
 	.name           = "spi0",
-	.class          = &AM335x_spi_hwmod_class,
+	.class          = &am335x_spi_hwmod_class,
 	.main_clk       = "i2c_clk",
 	.prcm = {
 		.omap4 = {
@@ -927,14 +927,14 @@ static struct omap_hwmod AM335x_spi1_hwmod = {
 
 /* 'spinlock' class */
 
-static struct omap_hwmod_class AM335x_spinlock_hwmod_class = {
+static struct omap_hwmod_class am335x_spinlock_hwmod_class = {
 	.name = "spinlock",
 };
 
 /* spinlock */
-static struct omap_hwmod AM335x_spinlock_hwmod = {
+static struct omap_hwmod am335x_spinlock_hwmod = {
 	.name		= "spinlock",
-	.class		= &AM335x_spinlock_hwmod_class,
+	.class		= &am335x_spinlock_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_SPINLOCK_CLKCTRL,
@@ -944,14 +944,14 @@ static struct omap_hwmod AM335x_spinlock_hwmod = {
 
 /* 'timer' class */
 
-static struct omap_hwmod_class AM335x_timer_hwmod_class = {
+static struct omap_hwmod_class am335x_timer_hwmod_class = {
 	.name = "timer",
 };
 
 /* timer0 */
-static struct omap_hwmod AM335x_timer0_hwmod = {
+static struct omap_hwmod am335x_timer0_hwmod = {
 	.name		= "timer0",
-	.class		= &AM335x_timer_hwmod_class,
+	.class		= &am335x_timer_hwmod_class,
 	.main_clk	= "timer0_fck",
 	.prcm = {
 		.omap4 = {
@@ -965,9 +965,9 @@ static struct omap_hwmod_irq_info am335x_timer1_irqs[] = {
 	{ .irq = 67 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_timer1_hwmod = {
+static struct omap_hwmod am335x_timer1_hwmod = {
 	.name		= "timer1",
-	.class		= &AM335x_timer_hwmod_class,
+	.class		= &am335x_timer_hwmod_class,
 	.mpu_irqs       = am335x_timer1_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_timer1_irqs),
 	.main_clk	= "timer1_fck",
@@ -983,9 +983,9 @@ static struct omap_hwmod_irq_info am335x_timer2_irqs[] = {
 	{ .irq = 68 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_timer2_hwmod = {
+static struct omap_hwmod am335x_timer2_hwmod = {
 	.name		= "timer2",
-	.class		= &AM335x_timer_hwmod_class,
+	.class		= &am335x_timer_hwmod_class,
 	.mpu_irqs       = am335x_timer2_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_timer2_irqs),
 	.main_clk	= "timer2_clk",
@@ -1001,9 +1001,9 @@ static struct omap_hwmod_irq_info am335x_timer3_irqs[] = {
 	{ .irq = 69 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_timer3_hwmod = {
+static struct omap_hwmod am335x_timer3_hwmod = {
 	.name		= "timer3",
-	.class		= &AM335x_timer_hwmod_class,
+	.class		= &am335x_timer_hwmod_class,
 	.mpu_irqs       = am335x_timer3_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_timer3_irqs),
 	.main_clk	= "timer3_clk",
@@ -1019,9 +1019,9 @@ static struct omap_hwmod_irq_info am335x_timer4_irqs[] = {
 	{ .irq = 92 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_timer4_hwmod = {
+static struct omap_hwmod am335x_timer4_hwmod = {
 	.name		= "timer4",
-	.class		= &AM335x_timer_hwmod_class,
+	.class		= &am335x_timer_hwmod_class,
 	.mpu_irqs       = am335x_timer4_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_timer4_irqs),
 	.main_clk	= "timer4_clk",
@@ -1037,9 +1037,9 @@ static struct omap_hwmod_irq_info am335x_timer5_irqs[] = {
 	{ .irq = 93 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_timer5_hwmod = {
+static struct omap_hwmod am335x_timer5_hwmod = {
 	.name		= "timer5",
-	.class		= &AM335x_timer_hwmod_class,
+	.class		= &am335x_timer_hwmod_class,
 	.mpu_irqs       = am335x_timer5_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_timer5_irqs),
 	.main_clk	= "timer5_clk",
@@ -1055,9 +1055,9 @@ static struct omap_hwmod_irq_info am335x_timer6_irqs[] = {
 	{ .irq = 94 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_timer6_hwmod = {
+static struct omap_hwmod am335x_timer6_hwmod = {
 	.name		= "timer6",
-	.class		= &AM335x_timer_hwmod_class,
+	.class		= &am335x_timer_hwmod_class,
 	.mpu_irqs       = am335x_timer6_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_timer6_irqs),
 	.main_clk	= "timer6_clk",
@@ -1073,9 +1073,9 @@ static struct omap_hwmod_irq_info am335x_timer7_irqs[] = {
 	{ .irq = 95 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_timer7_hwmod = {
+static struct omap_hwmod am335x_timer7_hwmod = {
 	.name		= "timer7",
-	.class		= &AM335x_timer_hwmod_class,
+	.class		= &am335x_timer_hwmod_class,
 	.mpu_irqs       = am335x_timer7_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_timer7_irqs),
 	.main_clk	= "timer7_clk",
@@ -1088,7 +1088,7 @@ static struct omap_hwmod AM335x_timer7_hwmod = {
 
 /* 'tpcc' class */
 
-static struct omap_hwmod_class AM335x_tpcc_hwmod_class = {
+static struct omap_hwmod_class am335x_tpcc_hwmod_class = {
 	.name = "tpcc",
 };
 
@@ -1097,9 +1097,9 @@ static struct omap_hwmod_irq_info am335x_tpcc_irqs[] = {
 	{ .irq = 12 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_tpcc_hwmod = {
+static struct omap_hwmod am335x_tpcc_hwmod = {
 	.name		= "tpcc",
-	.class		= &AM335x_tpcc_hwmod_class,
+	.class		= &am335x_tpcc_hwmod_class,
 	.mpu_irqs       = am335x_tpcc_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_tpcc_irqs),
 	.prcm = {
@@ -1111,7 +1111,7 @@ static struct omap_hwmod AM335x_tpcc_hwmod = {
 
 /* 'tptc' class */
 
-static struct omap_hwmod_class AM335x_tptc_hwmod_class = {
+static struct omap_hwmod_class am335x_tptc_hwmod_class = {
 	.name = "tptc",
 };
 
@@ -1120,9 +1120,9 @@ static struct omap_hwmod_irq_info am335x_tptc0_irqs[] = {
 	{ .irq = 112 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_tptc0_hwmod = {
+static struct omap_hwmod am335x_tptc0_hwmod = {
 	.name		= "tptc0",
-	.class		= &AM335x_tptc_hwmod_class,
+	.class		= &am335x_tptc_hwmod_class,
 	.mpu_irqs       = am335x_tptc0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_tptc0_irqs),
 	.prcm = {
@@ -1137,9 +1137,9 @@ static struct omap_hwmod_irq_info am335x_tptc1_irqs[] = {
 	{ .irq = 113 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_tptc1_hwmod = {
+static struct omap_hwmod am335x_tptc1_hwmod = {
 	.name		= "tptc1",
-	.class		= &AM335x_tptc_hwmod_class,
+	.class		= &am335x_tptc_hwmod_class,
 	.mpu_irqs       = am335x_tptc1_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_tptc1_irqs),
 	.prcm = {
@@ -1154,9 +1154,9 @@ static struct omap_hwmod_irq_info am335x_tptc2_irqs[] = {
 	{ .irq = 114 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_tptc2_hwmod = {
+static struct omap_hwmod am335x_tptc2_hwmod = {
 	.name		= "tptc2",
-	.class		= &AM335x_tptc_hwmod_class,
+	.class		= &am335x_tptc_hwmod_class,
 	.mpu_irqs       = am335x_tptc2_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_tptc2_irqs),
 	.prcm = {
@@ -1200,7 +1200,7 @@ static struct omap_hwmod_addr_space am335x_uart1_addr_space[] = {
 };
 
 static struct omap_hwmod_ocp_if am335x_l4_wkup__uart1 = {
-	.slave		= &AM335x_uart1_hwmod,
+	.slave		= &am335x_uart1_hwmod,
 	.clk		= "uart1_ick",
 	.addr		= am335x_uart1_addr_space,
 	.addr_cnt	= ARRAY_SIZE(am335x_uart1_addr_space),
@@ -1215,7 +1215,7 @@ static struct omap_hwmod_ocp_if *am335x_uart1_slaves[] = {
 	&am335x_l4_wkup__uart1,
 };
 
-static struct omap_hwmod AM335x_uart1_hwmod = {
+static struct omap_hwmod am335x_uart1_hwmod = {
 	.name		= "uart1",
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart1_irqs,
@@ -1243,7 +1243,7 @@ static struct omap_hwmod_addr_space am335x_uart2_addr_space[] = {
 };
 
 static struct omap_hwmod_ocp_if am335x_l4_ls__uart2 = {
-	.slave		= &AM335x_uart2_hwmod,
+	.slave		= &am335x_uart2_hwmod,
 	.clk		= "uart2_ick",
 	.addr		= am335x_uart2_addr_space,
 	.addr_cnt	= ARRAY_SIZE(am335x_uart2_addr_space),
@@ -1258,7 +1258,7 @@ static struct omap_hwmod_ocp_if *am335x_uart2_slaves[] = {
 	&am335x_l4_ls__uart2,
 };
 
-static struct omap_hwmod AM335x_uart2_hwmod = {
+static struct omap_hwmod am335x_uart2_hwmod = {
 	.name		= "uart2",
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart2_irqs,
@@ -1286,7 +1286,7 @@ static struct omap_hwmod_addr_space am335x_uart3_addr_space[] = {
 };
 
 static struct omap_hwmod_ocp_if am335x_l4_ls__uart3 = {
-	.slave		= &AM335x_uart3_hwmod,
+	.slave		= &am335x_uart3_hwmod,
 	.clk		= "uart3_ick",
 	.addr		= am335x_uart3_addr_space,
 	.addr_cnt	= ARRAY_SIZE(am335x_uart3_addr_space),
@@ -1301,7 +1301,7 @@ static struct omap_hwmod_ocp_if *am335x_uart3_slaves[] = {
 	&am335x_l4_ls__uart3,
 };
 
-static struct omap_hwmod AM335x_uart3_hwmod = {
+static struct omap_hwmod am335x_uart3_hwmod = {
 	.name		= "uart3",
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart3_irqs,
@@ -1329,7 +1329,7 @@ static struct omap_hwmod_addr_space am335x_uart4_addr_space[] = {
 };
 
 static struct omap_hwmod_ocp_if am335x_l4_ls__uart4 = {
-	.slave		= &AM335x_uart4_hwmod,
+	.slave		= &am335x_uart4_hwmod,
 	.clk		= "uart4_ick",
 	.addr		= am335x_uart4_addr_space,
 	.addr_cnt	= ARRAY_SIZE(am335x_uart4_addr_space),
@@ -1344,7 +1344,7 @@ static struct omap_hwmod_ocp_if *am335x_uart4_slaves[] = {
 	&am335x_l4_ls__uart4,
 };
 
-static struct omap_hwmod AM335x_uart4_hwmod = {
+static struct omap_hwmod am335x_uart4_hwmod = {
 	.name		= "uart4",
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart4_irqs,
@@ -1372,7 +1372,7 @@ static struct omap_hwmod_addr_space am335x_uart5_addr_space[] = {
 };
 
 static struct omap_hwmod_ocp_if am335x_l4_ls__uart5 = {
-	.slave		= &AM335x_uart5_hwmod,
+	.slave		= &am335x_uart5_hwmod,
 	.clk		= "uart5_ick",
 	.addr		= am335x_uart5_addr_space,
 	.addr_cnt	= ARRAY_SIZE(am335x_uart5_addr_space),
@@ -1387,7 +1387,7 @@ static struct omap_hwmod_ocp_if *am335x_uart5_slaves[] = {
 	&am335x_l4_ls__uart5,
 };
 
-static struct omap_hwmod AM335x_uart5_hwmod = {
+static struct omap_hwmod am335x_uart5_hwmod = {
 	.name		= "uart5",
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart5_irqs,
@@ -1415,7 +1415,7 @@ static struct omap_hwmod_addr_space am335x_uart6_addr_space[] = {
 };
 
 static struct omap_hwmod_ocp_if am335x_l4_ls__uart6 = {
-	.slave		= &AM335x_uart6_hwmod,
+	.slave		= &am335x_uart6_hwmod,
 	.clk		= "uart6_ick",
 	.addr		= am335x_uart6_addr_space,
 	.addr_cnt	= ARRAY_SIZE(am335x_uart6_addr_space),
@@ -1430,7 +1430,7 @@ static struct omap_hwmod_ocp_if *am335x_uart6_slaves[] = {
 	&am335x_l4_ls__uart6,
 };
 
-static struct omap_hwmod AM335x_uart6_hwmod = {
+static struct omap_hwmod am335x_uart6_hwmod = {
 	.name		= "uart6",
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart6_irqs,
@@ -1450,7 +1450,7 @@ static struct omap_hwmod AM335x_uart6_hwmod = {
 
 /* 'usb0' class */
 
-static struct omap_hwmod_class AM335x_usb0_hwmod_class = {
+static struct omap_hwmod_class am335x_usb0_hwmod_class = {
 	.name = "usb0",
 };
 
@@ -1459,9 +1459,9 @@ static struct omap_hwmod_irq_info am335x_usb0_irqs[] = {
 	{ .irq = 18 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_usb0_hwmod = {
+static struct omap_hwmod am335x_usb0_hwmod = {
 	.name		= "usb0",
-	.class		= &AM335x_usb0_hwmod_class,
+	.class		= &am335x_usb0_hwmod_class,
 	.mpu_irqs       = am335x_usb0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_usb0_irqs),
 	.main_clk	= "core_100m_ck",
@@ -1474,14 +1474,14 @@ static struct omap_hwmod AM335x_usb0_hwmod = {
 
 /* 'wd_timer1' class */
 
-static struct omap_hwmod_class AM335x_wd_timer1_hwmod_class = {
+static struct omap_hwmod_class am335x_wd_timer1_hwmod_class = {
 	.name = "wd_timer1",
 };
 
 /* wd_timer1 */
-static struct omap_hwmod AM335x_wd_timer1_hwmod = {
+static struct omap_hwmod am335x_wd_timer1_hwmod = {
 	.name		= "wd_timer1",
-	.class		= &AM335x_wd_timer1_hwmod_class,
+	.class		= &am335x_wd_timer1_hwmod_class,
 	.main_clk	= "wd_timer1_fck",
 	.prcm = {
 		.omap4 = {
@@ -1492,7 +1492,7 @@ static struct omap_hwmod AM335x_wd_timer1_hwmod = {
 
 /* 'wdt' class */
 
-static struct omap_hwmod_class AM335x_wdt_hwmod_class = {
+static struct omap_hwmod_class am335x_wdt_hwmod_class = {
 	.name = "wdt",
 };
 
@@ -1501,9 +1501,9 @@ static struct omap_hwmod_irq_info am335x_wdt0_irqs[] = {
 	{ .irq = 15 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod AM335x_wdt0_hwmod = {
+static struct omap_hwmod am335x_wdt0_hwmod = {
 	.name		= "wdt0",
-	.class		= &AM335x_wdt_hwmod_class,
+	.class		= &am335x_wdt_hwmod_class,
 	.mpu_irqs       = am335x_wdt0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_wdt0_irqs),
 	.main_clk	= "wdt0_fck",
@@ -1516,14 +1516,14 @@ static struct omap_hwmod AM335x_wdt0_hwmod = {
 
 /* 'wkup_m3' class */
 
-static struct omap_hwmod_class AM335x_wkup_m3_hwmod_class = {
+static struct omap_hwmod_class am335x_wkup_m3_hwmod_class = {
 	.name = "wkup_m3",
 };
 
 /* wkup_m3 */
-static struct omap_hwmod AM335x_wkup_m3_hwmod = {
+static struct omap_hwmod am335x_wkup_m3_hwmod = {
 	.name		= "wkup_m3",
-	.class		= &AM335x_wkup_m3_hwmod_class,
+	.class		= &am335x_wkup_m3_hwmod_class,
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_WKUP_WKUP_M3_CLKCTRL,
@@ -1533,119 +1533,119 @@ static struct omap_hwmod AM335x_wkup_m3_hwmod = {
 
 static __initdata struct omap_hwmod *am335x_hwmods[] = {
 	/* l4wkup class */
-	&AM335x_l4wkup_hwmod,
+	&am335x_l4wkup_hwmod,
 
 	/* adc_tsc class */
-	&AM335x_adc_tsc_hwmod,
+	&am335x_adc_tsc_hwmod,
 	/* aes class */
-	&AM335x_aes0_hwmod,
+	&am335x_aes0_hwmod,
 	/* cefuse class */
-	&AM335x_cefuse_hwmod,
+	&am335x_cefuse_hwmod,
 	/* clkdiv32k class */
-	&AM335x_clkdiv32k_hwmod,
+	&am335x_clkdiv32k_hwmod,
 	/* control class */
-	&AM335x_control_hwmod,
+	&am335x_control_hwmod,
 	/* cpgmac0 class */
-	&AM335x_cpgmac0_hwmod,
+	&am335x_cpgmac0_hwmod,
 	/* dcan class */
-	&AM335x_dcan0_hwmod,
-	&AM335x_dcan1_hwmod,
+	&am335x_dcan0_hwmod,
+	&am335x_dcan1_hwmod,
 	/* debugss class */
-	&AM335x_debugss_hwmod,
+	&am335x_debugss_hwmod,
 	/* efuse class */
-	&AM335x_efuse_hwmod,
+	&am335x_efuse_hwmod,
 	/* elm class */
-	&AM335x_elm_hwmod,
+	&am335x_elm_hwmod,
 	/* emif_fw class */
-	&AM335x_emif_fw_hwmod,
+	&am335x_emif_fw_hwmod,
 	/* epwmss class */
-	&AM335x_epwmss0_hwmod,
-	&AM335x_epwmss1_hwmod,
-	&AM335x_epwmss2_hwmod,
+	&am335x_epwmss0_hwmod,
+	&am335x_epwmss1_hwmod,
+	&am335x_epwmss2_hwmod,
 	/* gpio class */
-	&AM335x_gpio0_hwmod,
-	&AM335x_gpio1_hwmod,
-	&AM335x_gpio2_hwmod,
-	&AM335x_gpio3_hwmod,
+	&am335x_gpio0_hwmod,
+	&am335x_gpio1_hwmod,
+	&am335x_gpio2_hwmod,
+	&am335x_gpio3_hwmod,
 	/* gpmc class */
-	&AM335x_gpmc_hwmod,
+	&am335x_gpmc_hwmod,
 	/* i2c class */
-	&AM335x_i2c0_hwmod,
-	&AM335x_i2c1_hwmod,
-	&AM335x_i2c2_hwmod,
+	&am335x_i2c0_hwmod,
+	&am335x_i2c1_hwmod,
+	&am335x_i2c2_hwmod,
 	/* icss class */
-	&AM335x_icss_hwmod,
+	&am335x_icss_hwmod,
 	/* ieee5000 class */
-	&AM335x_ieee5000_hwmod,
+	&am335x_ieee5000_hwmod,
 	/* l3 class */
-	&AM335x_l4_hs_hwmod,
-	&AM335x_l3_instr_hwmod,
-	&AM335x_l3_main_hwmod,
+	&am335x_l4_hs_hwmod,
+	&am335x_l3_instr_hwmod,
+	&am335x_l3_main_hwmod,
 	/* l4fw class */
-	&AM335x_l4fw_hwmod,
+	&am335x_l4fw_hwmod,
 	/* l4ls class */
-	&AM335x_l4ls_hwmod,
+	&am335x_l4ls_hwmod,
 	/* lcdc class */
-	&AM335x_lcdc_hwmod,
+	&am335x_lcdc_hwmod,
 	/* mcasp class */
-	&AM335x_mcasp0_hwmod,
+	&am335x_mcasp0_hwmod,
 	/* mlb class */
-	&AM335x_mlb_hwmod,
+	&am335x_mlb_hwmod,
 	/* mmc class */
-	&AM335x_mmc0_hwmod,
-	&AM335x_mmc1_hwmod,
-	&AM335x_mmc2_hwmod,
+	&am335x_mmc0_hwmod,
+	&am335x_mmc1_hwmod,
+	&am335x_mmc2_hwmod,
 	/* mpu class */
-	&AM335x_mpu_hwmod,
+	&am335x_mpu_hwmod,
 	/* ocmcram class */
-	&AM335x_ocmcram_hwmod,
+	&am335x_ocmcram_hwmod,
 	/* ocpwp class */
-	&AM335x_ocpwp_hwmod,
+	&am335x_ocpwp_hwmod,
 	/* rtc class */
-	&AM335x_rtc_hwmod,
+	&am335x_rtc_hwmod,
 	/* sha0 class */
-	&AM335x_sha0_hwmod,
+	&am335x_sha0_hwmod,
 	/* smartreflex class */
-	&AM335x_smartreflex0_hwmod,
-	&AM335x_smartreflex1_hwmod,
+	&am335x_smartreflex0_hwmod,
+	&am335x_smartreflex1_hwmod,
 	/* spare class */
-	&AM335x_spare0_hwmod,
-	&AM335x_spare1_hwmod,
+	&am335x_spare0_hwmod,
+	&am335x_spare1_hwmod,
 	/* spi class */
-	&AM335x_spi0_hwmod,
-	&AM335x_spi1_hwmod,
+	&am335x_spi0_hwmod,
+	&am335x_spi1_hwmod,
 	/* spinlock class */
-	&AM335x_spinlock_hwmod,
+	&am335x_spinlock_hwmod,
 	/* timer class */
-	&AM335x_timer0_hwmod,
-	&AM335x_timer1_hwmod,
-	&AM335x_timer2_hwmod,
-	&AM335x_timer3_hwmod,
-	&AM335x_timer4_hwmod,
-	&AM335x_timer5_hwmod,
-	&AM335x_timer6_hwmod,
-	&AM335x_timer7_hwmod,
+	&am335x_timer0_hwmod,
+	&am335x_timer1_hwmod,
+	&am335x_timer2_hwmod,
+	&am335x_timer3_hwmod,
+	&am335x_timer4_hwmod,
+	&am335x_timer5_hwmod,
+	&am335x_timer6_hwmod,
+	&am335x_timer7_hwmod,
 	/* tpcc class */
-	&AM335x_tpcc_hwmod,
+	&am335x_tpcc_hwmod,
 	/* tptc class */
-	&AM335x_tptc0_hwmod,
-	&AM335x_tptc1_hwmod,
-	&AM335x_tptc2_hwmod,
+	&am335x_tptc0_hwmod,
+	&am335x_tptc1_hwmod,
+	&am335x_tptc2_hwmod,
 	/* uart class */
-	&AM335x_uart1_hwmod,
-	&AM335x_uart2_hwmod,
-	&AM335x_uart3_hwmod,
-	&AM335x_uart4_hwmod,
-	&AM335x_uart5_hwmod,
-	&AM335x_uart6_hwmod,
+	&am335x_uart1_hwmod,
+	&am335x_uart2_hwmod,
+	&am335x_uart3_hwmod,
+	&am335x_uart4_hwmod,
+	&am335x_uart5_hwmod,
+	&am335x_uart6_hwmod,
 	/* usb0 class */
-	&AM335x_usb0_hwmod,
+	&am335x_usb0_hwmod,
 	/* wd_timer1 class */
-	&AM335x_wd_timer1_hwmod,
+	&am335x_wd_timer1_hwmod,
 	/* wdt class */
-	&AM335x_wdt0_hwmod,
+	&am335x_wdt0_hwmod,
 	/* wkup_m3 class */
-	&AM335x_wkup_m3_hwmod,
+	&am335x_wkup_m3_hwmod,
 	NULL,
 };
 
