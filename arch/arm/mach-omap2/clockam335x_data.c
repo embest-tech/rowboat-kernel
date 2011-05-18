@@ -221,14 +221,21 @@ static struct clk dpll_core_ck = {
 	.recalc         = &omap3_dpll_recalc,
 };
 
+static struct clk dpll_core_x2_ck = {
+	.name		= "dpll_core_x2_ck",
+	.parent		= &dpll_core_ck,
+	.ops		= &clkops_null,
+	.recalc		= &omap3_clkoutx2_recalc,
+};
+
 static const struct clksel dpll_core_m4_div[] = {
-	{ .parent = &dpll_core_ck, .rates = div31_1to31_rates },
+	{ .parent = &dpll_core_x2_ck, .rates = div31_1to31_rates },
 	{ .parent = NULL },
 };
 
 static struct clk dpll_core_m4_ck = {
 	.name           = "dpll_core_m4_ck",
-	.parent         = &dpll_core_ck,
+	.parent         = &dpll_core_x2_ck,
 	.clksel         = dpll_core_m4_div,
 	.clksel_reg     = AM335x_CM_DIV_M4_DPLL_CORE,
 	.clksel_mask    = AM335x_HSDIVIDER_CLKOUT1_DIV_MASK,
@@ -1071,7 +1078,7 @@ static struct clk wkup_m3_fck = {
 
 static struct clk dpll_core_m5_ck = {
 	.name		= "dpll_core_m5_ck",
-	.parent		= &dpll_core_ck,
+	.parent		= &dpll_core_x2_ck,
 	.clksel		= dpll_core_m4_div,
 	.clksel_reg	= AM335x_CM_DIV_M5_DPLL_CORE,
 	.clksel_mask	= AM335x_HSDIVIDER_CLKOUT2_DIV_MASK,
@@ -1690,6 +1697,7 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"i2c_clk",		&i2c_clk,	CK_AM335X),
 	CLK(NULL,	"clk_div_24_ck",	&clk_div_24_ck,	CK_AM335X),
 	CLK(NULL,	"dpll_core_ck",		&dpll_core_ck,	CK_AM335X),
+	CLK(NULL,	"dpll_core_ck",		&dpll_core_x2_ck,	CK_AM335X),
 	CLK(NULL,	"dpll_core_m4_ck",	&dpll_core_m4_ck,	CK_AM335X),
 	CLK(NULL,	"sysclk_div_ck",	&sysclk_div_ck,	CK_AM335X),
 	CLK(NULL,	"core_100m_ck",		&core_100m_ck,	CK_AM335X),
