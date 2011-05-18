@@ -298,8 +298,17 @@ static const char *ti814x_dm_source_names[] __initdata = {
 	"xref2_ck",
 	NULL
 };
+
+static const char *am335x_dm_source_names[] __initdata = {
+	"sys_clkin_ck",
+	"clk_32khz_ck",
+	"tclkin_ck",
+	NULL
+};
+
 static struct clk *ti816x_dm_source_clocks[3];
 static struct clk *ti814x_dm_source_clocks[7];
+static struct clk *am335x_dm_source_clocks[3];
 static const int ti81xx_dm_timer_count = ARRAY_SIZE(ti81xx_dm_timers);
 
 #else
@@ -821,6 +830,8 @@ int __init omap_dm_timer_init(void)
 			dm_source_clocks = ti816x_dm_source_clocks;
 		} else if (cpu_is_am335x()) {
 			dm_timer_count = ti81xx_dm_timer_count - 1;
+			dm_source_names = am335x_dm_source_names;
+			dm_source_clocks = am335x_dm_source_clocks;
 		} else {
 			dm_timer_count = ti81xx_dm_timer_count;
 			dm_source_names = ti814x_dm_source_names;
