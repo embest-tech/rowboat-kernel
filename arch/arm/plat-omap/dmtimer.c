@@ -819,6 +819,8 @@ int __init omap_dm_timer_init(void)
 			dm_timer_count = ti81xx_dm_timer_count - 1;
 			dm_source_names = ti816x_dm_source_names;
 			dm_source_clocks = ti816x_dm_source_clocks;
+		} else if (cpu_is_am335x()) {
+			dm_timer_count = ti81xx_dm_timer_count - 1;
 		} else {
 			dm_timer_count = ti81xx_dm_timer_count;
 			dm_source_names = ti814x_dm_source_names;
@@ -835,6 +837,10 @@ int __init omap_dm_timer_init(void)
 
 	if (cpu_is_omap243x())
 		dm_timers[0].phys_base = 0x49018000;
+
+	if (cpu_is_am335x()) {
+		dm_timers[0].phys_base = 0x44e31000;
+	}
 
 	for (i = 0; i < dm_timer_count; i++) {
 		timer = &dm_timers[i];
