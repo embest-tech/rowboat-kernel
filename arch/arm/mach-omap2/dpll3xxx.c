@@ -606,9 +606,16 @@ unsigned long omap3_clkoutx2_recalc(struct clk *clk)
 
 	v = __raw_readl(dd->control_reg) & dd->enable_mask;
 	v >>= __ffs(dd->enable_mask);
-	if ((v != OMAP3XXX_EN_DPLL_LOCKED) || (dd->flags & DPLL_J_TYPE))
-		rate = clk->parent->rate;
-	else
-		rate = clk->parent->rate * 2;
+	if (cpu_is_am335x()) {
+		if (v == AM335X_EN_DPLL_LOCKED)
+			rate = clk->parent->rate * 2;
+		else
+			rate = 0;
+	} else {
+		if ((v != OMAP3XXX_EN_DPLL_LOCKED) || (dd->flags & DPLL_J_TYPE))
+			rate = clk->parent->rate;
+		else
+			rate = clk->parent->rate * 2;
+	}
 	return rate;
 }
