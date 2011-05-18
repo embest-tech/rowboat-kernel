@@ -1456,13 +1456,6 @@ static struct clk timer1_fck = {
 	.recalc		= &omap2_clksel_recalc,
 };
 
-static struct clk uart0_clk = {
-	.name		= "uart0_clk",
-	.parent		= &dpll_per_m2_ck,
-	.ops		= &clkops_null,
-	.recalc		= &followparent_recalc,
-};
-
 static struct clk vtp_clk_div_ck = {
 	.name		= "vtp_clk_div_ck",
 	.parent		= &sys_clkin_ck,
@@ -1642,7 +1635,6 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"gpt5_ick",		&timer5_ick,	CK_AM335X),
 	CLK(NULL,	"gpt6_ick",		&timer6_ick,	CK_AM335X),
 	CLK(NULL,	"gpt7_ick",		&timer7_ick,	CK_AM335X),
-	CLK(NULL,	"uart0_clk",		&uart0_clk,	CK_AM335X),
 	CLK(NULL,	"vtp_clk_div_ck",	&vtp_clk_div_ck,	CK_AM335X),
 	CLK(NULL,	"wdt0_clkmux_ck",	&wdt0_clkmux_ck,	CK_AM335X),
 	CLK(NULL,	"wdt1_clkmux_ck",	&wdt1_clkmux_ck,	CK_AM335X),
