@@ -123,10 +123,8 @@ static struct clk dpll_per_ck = {
 	.parent         = &sys_clkin_ck,
 	.dpll_data      = &dpll_per_dd,
 	.init           = &omap2_init_dpll_parent,
-	.ops            = &clkops_omap3_noncore_dpll_ops,
+	.ops		= &clkops_null,
 	.recalc         = &omap3_dpll_recalc,
-	.round_rate     = &omap2_dpll_round_rate,
-	.set_rate       = &omap3_noncore_dpll_set_rate,
 };
 
 static const struct clksel_rate div31_1to31_rates[] = {
@@ -1141,11 +1139,9 @@ static struct clk dpll_ddr_ck = {
 	.name		= "dpll_ddr_ck",
 	.parent		= &sys_clkin_ck,
 	.dpll_data	= &dpll_ddr_dd,
-	.init		= &omap2_init_dpll_parent,
-	.ops		= &clkops_omap3_noncore_dpll_ops,
-	.recalc		= &omap3_dpll_recalc,
-	.round_rate	= &omap2_dpll_round_rate,
-	.set_rate	= &omap3_noncore_dpll_set_rate,
+	.init           = &omap2_init_dpll_parent,
+	.ops		= &clkops_null,
+	.recalc         = &omap3_dpll_recalc,
 };
 
 static const struct clksel dpll_ddr_m2_div[] = {
@@ -1213,11 +1209,9 @@ static struct clk dpll_disp_ck = {
 	.name		= "dpll_disp_ck",
 	.parent		= &sys_clkin_ck,
 	.dpll_data	= &dpll_disp_dd,
-	.init		= &omap2_init_dpll_parent,
-	.ops		= &clkops_omap3_noncore_dpll_ops,
-	.recalc		= &omap3_dpll_recalc,
-	.round_rate	= &omap2_dpll_round_rate,
-	.set_rate	= &omap3_noncore_dpll_set_rate,
+	.init           = &omap2_init_dpll_parent,
+	.ops		= &clkops_null,
+	.recalc         = &omap3_dpll_recalc,
 };
 
 
@@ -1264,11 +1258,9 @@ static struct clk dpll_mpu_ck = {
 	.name		= "dpll_mpu_ck",
 	.parent		= &sys_clkin_ck,
 	.dpll_data	= &dpll_mpu_dd,
-	.init		= &omap2_init_dpll_parent,
-	.ops		= &clkops_omap3_noncore_dpll_ops,
-	.recalc		= &omap3_dpll_recalc,
-	.round_rate	= &omap2_dpll_round_rate,
-	.set_rate	= &omap3_noncore_dpll_set_rate,
+	.init           = &omap2_init_dpll_parent,
+	.ops		= &clkops_null,
+	.recalc         = &omap3_dpll_recalc,
 };
 
 
