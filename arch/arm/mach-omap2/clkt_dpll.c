@@ -197,6 +197,10 @@ void omap2_init_dpll_parent(struct clk *clk)
 		    v == OMAP4XXX_EN_DPLL_FRBYPASS ||
 		    v == OMAP4XXX_EN_DPLL_MNBYPASS)
 			clk_reparent(clk, dd->clk_bypass);
+	} else if (cpu_is_am335x()) {
+		if (v == AM335X_EN_DPLL_LPBYPASS ||
+		    v == AM335X_EN_DPLL_MNBYPASS)
+			clk_reparent(clk, dd->clk_bypass);
 	}
 	return;
 }
@@ -242,6 +246,10 @@ u32 omap2_get_dpll_rate(struct clk *clk)
 		if (v == OMAP4XXX_EN_DPLL_LPBYPASS ||
 		    v == OMAP4XXX_EN_DPLL_FRBYPASS ||
 		    v == OMAP4XXX_EN_DPLL_MNBYPASS)
+			return dd->clk_bypass->rate;
+	} else if (cpu_is_am335x()) {
+		if (v == AM335X_EN_DPLL_LPBYPASS ||
+		    v == AM335X_EN_DPLL_MNBYPASS)
 			return dd->clk_bypass->rate;
 	}
 
