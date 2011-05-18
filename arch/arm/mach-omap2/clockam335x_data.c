@@ -46,6 +46,10 @@ static struct clk clk_32768_ck = {
 	.ops		= &clkops_null,
 };
 
+/* XXX: This holds true iff PER PLL is locked at 960MHz.
+ * If PLL frequency is changed, calculations based on the
+ * this clock rate will break
+ */
 static struct clk clk_32khz_ck = {
 	.name		= "clk_32khz_ck",
 	.rate		= 32768,
