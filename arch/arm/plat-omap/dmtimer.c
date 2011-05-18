@@ -149,6 +149,7 @@ struct omap_dm_timer {
 	struct clk *iclk, *fclk;
 #endif
 	void __iomem *io_base;
+	u32 *dm_regs;
 	unsigned reserved:1;
 	unsigned enabled:1;
 	unsigned posted:1;
@@ -323,7 +324,6 @@ static const int ti81xx_dm_timer_count = ARRAY_SIZE(ti81xx_dm_timers);
 static struct omap_dm_timer *dm_timers;
 static const char **dm_source_names;
 static struct clk **dm_source_clocks;
-static u32 *dm_regs;
 
 static spinlock_t dm_timer_lock;
 
@@ -336,10 +336,10 @@ static inline u32 omap_dm_timer_read_reg(struct omap_dm_timer *timer, u32 reg)
 {
 	if (timer->posted)
 		while (readl(timer->io_base +
-				(dm_regs[OMAP_TIMER_WRITE_PEND_REG] & 0xff)) &
-				(dm_regs[reg] >> WPSHIFT))
+			(timer->dm_regs[OMAP_TIMER_WRITE_PEND_REG] & 0xff)) &
+			(timer->dm_regs[reg] >> WPSHIFT))
 			cpu_relax();
-	return readl(timer->io_base + (dm_regs[reg] & 0xff));
+	return readl(timer->io_base + (timer->dm_regs[reg] & 0xff));
 }
 
 /*
@@ -353,10 +353,10 @@ static void omap_dm_timer_write_reg(struct omap_dm_timer *timer, u32 reg,
 {
 	if (timer->posted)
 		while (readl(timer->io_base +
-				(dm_regs[OMAP_TIMER_WRITE_PEND_REG] & 0xff)) &
-				(dm_regs[reg] >> WPSHIFT))
+			(timer->dm_regs[OMAP_TIMER_WRITE_PEND_REG] & 0xff)) &
+			(timer->dm_regs[reg] >> WPSHIFT))
 			cpu_relax();
-	writel(value, timer->io_base + (dm_regs[reg] & 0xff));
+	writel(value, timer->io_base + (timer->dm_regs[reg] & 0xff));
 }
 
 static inline int omap_dm_timer_is_reset_done(struct omap_dm_timer *timer)
@@ -800,8 +800,6 @@ int __init omap_dm_timer_init(void)
 
 	spin_lock_init(&dm_timer_lock);
 
-	dm_regs = (u32 *)reg_map;
-
 	if (cpu_class_is_omap1()) {
 		dm_timers = omap1_dm_timers;
 		dm_timer_count = omap1_dm_timer_count;
@@ -837,9 +835,6 @@ int __init omap_dm_timer_init(void)
 			dm_source_names = ti814x_dm_source_names;
 			dm_source_clocks = ti814x_dm_source_clocks;
 		}
-
-		/* Few registers/offsets are different */
-		dm_regs = (u32 *)ti81xx_reg_map;
 	}
 
 	if (cpu_class_is_omap2())
@@ -860,6 +855,12 @@ int __init omap_dm_timer_init(void)
 		timer->io_base = ioremap(timer->phys_base, map_size);
 		BUG_ON(!timer->io_base);
 
+		/* Few registers/offsets are different */
+		if (cpu_is_ti81xx()) {
+			timer->dm_regs = (u32 *)ti81xx_reg_map;
+		} else
+			timer->dm_regs = (u32 *)reg_map;
+
 #ifdef CONFIG_ARCH_OMAP2PLUS
 		if (cpu_class_is_omap2()) {
 			char clk_name[16];
@@ -870,6 +871,9 @@ int __init omap_dm_timer_init(void)
 		}
 #endif
 	}
+
+	if (cpu_is_am335x())
+		dm_timers[0].dm_regs = (u32 *)reg_map;
 
 	return 0;
 }
