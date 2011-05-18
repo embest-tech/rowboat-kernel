@@ -251,7 +251,8 @@ static struct clk div_l4_wkup_gclk_ck = {
 	.name           = "div_l4_wkup_gclk_ck",
 	.parent         = &dpll_core_m4_ck,
 	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
 static struct clk core_100m_ck = {
@@ -996,10 +997,9 @@ static struct clk uart6_fck = {
 
 static struct clk uart1_ick = {
 	.name           = "uart1_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &div_l4_wkup_gclk_ck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc         = &followparent_recalc,
 };
 
 static struct clk uart2_ick = {
@@ -1478,10 +1478,9 @@ static const struct clksel timer1_clkmux_sel[] = {
 
 static struct clk timer1_ick = {
 	.name		= "timer1_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &div_l4_wkup_gclk_ck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc         = &followparent_recalc,
 };
 
 static struct clk timer1_fck = {
