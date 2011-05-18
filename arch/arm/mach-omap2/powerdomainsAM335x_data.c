@@ -38,7 +38,7 @@ static struct powerdomain gfx_335X_pwrdm = {
 		[0] = PWRSTS_OFF_RET,	/* gfx_mem */
 	},
 	.pwrsts_mem_on	= {
-		[0] = PWRDM_POWER_ON,	/* gfx_mem */
+		[0] = PWRSTS_ON,	/* gfx_mem */
 	},
 };
 
@@ -47,8 +47,7 @@ static struct powerdomain rtc_335X_pwrdm = {
 	.name		  = "rtc_pwrdm",
 	.prcm_offs	  = AM335x_PRM_RTC_MOD,
 	.omap_chip	  = OMAP_CHIP_INIT(CHIP_IS_AM335X),
-	.pwrsts		  = PWRDM_POWER_ON,
-	.pwrsts_logic_ret = PWRSTS_OFF_RET,
+	.pwrsts		  = PWRSTS_ON,
 };
 
 /* wkup_335x_pwrdm: TBD */
@@ -56,15 +55,7 @@ static struct powerdomain wkup_335X_pwrdm = {
 	.name		  = "wkup_pwrdm",
 	.prcm_offs	  = AM335x_PRM_WKUP_MOD,
 	.omap_chip	  = OMAP_CHIP_INIT(CHIP_IS_AM335X),
-	.pwrsts		  = PWRDM_POWER_ON,
-	.pwrsts_logic_ret = PWRSTS_OFF_RET,
-	.banks		  = 1,
-	.pwrsts_mem_ret	= {
-		[0] = PWRDM_POWER_OFF,	/* debugss_mem */
-	},
-	.pwrsts_mem_on	= {
-		[0] = PWRDM_POWER_ON,	/* debugss_mem */
-	},
+	.pwrsts		  = PWRSTS_ON,
 };
 
 /* per_335x_pwrdm: TBD */
@@ -76,14 +67,14 @@ static struct powerdomain per_335X_pwrdm = {
 	.pwrsts_logic_ret = PWRSTS_OFF_RET,
 	.banks		  = 3,
 	.pwrsts_mem_ret	= {
-		[0] = PWRSTS_OFF_RET,	/* icss_mem */
-		[1] = PWRSTS_OFF_RET,	/* per_mem */
-		[2] = PWRSTS_OFF_RET,	/* ram_mem */
+		[0] = PWRSTS_OFF_RET,		/* icss_mem */
+		[1] = PWRSTS_OFF_RET,		/* per_mem */
+		[2] = PWRSTS_OFF_RET,		/* ram_mem */
 	},
 	.pwrsts_mem_on	= {
-		[0] = PWRSTS_OFF_RET,	/* icss_mem */
-		[1] = PWRDM_POWER_ON,	/* per_mem */
-		[2] = PWRSTS_OFF_RET,	/* ram_mem */
+		[0] = PWRSTS_OFF_RET_ON,	/* icss_mem */
+		[1] = PWRSTS_OFF_RET_ON,	/* per_mem */
+		[2] = PWRSTS_OFF_RET_ON,	/* ram_mem */
 	},
 };
 
@@ -96,14 +87,14 @@ static struct powerdomain mpu_335X_pwrdm = {
 	.pwrsts_logic_ret = PWRSTS_OFF_RET,
 	.banks		  = 3,
 	.pwrsts_mem_ret	= {
-		[0] = PWRSTS_OFF_RET,	/* mpu_l1 */
-		[1] = PWRSTS_OFF_RET,	/* mpu_l2 */
-		[2] = PWRSTS_OFF_RET,	/* mpu_ram */
+		[0] = PWRSTS_OFF_RET,		/* mpu_l1 */
+		[1] = PWRSTS_OFF_RET,		/* mpu_l2 */
+		[2] = PWRSTS_OFF_RET,		/* mpu_ram */
 	},
 	.pwrsts_mem_on	= {
-		[0] = PWRDM_POWER_ON,	/* mpu_l1 */
-		[1] = PWRDM_POWER_ON,	/* mpu_l2 */
-		[2] = PWRDM_POWER_ON,	/* mpu_ram */
+		[0] = PWRSTS_ON,		/* mpu_l1 */
+		[1] = PWRSTS_ON,		/* mpu_l2 */
+		[2] = PWRSTS_OFF_RET_ON,	/* mpu_ram */
 	},
 };
 
