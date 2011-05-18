@@ -95,34 +95,6 @@ static int am335x_pwrdm_set_logic_retst(struct powerdomain *pwrdm, u8 pwrst)
 	return 0;
 }
 
-static int am335x_pwrdm_set_mem_onst(struct powerdomain *pwrdm, u8 bank,
-				    u8 pwrst)
-{
-	u32 m;
-
-	m = omap2_pwrdm_get_mem_bank_onstate_mask(bank);
-
-	am335x_prminst_rmw_inst_reg_bits(m, (pwrst << __ffs(m)),
-					pwrdm->prcm_offs,
-					AM335x_PM_PWSTCTRL);
-
-	return 0;
-}
-
-static int am335x_pwrdm_set_mem_retst(struct powerdomain *pwrdm, u8 bank,
-				     u8 pwrst)
-{
-	u32 m;
-
-	m = omap2_pwrdm_get_mem_bank_retst_mask(bank);
-
-	am335x_prminst_rmw_inst_reg_bits(m, (pwrst << __ffs(m)),
-					pwrdm->prcm_offs,
-					AM335x_PM_PWSTCTRL);
-
-	return 0;
-}
-
 static int am335x_pwrdm_read_logic_pwrst(struct powerdomain *pwrdm)
 {
 	u32 v;
@@ -141,32 +113,6 @@ static int am335x_pwrdm_read_logic_retst(struct powerdomain *pwrdm)
 	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
 	v &= AM335x_LOGICRETSTATE_MASK;
 	v >>= AM335x_LOGICRETSTATE_SHIFT;
-
-	return v;
-}
-
-static int am335x_pwrdm_read_mem_pwrst(struct powerdomain *pwrdm, u8 bank)
-{
-	u32 m, v;
-
-	m = omap2_pwrdm_get_mem_bank_stst_mask(bank);
-
-	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTST);
-	v &= m;
-	v >>= __ffs(m);
-
-	return v;
-}
-
-static int am335x_pwrdm_read_mem_retst(struct powerdomain *pwrdm, u8 bank)
-{
-	u32 m, v;
-
-	m = omap2_pwrdm_get_mem_bank_retst_mask(bank);
-
-	v = am335x_prminst_read_inst_reg(pwrdm->prcm_offs, AM335x_PM_PWSTCTRL);
-	v &= m;
-	v >>= __ffs(m);
 
 	return v;
 }
@@ -208,9 +154,5 @@ struct pwrdm_ops am335x_pwrdm_operations = {
 	.pwrdm_set_logic_retst	= am335x_pwrdm_set_logic_retst,
 	.pwrdm_read_logic_pwrst	= am335x_pwrdm_read_logic_pwrst,
 	.pwrdm_read_logic_retst	= am335x_pwrdm_read_logic_retst,
-	.pwrdm_read_mem_pwrst	= am335x_pwrdm_read_mem_pwrst,
-	.pwrdm_read_mem_retst	= am335x_pwrdm_read_mem_retst,
-	.pwrdm_set_mem_onst	= am335x_pwrdm_set_mem_onst,
-	.pwrdm_set_mem_retst	= am335x_pwrdm_set_mem_retst,
 	.pwrdm_wait_transition	= am335x_pwrdm_wait_transition,
 };
