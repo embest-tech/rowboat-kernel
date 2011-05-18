@@ -26,16 +26,35 @@
 #include "prm-regbits-AM335x.h"
 #include "prcmAM335x.h"
 
+#define AM335X_PRM_MOD_SIZE	0x100
+#define AM335X_PRM_MOD_START	AM335x_PRM_PER_MOD
+#define PRM_REG_SZ	0x4
+
+static u16 off_fixup[][2] = {
+	{ 0xC, 0x8 },	/* AM335x_PRM_PER_MOD */
+	{ 0x4, 0x8 },	/* AM335x_PRM_WKUP_MOD */
+	{ 0x0, 0x4 },	/* AM335x_PRM_MPU_MOD */
+	/* XXX: PRM_DEVICE: offsets are invalid for powerdomain*/
+	{ 0x0, 0x0 },	/* AM335x_PRM_DEVICE_MOD */
+	{ 0x0, 0x4 },	/* AM335x_PRM_RTC_MOD */
+	{ 0x0, 0x10 },	/* AM335x_PRM_GFX_MOD */
+	{ 0x0, 0x4 },	/* AM335x_PRM_CEFUSE_MOD */
+};
+
 /* Read a register in a PRM instance */
 u32 am335x_prminst_read_inst_reg(s16 inst, u16 idx)
 {
-	return __raw_readl(prm_base + inst + idx);
+	int i = (inst - AM335X_PRM_MOD_START) / AM335X_PRM_MOD_SIZE;
+
+	return __raw_readl(prm_base + inst + off_fixup[i][idx / PRM_REG_SZ]);
 }
 
 /* Write into a register in a PRM instance */
 void am335x_prminst_write_inst_reg(u32 val, s16 inst, u16 idx)
 {
-	__raw_writel(val, prm_base + inst + idx);
+	int i = (inst - AM335X_PRM_MOD_START) / AM335X_PRM_MOD_SIZE;
+
+	__raw_writel(val, prm_base + inst + off_fixup[i][idx / PRM_REG_SZ]);
 }
 
 /* Read-modify-write a register in PRM. Caller must lock */
