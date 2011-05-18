@@ -924,53 +924,69 @@ static struct clk tptc2_fck = {
 };
 
 static struct clk uart1_fck = {
-	.name		= "uart1_fck",
-	.ops		= &clkops_omap2_dflt,
-	.enable_reg	= AM335x_CM_PER_UART1_CLKCTRL,
-	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
-	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &i2c_clk,
-	.recalc		= &followparent_recalc,
+	.name           = "uart1_fck",
+	.parent		= &dpll_per_m2_ck ,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg     = AM335x_CM_WKUP_UART0_CLKCTRL,
+	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
+	.clkdm_name     = "l4_wkup_clkdm",
+	.fixed_div	= 4,
+	.recalc         = &omap_fixed_divisor_recalc,
 };
 
 static struct clk uart2_fck = {
-	.name		= "uart2_fck",
-	.ops		= &clkops_omap2_dflt,
-	.enable_reg	= AM335x_CM_PER_UART2_CLKCTRL,
-	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.name           = "uart2_fck",
+	.parent		= &dpll_per_m2_ck ,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg	= AM335x_CM_PER_UART1_CLKCTRL,
+	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &i2c_clk,
-	.recalc		= &followparent_recalc,
+	.fixed_div	= 4,
+	.recalc         = &omap_fixed_divisor_recalc,
 };
 
 static struct clk uart3_fck = {
-	.name		= "uart3_fck",
-	.ops		= &clkops_omap2_dflt,
-	.enable_reg	= AM335x_CM_PER_UART3_CLKCTRL,
-	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.name           = "uart3_fck",
+	.parent		= &dpll_per_m2_ck ,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg	= AM335x_CM_PER_UART2_CLKCTRL,
+	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &i2c_clk,
-	.recalc		= &followparent_recalc,
+	.fixed_div	= 4,
+	.recalc         = &omap_fixed_divisor_recalc,
 };
 
 static struct clk uart4_fck = {
-	.name		= "uart4_fck",
-	.ops		= &clkops_omap2_dflt,
-	.enable_reg	= AM335x_CM_PER_UART4_CLKCTRL,
-	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.name           = "uart4_fck",
+	.parent		= &dpll_per_m2_ck ,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg	= AM335x_CM_PER_UART3_CLKCTRL,
+	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &i2c_clk,
-	.recalc		= &followparent_recalc,
+	.fixed_div	= 4,
+	.recalc         = &omap_fixed_divisor_recalc,
 };
 
 static struct clk uart5_fck = {
-	.name		= "uart5_fck",
-	.ops		= &clkops_omap2_dflt,
-	.enable_reg	= AM335x_CM_PER_UART5_CLKCTRL,
-	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.name           = "uart5_fck",
+	.parent		= &dpll_per_m2_ck ,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg	= AM335x_CM_PER_UART4_CLKCTRL,
+	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &i2c_clk,
-	.recalc		= &followparent_recalc,
+	.fixed_div	= 4,
+	.recalc         = &omap_fixed_divisor_recalc,
+};
+
+static struct clk uart6_fck = {
+	.name           = "uart6_fck",
+	.parent		= &dpll_per_m2_ck ,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg	= AM335x_CM_PER_UART5_CLKCTRL,
+	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
+	.clkdm_name	= "l4ls_clkdm",
+	.fixed_div	= 4,
+	.recalc         = &omap_fixed_divisor_recalc,
 };
 
 static struct clk usb0_fck = {
@@ -1440,16 +1456,6 @@ static struct clk uart0_clk = {
 	.recalc		= &followparent_recalc,
 };
 
-static struct clk uart0_fck = {
-	.name           = "uart0_fck",
-	.ops            = &clkops_omap2_dflt,
-	.enable_reg     = AM335x_CM_WKUP_UART0_CLKCTRL,
-	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
-	.clkdm_name     = "l4_wkup_clkdm",
-	.parent         = &uart0_clk,
-	.recalc         = &followparent_recalc,
-};
-
 static struct clk vtp_clk_div_ck = {
 	.name		= "vtp_clk_div_ck",
 	.parent		= &sys_clkin_ck,
@@ -1580,12 +1586,12 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"tptc0_fck",		&tptc0_fck,	CK_AM335X),
 	CLK(NULL,	"tptc1_fck",		&tptc1_fck,	CK_AM335X),
 	CLK(NULL,	"tptc2_fck",		&tptc2_fck,	CK_AM335X),
-	CLK(NULL,	"uart0_fck",		&uart0_fck,	CK_AM335X),
 	CLK(NULL,	"uart1_fck",		&uart1_fck,	CK_AM335X),
 	CLK(NULL,	"uart2_fck",		&uart2_fck,	CK_AM335X),
 	CLK(NULL,	"uart3_fck",		&uart3_fck,	CK_AM335X),
 	CLK(NULL,	"uart4_fck",		&uart4_fck,	CK_AM335X),
 	CLK(NULL,	"uart5_fck",		&uart5_fck,	CK_AM335X),
+	CLK(NULL,	"uart6_fck",		&uart6_fck,	CK_AM335X),
 	CLK(NULL,	"usb0_fck",		&usb0_fck,	CK_AM335X),
 	CLK(NULL,	"wd_timer1_fck",	&wd_timer1_fck,	CK_AM335X),
 	CLK(NULL,	"wdt0_fck",		&wdt0_fck,	CK_AM335X),
