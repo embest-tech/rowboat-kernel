@@ -25,8 +25,10 @@
 
 #include "clock.h"
 #include "clockam335x.h"
+#include "clock81xx.h"
 #include "cmAM335x.h"
 #include "cm-regbits-AM335x.h"
+#include "cm-regbits-81xx.h"
 #include "prmAM335x.h"
 #include "prm-regbits-AM335x.h"
 #include "control.h"
@@ -46,7 +48,7 @@ static struct clk clk_32768_ck = {
 
 static struct clk clk_32khz_ck = {
 	.name		= "clk_32khz_ck",
-	.rate		= 12000000,
+	.rate		= 32768,
 	.ops		= &clkops_null,
 };
 
@@ -54,48 +56,6 @@ static struct clk clk_rc32k_ck = {
 	.name		= "clk_rc32k_ck",
 	.rate		= 0,
 	.ops		= &clkops_null,
-};
-
-static struct clk virt_12000000_ck = {
-	.name		= "virt_12000000_ck",
-	.ops		= &clkops_null,
-	.rate		= 12000000,
-};
-
-static struct clk virt_13000000_ck = {
-	.name		= "virt_13000000_ck",
-	.ops		= &clkops_null,
-	.rate		= 13000000,
-};
-
-static struct clk virt_16800000_ck = {
-	.name		= "virt_16800000_ck",
-	.ops		= &clkops_null,
-	.rate		= 16800000,
-};
-
-static struct clk virt_19200000_ck = {
-	.name		= "virt_19200000_ck",
-	.ops		= &clkops_null,
-	.rate		= 19200000,
-};
-
-static struct clk virt_26000000_ck = {
-	.name		= "virt_26000000_ck",
-	.ops		= &clkops_null,
-	.rate		= 26000000,
-};
-
-static struct clk virt_27000000_ck = {
-	.name		= "virt_27000000_ck",
-	.ops		= &clkops_null,
-	.rate		= 27000000,
-};
-
-static struct clk virt_38400000_ck = {
-	.name		= "virt_38400000_ck",
-	.ops		= &clkops_null,
-	.rate		= 38400000,
 };
 
 static const struct clksel_rate div_1_0_rates[] = {
@@ -123,44 +83,10 @@ static const struct clksel_rate div_1_4_rates[] = {
 	{ .div = 0 },
 };
 
-static const struct clksel_rate div_1_5_rates[] = {
-	{ .div = 1, .val = 5, .flags = RATE_IN_AM335X },
-	{ .div = 0 },
-};
-
-static const struct clksel_rate div_1_6_rates[] = {
-	{ .div = 1, .val = 6, .flags = RATE_IN_AM335X },
-	{ .div = 0 },
-};
-
-static const struct clksel_rate div_1_7_rates[] = {
-	{ .div = 1, .val = 7, .flags = RATE_IN_AM335X },
-	{ .div = 0 },
-};
-
-static const struct clksel sys_clkin_sel[] = {
-	{ .parent = &virt_12000000_ck, .rates = div_1_1_rates },
-	{ .parent = &virt_13000000_ck, .rates = div_1_2_rates },
-	{ .parent = &virt_16800000_ck, .rates = div_1_3_rates },
-	{ .parent = &virt_19200000_ck, .rates = div_1_4_rates },
-	{ .parent = &virt_26000000_ck, .rates = div_1_5_rates },
-	{ .parent = &virt_27000000_ck, .rates = div_1_6_rates },
-	{ .parent = &virt_38400000_ck, .rates = div_1_7_rates },
-	{ .parent = NULL },
-};
-
 static struct clk sys_clkin_ck = {
 	.name		= "sys_clkin_ck",
-	.rate		= 38400000,
-	.clksel		= sys_clkin_sel,
-	.init		= &omap2_init_clksel_parent,
-	/* Looking at the documentation, there is no selection here */
-#if 0
-	.clksel_reg	= AM335x_CM_SYS_CLKSEL,
-	.clksel_mask	= AM335x_SYS_CLKSEL_MASK,
-#endif
+	.rate		= 24000000,
 	.ops		= &clkops_null,
-	.recalc		= &omap2_clksel_recalc,
 };
 
 static struct clk tclkin_ck = {
@@ -866,64 +792,95 @@ static struct clk spinlock_fck = {
 	.recalc		= &followparent_recalc,
 };
 
+static const struct clksel timer2_to_7_clk_sel[] = {
+	{ .parent = &tclkin_ck, .rates = div_1_0_rates },
+	{ .parent = &sys_clkin_ck, .rates = div_1_1_rates },
+	{ .parent = &clk_32khz_ck, .rates = div_1_2_rates },
+	{ .parent = NULL },
+};
+
 static struct clk timer2_fck = {
 	.name		= "timer2_fck",
-	.ops		= &clkops_omap2_dflt,
+	.parent		= &sys_clkin_ck,
+	.init		= &omap2_init_clksel_parent,
+	.clksel		= timer2_to_7_clk_sel,
+	.ops		= &clkops_ti81xx_dflt_wait,
 	.enable_reg	= AM335x_CM_PER_TIMER2_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.clksel_reg	= AM335x_CLKSEL_TIMER2_CLK,
+	.clksel_mask	= TI81XX_CLKSEL_0_1_MASK,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &timer2_clk,
-	.recalc		= &followparent_recalc,
+	.recalc		= &omap2_clksel_recalc,
 };
 
 static struct clk timer3_fck = {
 	.name		= "timer3_fck",
-	.ops		= &clkops_omap2_dflt,
+	.parent		= &sys_clkin_ck,
+	.init		= &omap2_init_clksel_parent,
+	.clksel		= timer2_to_7_clk_sel,
+	.ops		= &clkops_ti81xx_dflt_wait,
 	.enable_reg	= AM335x_CM_PER_TIMER3_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.clksel_reg	= AM335x_CLKSEL_TIMER3_CLK,
+	.clksel_mask	= TI81XX_CLKSEL_0_1_MASK,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &timer3_clk,
-	.recalc		= &followparent_recalc,
+	.recalc		= &omap2_clksel_recalc,
 };
 
 static struct clk timer4_fck = {
 	.name		= "timer4_fck",
-	.ops		= &clkops_omap2_dflt,
+	.parent		= &sys_clkin_ck,
+	.init		= &omap2_init_clksel_parent,
+	.clksel		= timer2_to_7_clk_sel,
+	.ops		= &clkops_ti81xx_dflt_wait,
 	.enable_reg	= AM335x_CM_PER_TIMER4_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.clksel_reg	= AM335x_CLKSEL_TIMER4_CLK,
+	.clksel_mask	= TI81XX_CLKSEL_0_1_MASK,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &timer4_clk,
-	.recalc		= &followparent_recalc,
+	.recalc		= &omap2_clksel_recalc,
 };
 
 static struct clk timer5_fck = {
 	.name		= "timer5_fck",
-	.ops		= &clkops_omap2_dflt,
+	.parent		= &sys_clkin_ck,
+	.init		= &omap2_init_clksel_parent,
+	.clksel		= timer2_to_7_clk_sel,
+	.ops		= &clkops_ti81xx_dflt_wait,
 	.enable_reg	= AM335x_CM_PER_TIMER5_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.clksel_reg	= AM335x_CLKSEL_TIMER5_CLK,
+	.clksel_mask	= TI81XX_CLKSEL_0_1_MASK,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &timer5_clk,
-	.recalc		= &followparent_recalc,
+	.recalc		= &omap2_clksel_recalc,
 };
 
 static struct clk timer6_fck = {
 	.name		= "timer6_fck",
-	.ops		= &clkops_omap2_dflt,
+	.parent		= &sys_clkin_ck,
+	.init		= &omap2_init_clksel_parent,
+	.clksel		= timer2_to_7_clk_sel,
+	.ops		= &clkops_ti81xx_dflt_wait,
 	.enable_reg	= AM335x_CM_PER_TIMER6_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.clksel_reg	= AM335x_CLKSEL_TIMER6_CLK,
+	.clksel_mask	= TI81XX_CLKSEL_0_1_MASK,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &timer6_clk,
-	.recalc		= &followparent_recalc,
+	.recalc		= &omap2_clksel_recalc,
 };
 
 static struct clk timer7_fck = {
 	.name		= "timer7_fck",
-	.ops		= &clkops_omap2_dflt,
+	.parent		= &sys_clkin_ck,
+	.init		= &omap2_init_clksel_parent,
+	.clksel		= timer2_to_7_clk_sel,
+	.ops		= &clkops_ti81xx_dflt_wait,
 	.enable_reg	= AM335x_CM_PER_TIMER7_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.clksel_reg	= AM335x_CLKSEL_TIMER7_CLK,
+	.clksel_mask	= TI81XX_CLKSEL_0_1_MASK,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &timer7_clk,
-	.recalc		= &followparent_recalc,
+	.recalc		= &omap2_clksel_recalc,
 };
 
 static struct clk tpcc_fck = {
@@ -1472,13 +1429,6 @@ static struct clk timer1_fck = {
 	.recalc         = &followparent_recalc,
 };
 
-static const struct clksel timer2_clk_sel[] = {
-	{ .parent = &tclkin_ck, .rates = div_1_0_rates },
-	{ .parent = &sys_clkin_ck, .rates = div_1_1_rates },
-	{ .parent = &clk_32khz_ck, .rates = div_1_2_rates },
-	{ .parent = NULL },
-};
-
 static struct clk uart0_clk = {
 	.name		= "uart0_clk",
 	.parent		= &dpll_per_m2_ck,
@@ -1556,13 +1506,6 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"clk_32768_ck",		&clk_32768_ck,	CK_AM335X),
 	CLK(NULL,	"clk_32khz_ck",		&clk_32khz_ck,	CK_AM335X),
 	CLK(NULL,	"clk_rc32k_ck",		&clk_rc32k_ck,	CK_AM335X),
-	CLK(NULL,	"virt_12000000_ck",	&virt_12000000_ck,	CK_AM335X),
-	CLK(NULL,	"virt_13000000_ck",	&virt_13000000_ck,	CK_AM335X),
-	CLK(NULL,	"virt_16800000_ck",	&virt_16800000_ck,	CK_AM335X),
-	CLK(NULL,	"virt_19200000_ck",	&virt_19200000_ck,	CK_AM335X),
-	CLK(NULL,	"virt_26000000_ck",	&virt_26000000_ck,	CK_AM335X),
-	CLK(NULL,	"virt_27000000_ck",	&virt_27000000_ck,	CK_AM335X),
-	CLK(NULL,	"virt_38400000_ck",	&virt_38400000_ck,	CK_AM335X),
 	CLK(NULL,	"sys_clkin_ck",		&sys_clkin_ck,	CK_AM335X),
 	CLK(NULL,	"tclkin_ck",		&tclkin_ck,	CK_AM335X),
 	CLK(NULL,	"adc_tsc_fck",		&adc_tsc_fck,	CK_AM335X),
@@ -1623,12 +1566,12 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"spinlock_fck",		&spinlock_fck,	CK_AM335X),
 	CLK(NULL,	"timer0_fck",		&timer0_fck,	CK_AM335X),
 	CLK(NULL,	"timer1_fck",		&timer1_fck,	CK_AM335X),
-	CLK(NULL,	"timer2_fck",		&timer2_fck,	CK_AM335X),
-	CLK(NULL,	"timer3_fck",		&timer3_fck,	CK_AM335X),
-	CLK(NULL,	"timer4_fck",		&timer4_fck,	CK_AM335X),
-	CLK(NULL,	"timer5_fck",		&timer5_fck,	CK_AM335X),
-	CLK(NULL,	"timer6_fck",		&timer6_fck,	CK_AM335X),
-	CLK(NULL,	"timer7_fck",		&timer7_fck,	CK_AM335X),
+	CLK(NULL,	"gpt2_fck",		&timer2_fck,	CK_AM335X),
+	CLK(NULL,	"gpt3_fck",		&timer3_fck,	CK_AM335X),
+	CLK(NULL,	"gpt4_fck",		&timer4_fck,	CK_AM335X),
+	CLK(NULL,	"gpt5_fck",		&timer5_fck,	CK_AM335X),
+	CLK(NULL,	"gpt6_fck",		&timer6_fck,	CK_AM335X),
+	CLK(NULL,	"gpt7_fck",		&timer7_fck,	CK_AM335X),
 	CLK(NULL,	"tpcc_fck",		&tpcc_fck,	CK_AM335X),
 	CLK(NULL,	"tptc0_fck",		&tptc0_fck,	CK_AM335X),
 	CLK(NULL,	"tptc1_fck",		&tptc1_fck,	CK_AM335X),
