@@ -37,6 +37,7 @@
 #include "clock3xxx.h"
 #include "clock44xx.h"
 #include "clock81xx.h"
+#include "clockam335x.h"
 #include "io.h"
 
 #include <plat/omap-pm.h>
@@ -431,6 +432,8 @@ void __init omap2_init_common_infrastructure(void)
 		ti816x_clk_init();
 	else if (cpu_is_ti814x())
 		ti814x_clk_init();
+	else if (cpu_is_am335x())
+		am335x_clk_init();
 	else if (cpu_is_omap44xx())
 		omap4xxx_clk_init();
 	else
