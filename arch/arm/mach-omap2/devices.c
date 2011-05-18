@@ -968,7 +968,7 @@ void __init omap2_init_mmc(struct omap_mmc_platform_data **mmc_data,
 				irq = TI814X_IRQ_SD1;
 			} else if (cpu_is_am335x()) {
 				base = AM335X_MMC0_BASE;
-				irq = AM335x_IRQ_MMCHS0;
+				irq = AM335X_IRQ_MMCHS0;
 			}
 			break;
 		case 1:
@@ -977,7 +977,7 @@ void __init omap2_init_mmc(struct omap_mmc_platform_data **mmc_data,
 				irq = INT_24XX_MMC2_IRQ;
 			} else {
 				base = AM335X_MMC1_BASE;
-				irq = AM335x_IRQ_MMCHS1;
+				irq = AM335X_IRQ_MMCHS1;
 			}
 			break;
 		case 2:
@@ -989,7 +989,7 @@ void __init omap2_init_mmc(struct omap_mmc_platform_data **mmc_data,
 				irq = INT_34XX_MMC3_IRQ;
 			} else {
 				base = AM335X_MMC2_BASE;
-				irq = AM335x_IRQ_MMCHS2;
+				irq = AM335X_IRQ_MMCHS2;
 			}
 			break;
 		case 3:
@@ -1935,23 +1935,23 @@ static struct resource am335x_cpsw_resources[] = {
 		.flags  = IORESOURCE_MEM,
 	},
 	{
-		.start	= AM335x_IRQ_CPSW_C0_RX,
-		.end	= AM335x_IRQ_CPSW_C0_RX,
+		.start	= AM335X_IRQ_CPSW_C0_RX,
+		.end	= AM335X_IRQ_CPSW_C0_RX,
 		.flags	= IORESOURCE_IRQ,
 	},
 	{
-		.start	= AM335x_IRQ_CPSW_RX,
-		.end	= AM335x_IRQ_CPSW_RX,
+		.start	= AM335X_IRQ_CPSW_RX,
+		.end	= AM335X_IRQ_CPSW_RX,
 		.flags	= IORESOURCE_IRQ,
 	},
 	{
-		.start	= AM335x_IRQ_CPSW_TX,
-		.end	= AM335x_IRQ_CPSW_TX,
+		.start	= AM335X_IRQ_CPSW_TX,
+		.end	= AM335X_IRQ_CPSW_TX,
 		.flags	= IORESOURCE_IRQ,
 	},
 	{
-		.start	= AM335x_IRQ_CPSW_C0,
-		.end	= AM335x_IRQ_CPSW_C0,
+		.start	= AM335X_IRQ_CPSW_C0,
+		.end	= AM335X_IRQ_CPSW_C0,
 		.flags	= IORESOURCE_IRQ,
 	},
 };
