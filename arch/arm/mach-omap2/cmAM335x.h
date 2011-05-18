@@ -20,7 +20,7 @@
 #define __ARCH_ARM_MACH_OMAP2_CM_AM335x_H
 
 /* CM base address */
-#define AM335x_CM_BASE               0x4a004000
+#define AM335x_CM_BASE               0x44e00000
 
 #define AM335x_CM_REGADDR(inst, reg)                         \
 	AM335X_L4_WK_IO_ADDRESS(AM335x_CM_BASE + (inst) + (reg))
