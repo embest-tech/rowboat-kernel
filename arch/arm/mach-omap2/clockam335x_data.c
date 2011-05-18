@@ -42,7 +42,7 @@
 
 static struct clk clk_32768_ck = {
 	.name		= "clk_32768_ck",
-	.rate		= 32000,
+	.rate		= 32678,
 	.ops		= &clkops_null,
 };
 
@@ -54,7 +54,7 @@ static struct clk clk_32khz_ck = {
 
 static struct clk clk_rc32k_ck = {
 	.name		= "clk_rc32k_ck",
-	.rate		= 0,
+	.rate		= 32000,
 	.ops		= &clkops_null,
 };
 
@@ -1420,13 +1420,17 @@ static struct clk timer1_clkmux_ck = {
 };
 
 static struct clk timer1_fck = {
-	.name           = "timer1_fck",
-	.ops            = &clkops_omap2_dflt,
-	.enable_reg     = AM335x_CM_WKUP_TIMER1_CLKCTRL,
-	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
-	.clkdm_name     = "l4_wkup_clkdm",
-	.parent         = &timer1_clkmux_ck,
-	.recalc         = &followparent_recalc,
+	.name		= "timer1_fck",
+	.parent		= &sys_clkin_ck,
+	.init		= &omap2_init_clksel_parent,
+	.clksel		= timer1_clkmux_sel,
+	.ops		= &clkops_ti81xx_dflt_wait,
+	.enable_reg	= AM335x_CM_WKUP_TIMER1_CLKCTRL,
+	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.clksel_reg	= AM335x_CLKSEL_TIMER1MS_CLK,
+	.clksel_mask	= TI81XX_CLKSEL_0_2_MASK,
+	.clkdm_name	= "l4ls_clkdm",
+	.recalc		= &omap2_clksel_recalc,
 };
 
 static struct clk uart0_clk = {
@@ -1565,7 +1569,7 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"spi1_fck",		&spi1_fck,	CK_AM335X),
 	CLK(NULL,	"spinlock_fck",		&spinlock_fck,	CK_AM335X),
 	CLK(NULL,	"timer0_fck",		&timer0_fck,	CK_AM335X),
-	CLK(NULL,	"timer1_fck",		&timer1_fck,	CK_AM335X),
+	CLK(NULL,	"gpt1_fck",		&timer1_fck,	CK_AM335X),
 	CLK(NULL,	"gpt2_fck",		&timer2_fck,	CK_AM335X),
 	CLK(NULL,	"gpt3_fck",		&timer3_fck,	CK_AM335X),
 	CLK(NULL,	"gpt4_fck",		&timer4_fck,	CK_AM335X),
