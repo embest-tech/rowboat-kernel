@@ -257,46 +257,52 @@ static struct clk core_100m_ck = {
 	.recalc         = &followparent_recalc,
 };
 
-static struct clk timer2_clk = {
-	.name           = "timer2_clk",
-	.parent         = &tclkin_ck,
-	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
+static struct clk timer2_ick = {
+	.name           = "timer2_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
-static struct clk timer3_clk = {
-	.name           = "timer3_clk",
-	.parent         = &tclkin_ck,
-	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
+static struct clk timer3_ick = {
+	.name           = "timer3_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
-static struct clk timer4_clk = {
-	.name           = "timer4_clk",
-	.parent         = &tclkin_ck,
-	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
+static struct clk timer4_ick = {
+	.name           = "timer4_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
-static struct clk timer5_clk = {
-	.name           = "timer5_clk",
-	.parent         = &tclkin_ck,
-	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
+static struct clk timer5_ick = {
+	.name           = "timer5_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
-static struct clk timer6_clk = {
-	.name           = "timer6_clk",
-	.parent         = &tclkin_ck,
-	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
+static struct clk timer6_ick = {
+	.name           = "timer6_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
-static struct clk timer7_clk = {
-	.name           = "timer7_clk",
-	.parent         = &tclkin_ck,
-	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
+static struct clk timer7_ick = {
+	.name           = "timer7_ick",
+	.parent		= &dpll_core_m4_ck,
+	.ops		= &clkops_null,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
 /* Leaf clocks controlled by modules */
@@ -1428,11 +1434,12 @@ static const struct clksel timer1_clkmux_sel[] = {
 	{ .parent = NULL },
 };
 
-static struct clk timer1_clkmux_ck = {
-	.name		= "timer1_clkmux_ck",
-	.parent		= &sys_clkin_ck,
+static struct clk timer1_ick = {
+	.name		= "timer1_ick",
+	.parent		= &dpll_core_m4_ck,
 	.ops		= &clkops_null,
-	.recalc		= &followparent_recalc,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
 static struct clk timer1_fck = {
@@ -1628,13 +1635,13 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"sysclkout_pre_ck",	&sysclkout_pre_ck,	CK_AM335X),
 	CLK(NULL,	"syclkoutdiv_ck",	&syclkoutdiv_ck,	CK_AM335X),
 	CLK(NULL,	"timer0_clkmux_ck",	&timer0_clkmux_ck,	CK_AM335X),
-	CLK(NULL,	"timer1_clkmux_ck",	&timer1_clkmux_ck,	CK_AM335X),
-	CLK(NULL,	"timer2_clk",		&timer2_clk,	CK_AM335X),
-	CLK(NULL,	"timer3_clk",		&timer3_clk,	CK_AM335X),
-	CLK(NULL,	"timer4_clk",		&timer4_clk,	CK_AM335X),
-	CLK(NULL,	"timer5_clk",		&timer5_clk,	CK_AM335X),
-	CLK(NULL,	"timer6_clk",		&timer6_clk,	CK_AM335X),
-	CLK(NULL,	"timer7_clk",		&timer7_clk,	CK_AM335X),
+	CLK(NULL,	"gpt1_ick",		&timer1_ick,	CK_AM335X),
+	CLK(NULL,	"gpt2_ick",		&timer2_ick,	CK_AM335X),
+	CLK(NULL,	"gpt3_ick",		&timer3_ick,	CK_AM335X),
+	CLK(NULL,	"gpt4_ick",		&timer4_ick,	CK_AM335X),
+	CLK(NULL,	"gpt5_ick",		&timer5_ick,	CK_AM335X),
+	CLK(NULL,	"gpt6_ick",		&timer6_ick,	CK_AM335X),
+	CLK(NULL,	"gpt7_ick",		&timer7_ick,	CK_AM335X),
 	CLK(NULL,	"uart0_clk",		&uart0_clk,	CK_AM335X),
 	CLK(NULL,	"vtp_clk_div_ck",	&vtp_clk_div_ck,	CK_AM335X),
 	CLK(NULL,	"wdt0_clkmux_ck",	&wdt0_clkmux_ck,	CK_AM335X),
