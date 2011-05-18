@@ -16,7 +16,7 @@
 #ifndef __ARCH_ASM_MACH_OMAP2_PRMINSTAM335X_H
 #define __ARCH_ASM_MACH_OMAP2_PRMINSTAM335X_H
 
-#include "prminstAM335x.c"
+#include "prminstam335x.c"
 
 /*
  * In an ideal world, we would not export these low-level functions,

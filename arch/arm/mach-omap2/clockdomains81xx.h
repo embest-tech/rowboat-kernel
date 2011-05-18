@@ -20,7 +20,7 @@
 
 #include "cm.h"
 #include "cm81xx.h"
-#include "cmAM335x.h"
+#include "cmam335x.h"
 #include "cm-regbits-81xx.h"
 
 /*

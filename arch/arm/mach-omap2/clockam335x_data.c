@@ -26,11 +26,11 @@
 #include "clock.h"
 #include "clockam335x.h"
 #include "clock81xx.h"
-#include "cmAM335x.h"
-#include "cm-regbits-AM335x.h"
+#include "cmam335x.h"
+#include "cm-regbits-am335x.h"
 #include "cm-regbits-81xx.h"
-#include "prmAM335x.h"
-#include "prm-regbits-AM335x.h"
+#include "prmam335x.h"
+#include "prm-regbits-am335x.h"
 #include "control.h"
 
 /* OMAP4 modulemode control */

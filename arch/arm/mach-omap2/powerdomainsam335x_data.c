@@ -22,8 +22,8 @@
 #include "powerdomain.h"
 
 #include "prcm-common.h"
-#include "prmAM335x.h"
-#include "prm-regbits-AM335x.h"
+#include "prmam335x.h"
+#include "prm-regbits-am335x.h"
 
 
 /* gfx_335x_pwrdm:  */

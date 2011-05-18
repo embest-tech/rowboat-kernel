@@ -25,9 +25,9 @@
 
 #include "omap_hwmod_common_data.h"
 
-#include "cmAM335x.h"
-#include "prm-regbits-AM335x.h"
-#include "prmAM335x.h"
+#include "cmam335x.h"
+#include "prm-regbits-am335x.h"
+#include "prmam335x.h"
 
 /* XXX: In struct omap_hwmod, "masters" field has not been updated.
  * Code analysis so far didn't brought to notice any instance where

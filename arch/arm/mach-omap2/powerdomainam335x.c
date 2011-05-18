@@ -21,9 +21,9 @@
 
 #include "powerdomain.h"
 #include <plat/prcm.h>
-#include "prmAM335x.h"
-#include "prm-regbits-AM335x.h"
-#include "prminstAM335x.h"
+#include "prmam335x.h"
+#include "prm-regbits-am335x.h"
+#include "prminstam335x.h"
 
 
 static int am335x_pwrdm_set_next_pwrst(struct powerdomain *pwrdm, u8 pwrst)

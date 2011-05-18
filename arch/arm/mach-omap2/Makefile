@@ -111,8 +111,8 @@ obj-$(CONFIG_ARCH_TI81XX)		+= $(powerdomain-common) \
 					   powerdomains3xxx_data.o \
 					   powerdomains2xxx_3xxx_data.o
 obj-$(CONFIG_ARCH_AM335X)               += $(powerdomain-common) \
-                                           powerdomainAM335x.o \
-                                           powerdomainsAM335x_data.o
+                                           powerdomainam335x.o \
+                                           powerdomainsam335x_data.o
 
 
 # PRCM clockdomain control
@@ -155,7 +155,7 @@ obj-$(CONFIG_ARCH_OMAP2430)		+= omap_hwmod_2430_data.o
 obj-$(CONFIG_ARCH_OMAP3)		+= omap_hwmod_3xxx_data.o
 obj-$(CONFIG_ARCH_OMAP4)		+= omap_hwmod_44xx_data.o
 obj-$(CONFIG_ARCH_TI81XX)		+= omap_hwmod_81xx_data.o
-obj-$(CONFIG_ARCH_AM335X)               += omap_hwmod_AM335x_data.o
+obj-$(CONFIG_ARCH_AM335X)               += omap_hwmod_am335x_data.o
 
 # EMU peripherals
 obj-$(CONFIG_OMAP3_EMU)			+= emu.o

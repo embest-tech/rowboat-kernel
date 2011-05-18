@@ -21,10 +21,10 @@
 
 #include <plat/common.h>
 
-#include "prmAM335x.h"
-#include "prminstAM335x.h"
-#include "prm-regbits-AM335x.h"
-#include "prcmAM335x.h"
+#include "prmam335x.h"
+#include "prminstam335x.h"
+#include "prm-regbits-am335x.h"
+#include "prcmam335x.h"
 
 #define AM335X_PRM_MOD_SIZE	0x100
 #define AM335X_PRM_MOD_START	AM335x_PRM_PER_MOD
