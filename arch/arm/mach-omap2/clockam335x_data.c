@@ -258,55 +258,60 @@ static struct clk core_100m_ck = {
 	.name           = "core_100m_ck",
 	.parent         = &sysclk_div_ck,
 	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
+	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
+};
+
+static struct clk l4ls_fck = {
+	.name		= "l4ls_fck",
+	.ops		= &clkops_omap2_dflt,
+	.enable_reg	= AM335x_CM_PER_L4LS_CLKCTRL,
+	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
+	.clkdm_name	= "l4ls_clkdm",
+	.parent		= &core_100m_ck,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk timer2_ick = {
 	.name           = "timer2_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk timer3_ick = {
 	.name           = "timer3_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk timer4_ick = {
 	.name           = "timer4_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk timer5_ick = {
 	.name           = "timer5_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk timer6_ick = {
 	.name           = "timer6_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk timer7_ick = {
 	.name           = "timer7_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 /* Leaf clocks controlled by modules */
@@ -577,16 +582,6 @@ static struct clk l4fw_fck = {
 	.enable_reg	= AM335x_CM_PER_L4FW_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l4fw_clkdm",
-	.parent		= &core_100m_ck,
-	.recalc		= &followparent_recalc,
-};
-
-static struct clk l4ls_fck = {
-	.name		= "l4ls_fck",
-	.ops		= &clkops_omap2_dflt,
-	.enable_reg	= AM335x_CM_PER_L4LS_CLKCTRL,
-	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
-	.clkdm_name	= "l4ls_clkdm",
 	.parent		= &core_100m_ck,
 	.recalc		= &followparent_recalc,
 };
@@ -1009,42 +1004,37 @@ static struct clk uart1_ick = {
 
 static struct clk uart2_ick = {
 	.name           = "uart2_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk uart3_ick = {
 	.name           = "uart3_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk uart4_ick = {
 	.name           = "uart4_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk uart5_ick = {
 	.name           = "uart5_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk uart6_ick = {
 	.name           = "uart6_ick",
-	.parent		= &dpll_core_m4_ck,
+	.parent		= &l4ls_fck,
 	.ops		= &clkops_null,
-	.fixed_div	= 2,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk usb0_fck = {
