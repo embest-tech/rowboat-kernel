@@ -18,7 +18,7 @@
 
 /*
  * TI81XX Interrupts. Note that some interrupts are specific to TI81XX or TI814X
- * as indicated by respective prefix.
+ * or AM335X as indicated by respective prefix.
  */
 #define TI81XX_IRQ_EMU		0
 #define TI81XX_IRQ_COMMTX	1
@@ -50,8 +50,10 @@
 #define TI81XX_IRQ_TPPSS_ERR1	27
 #define TI816X_IRQ_TPPSS_ERR2	28
 #define TI814X_IRQ_SD1		28
+#define AM335X_IRQ_MMCSD1	28
 #define TI816X_IRQ_TPPSS_ERR3	29
 #define TI814X_IRQ_SD2		29
+#define AM335X_IRQ_MMCSD2	29
 #define TI816X_IRQ_MCARD_TX	30
 #define TI814X_IRQ_I2C2		30
 #define TI816X_IRQ_MCARD_RX	31
@@ -98,6 +100,7 @@
 #define TI814X_IRQ_GPIO_3A	62
 #define TI814X_IRQ_GPIO_3B	63
 #define TI81XX_IRQ_SD		64	/* TI814X SD0 */
+#define AM335X_IRQ_MMCSD0	64	/* AM335X SD0 */
 #define TI81XX_IRQ_SPI		65	/* TI814X McSPI0 */
 #define TI81XX_IRQ_GPT1		67
 #define TI81XX_IRQ_GPT2		68

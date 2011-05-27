@@ -148,6 +148,31 @@ static void setup_bb_gp_db_config(void)
 		if (prof_sel == PROFILE_2) {
 			/* MMC2 is not available in Profile 2 */
 			mmc[2].mmc = 0;
+
+			omap_mux_init_signal("mmc1_dat7",
+				OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc1_dat6",
+				OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc1_dat5",
+				OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc1_dat4",
+				OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc1_dat3",
+				OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc1_dat2",
+				OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc1_dat1",
+				OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc1_dat0",
+				OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc1_clk",
+				OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("mmc1_cmd",
+				OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("mmc1_wp",
+				OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("mmc1_cd",
+				OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN);
 		}
 
 		if (prof_sel == PROFILE_4) {
@@ -158,6 +183,23 @@ static void setup_bb_gp_db_config(void)
 			mmc[2].mmc = 0;
 		}
 	}
+
+	omap_mux_init_signal("mmc0_dat3",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat2",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat1",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat0",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_clk",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_cmd",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_wp",
+			OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("mmc0_cd",
+			OMAP_MUX_MODE5 | AM335X_PIN_INPUT_PULLUP);
 
 	omap2_hsmmc_init(mmc);
 }
@@ -202,6 +244,23 @@ static void setup_bb_only_config(void)
 
 
 	/* Configure MMC */
+	omap_mux_init_signal("mmc0_dat3",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat2",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat1",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat0",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_clk",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_cmd",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_wp",
+			OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("mmc0_cd",
+			OMAP_MUX_MODE5 | AM335X_PIN_INPUT_PULLUP);
+
 	/* MMC 1/2 are not accessible in "baseboard-only" mode */
 	mmc[1].mmc = 0;
 	mmc[2].mmc = 0;

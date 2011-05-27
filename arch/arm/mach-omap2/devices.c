@@ -929,6 +929,9 @@ static inline void omap2_mmc_mux(struct omap_mmc_platform_data *mmc_controller,
 		omap_mux_init_signal("mmc_sdwp", OMAP_PULL_ENA );
 	}
 #endif
+
+	/* for AM335x, pin mux setting is done in the board-am335xevm.c */
+
 }
 
 void __init omap2_init_mmc(struct omap_mmc_platform_data **mmc_data,
@@ -957,17 +960,31 @@ void __init omap2_init_mmc(struct omap_mmc_platform_data **mmc_data,
 			} else if (cpu_is_ti814x()) {
 				base = TI814X_MMC1_BASE;
 				irq = TI814X_IRQ_SD1;
+			} else if (cpu_is_am335x()) {
+				base = AM335X_MMC0_BASE;
+				irq = AM335X_IRQ_MMCSD0;
 			}
 			break;
 		case 1:
-			base = OMAP2_MMC2_BASE;
-			irq = INT_24XX_MMC2_IRQ;
+			if (!cpu_is_am335x()) {
+				base = OMAP2_MMC2_BASE;
+				irq = INT_24XX_MMC2_IRQ;
+			} else {
+				base = AM335X_MMC1_BASE;
+				irq = AM335X_IRQ_MMCSD1;
+			}
 			break;
 		case 2:
-			if (!cpu_is_omap44xx() && !cpu_is_omap34xx())
+			if (!cpu_is_omap44xx() && !cpu_is_omap34xx()
+						&& !cpu_is_am335x())
 				return;
-			base = OMAP3_MMC3_BASE;
-			irq = INT_34XX_MMC3_IRQ;
+			if (!cpu_is_am335x()) {
+				base = OMAP3_MMC3_BASE;
+				irq = INT_34XX_MMC3_IRQ;
+			} else {
+				base = AM335X_MMC2_BASE;
+				irq = AM335X_IRQ_MMCSD2;
+			}
 			break;
 		case 3:
 			if (!cpu_is_omap44xx())
@@ -994,7 +1011,21 @@ void __init omap2_init_mmc(struct omap_mmc_platform_data **mmc_data,
 			size = OMAP4_HSMMC_SIZE;
 			name = "mmci-omap-hs";
 		} else if (cpu_is_ti81xx()) {
+
+#ifndef	CONFIG_ARCH_AM335X
 			size = TI81XX_HSMMC_SIZE;
+#else
+			switch (i) {
+			case 0:
+			case 1:
+				size = AM335X_HSMMC0_1_SIZE; /* MMC0/1 = 4KB*/
+				break;
+
+			case 2:
+				size = AM335X_HSMMC2_SIZE; /* MMC2 = 64KB*/
+				break;
+			}
+#endif
 			name = "mmci-omap-hs";
 		} else {
 			size = OMAP3_HSMMC_SIZE;
