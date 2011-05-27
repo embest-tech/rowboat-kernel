@@ -26,6 +26,7 @@
 #include <plat/irqs.h>
 #include <plat/board.h>
 #include <plat/common.h>
+#include <plat/asp.h>
 
 #include "mux.h"
 
@@ -40,6 +41,26 @@ static struct omap_board_mux board_mux[] __initdata = {
 #else
 #define	board_mux	NULL
 #endif
+
+static u8 am33xx_iis_serializer_direction[] = {
+	TX_MODE,	RX_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+};
+
+static struct snd_platform_data am33xx_evm_snd_data = {
+	.tx_dma_offset	= 0x46400000,	/* McASP1 */
+	.rx_dma_offset	= 0x46400000,
+	.op_mode	= DAVINCI_MCASP_IIS_MODE,
+	.num_serializer = ARRAY_SIZE(am33xx_iis_serializer_direction),
+	.tdm_slots	= 2,
+	.serial_dir	= am33xx_iis_serializer_direction,
+	.asp_chan_q	= EVENTQ_2,
+	.version	= MCASP_VERSION_2,
+	.txnumevt	= 1,
+	.rxnumevt	= 1,
+};
 
 /*
 * Daughter Card Detection.
@@ -72,6 +93,14 @@ static void setup_bb_gp_db_config(void)
 	* Based on selected profile, configure Pin Mux, Clock setup,
 	* read data from eeprom & register devices.
 	*/
+
+	/* Configure McASP */
+	if ((prof_sel == PROFILE_0) || (prof_sel == PROFILE_3)) {
+		/* Audio Codec is available in Profile 0 & 3 respectively */
+
+		/* register device data */
+		am33xx_register_mcasp(0, &am33xx_evm_snd_data);
+	}
 }
 
 static void setup_bb_ia_db_config(void)
@@ -97,6 +126,9 @@ static void setup_bb_ipp_db_config(void)
 	* configure Pin Mux, Clock setup, read data from eeprom
 	* & register devices.
 	*/
+
+	/* Configure McASP */
+	am33xx_register_mcasp(0, &am33xx_evm_snd_data);
 }
 
 static void setup_bb_only_config(void)
