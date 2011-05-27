@@ -27,8 +27,10 @@
 #include <plat/board.h>
 #include <plat/common.h>
 #include <plat/asp.h>
+#include <plat/mmc.h>
 
 #include "mux.h"
+#include "hsmmc.h"
 
 #ifdef CONFIG_OMAP_MUX
 static struct omap_board_mux board_mux[] __initdata = {
@@ -41,6 +43,35 @@ static struct omap_board_mux board_mux[] __initdata = {
 #else
 #define	board_mux	NULL
 #endif
+
+/*
+* mmc 1 & 2 is present on GP daughter board. However they work
+* depending on profile selection.
+*/
+static struct omap2_hsmmc_info mmc[] = {
+	{
+		.mmc            = 1,
+		.caps           = MMC_CAP_4_BIT_DATA,
+		.gpio_cd        = -EINVAL,/* Dedicated pins for CD and WP */
+		.gpio_wp        = -EINVAL,
+		.ocr_mask       = MMC_VDD_33_34,
+	},
+	{
+		.mmc            = 2,
+		.caps           = MMC_CAP_8_BIT_DATA,
+		.gpio_cd        = -EINVAL,
+		.gpio_wp        = -EINVAL,
+		.ocr_mask       = MMC_VDD_33_34,
+	},
+	{
+		.mmc            = 3,
+		.caps           = MMC_CAP_4_BIT_DATA,
+		.gpio_cd        = -EINVAL,
+		.gpio_wp        = -EINVAL,
+		.ocr_mask       = MMC_VDD_33_34,
+	},
+	{}      /* Terminator */
+};
 
 static u8 am33xx_iis_serializer_direction[] = {
 	TX_MODE,	RX_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
@@ -109,6 +140,26 @@ static void setup_bb_gp_db_config(void)
 		/* register device data */
 		am33xx_register_mcasp(0, &am33xx_evm_snd_data);
 	}
+
+	/* Configure MMC */
+	/* Check which profile is selected */
+	if ((prof_sel == PROFILE_2) || (prof_sel == PROFILE_4)) {
+		/* MMC 1 & 2 is available in Profile 2 & 4 respectively */
+		if (prof_sel == PROFILE_2) {
+			/* MMC2 is not available in Profile 2 */
+			mmc[2].mmc = 0;
+		}
+
+		if (prof_sel == PROFILE_4) {
+			/* MMC1 is not available in Profile 4 */
+			mmc[1].mmc = 0;
+
+			/* Profile 4 yet to be completed. Disable till then */
+			mmc[2].mmc = 0;
+		}
+	}
+
+	omap2_hsmmc_init(mmc);
 }
 
 static void setup_bb_ia_db_config(void)
@@ -148,6 +199,13 @@ static void setup_bb_only_config(void)
 	* configure Pin Mux, Clock setup, read data from eeprom
 	* & register devices.
 	*/
+
+
+	/* Configure MMC */
+	/* MMC 1/2 are not accessible in "baseboard-only" mode */
+	mmc[1].mmc = 0;
+	mmc[2].mmc = 0;
+	omap2_hsmmc_init(mmc);
 }
 
 static void am335x_set_baseboard
