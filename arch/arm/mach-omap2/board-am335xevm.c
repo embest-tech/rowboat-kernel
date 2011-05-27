@@ -97,6 +97,14 @@ static void setup_bb_gp_db_config(void)
 	/* Configure McASP */
 	if ((prof_sel == PROFILE_0) || (prof_sel == PROFILE_3)) {
 		/* Audio Codec is available in Profile 0 & 3 respectively */
+		omap_mux_init_signal("mcasp1_aclkx",
+			OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN);
+		omap_mux_init_signal("mcasp1_fsx",
+			OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN);
+		omap_mux_init_signal("mcasp0_axr0",
+			OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+		omap_mux_init_signal("mcasp0_axr1",
+			OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
 
 		/* register device data */
 		am33xx_register_mcasp(0, &am33xx_evm_snd_data);
