@@ -64,6 +64,12 @@ static int evm_hw_params(struct snd_pcm_substream *substream,
 				machine_is_ti8148evm())
 		sysclk = 24576000;
 
+	/* On AM335X, CODEC gets MCLK from external Xtal (12MHz) or from CPLD.
+	 * Need to verify the source. Curently taking Xtal as clk source
+	 */
+	else if (machine_is_am335xevm())
+		sysclk = 12000000;
+
 	else
 		return -EINVAL;
 
@@ -251,7 +257,11 @@ static struct snd_soc_dai_link da850_evm_dai = {
 static struct snd_soc_dai_link ti81xx_evm_dai = {
 	.name = "TLV320AIC3X",
 	.stream_name = "AIC3X",
+#if !defined(CONFIG_ARCH_AM335X)
 	.cpu_dai_name= "davinci-mcasp.2",
+#else
+	.cpu_dai_name = "davinci-mcasp.1",
+#endif
 	.codec_dai_name = "tlv320aic3x-hifi",
 	.codec_name = "tlv320aic3x-codec.1-0018",
 	.platform_name = "davinci-pcm-audio",
@@ -331,7 +341,8 @@ static int __init evm_init(void)
 	} else if (machine_is_davinci_da850_evm()) {
 		evm_snd_dev_data = &da850_snd_soc_card;
 		index = 0;
-	} else if (machine_is_ti8168evm() || machine_is_ti8148evm()) {
+	} else if (machine_is_ti8168evm() || machine_is_ti8148evm()
+						|| machine_is_am335xevm()) {
 		evm_snd_dev_data = &ti81xx_snd_soc_card;
 		index = 0;
 	} else
