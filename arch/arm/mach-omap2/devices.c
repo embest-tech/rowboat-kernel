@@ -1301,12 +1301,14 @@ static struct resource ti81xx_edma_resources[] = {
 		.end	= TI81XX_TPTC2_BASE + SZ_1K - 1,
 		.flags	= IORESOURCE_MEM,
 	},
+#ifndef	CONFIG_ARCH_AM335X
 	{
 		.name	= "edma_tc3",
 		.start	= TI81XX_TPTC3_BASE,
 		.end	= TI81XX_TPTC3_BASE + SZ_1K - 1,
 		.flags	= IORESOURCE_MEM,
 	},
+#endif
 	{
 		.name	= "edma0",
 		.start	= TI81XX_IRQ_EDMA_COMP,
@@ -1483,7 +1485,12 @@ int map_xbar_event_to_channel(unsigned event, unsigned *channel, unsigned *xbar_
 	else if (event < edma_info[ctrl]->num_events){
 		*channel = xbar_event_mapping[val][1];
 		offset = (*channel)*4;
+#ifndef	CONFIG_ARCH_AM335X
 		__raw_writel(xbar_event_mapping[val][0], TI81XX_SCM_BASE + TI81XX_SCM_BASE_EDMA + offset);
+#else
+		__raw_writel(xbar_event_mapping[val][0], AM335X_SCM_BASE +
+						TI81XX_SCM_BASE_EDMA + offset);
+#endif
 		return 0;
 	}
 	else {
@@ -1497,9 +1504,15 @@ EXPORT_SYMBOL(map_xbar_event_to_channel);
 static struct edma_soc_info ti814x_edma_info[] = {
 	{
 		.n_channel		= 64,
+#ifndef	CONFIG_ARCH_AM335X
 		.n_region		= 5,	/* 0-2, 4-5 */
 		.n_slot			= 512,
 		.n_tc			= 4,
+#else
+		.n_region		= 4,	/* 0-2, 4-5 */
+		.n_slot			= 256,
+		.n_tc			= 3,
+#endif
 		.n_cc			= 1,
 		.rsv_chans		= ti814x_dma_rsv_chans,
 		.rsv_slots		= ti814x_dma_rsv_slots,
