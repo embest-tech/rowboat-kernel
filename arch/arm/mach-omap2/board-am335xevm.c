@@ -12,9 +12,13 @@
  */
 
 #include <linux/kernel.h>
+#include <linux/i2c.h>
+#include <linux/i2c/at24.h>
 #include <linux/init.h>
 
 #include <mach/hardware.h>
+#include <mach/board-am335xevm.h>
+
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
 #include <asm/mach/map.h>
@@ -37,6 +41,173 @@ static struct omap_board_mux board_mux[] __initdata = {
 #define	board_mux	NULL
 #endif
 
+/*
+* Daughter Card Detection.
+* Every board has a ID memory (EEPROM) on board. We probe these devices at
+* machine init, starting from daughter board and ending with baseboard.
+* Assumptions :
+*	1. Daughter boards are probed 1st. Baseboard probe is called last.
+*	2. These probes are called only once.
+*/
+static u32 daughter_board_id;
+
+u32 am335x_get_profile_selection(void)
+{
+	/*
+	* TODO : update with CPLD/DIN switch read and profile
+	* detection logic
+	*/
+	return PROFILE_0;
+}
+EXPORT_SYMBOL(am335x_get_profile_selection);
+
+static void setup_bb_gp_db_config(void)
+{
+	u32 prof_sel = am335x_get_profile_selection();
+	pr_info("Baseboard + GP daughter board detected\n");
+	pr_info("Selected profile : %d\n", prof_sel);
+
+	/*
+	* TODO/REVIST -
+	* Based on selected profile, configure Pin Mux, Clock setup,
+	* read data from eeprom & register devices.
+	*/
+}
+
+static void setup_bb_ia_db_config(void)
+{
+	u32 prof_sel = am335x_get_profile_selection();
+
+	pr_info("Baseboard + IA daughter board detected\n");
+	pr_info("Selected profile : %d\n", prof_sel);
+
+	/*
+	* TODO/REVIST -
+	* Based on selected profile, configure Pin Mux, Clock setup,
+	* read data from eeprom & register devices.
+	*/
+}
+
+static void setup_bb_ipp_db_config(void)
+{
+	pr_info("Baseboard + IP-Phone daughter board detected\n");
+
+	/*
+	* TODO/REVIST -
+	* configure Pin Mux, Clock setup, read data from eeprom
+	* & register devices.
+	*/
+}
+
+static void setup_bb_only_config(void)
+{
+	pr_info("Baseboard only detected\n");
+
+	/*
+	* TODO/REVIST -
+	* configure Pin Mux, Clock setup, read data from eeprom
+	* & register devices.
+	*/
+}
+
+static void am335x_set_baseboard
+				(struct memory_accessor *mem_acc, void *context)
+{
+	/* Check for what configuration detected */
+	pr_info("AM335x EVM : ");
+	switch (daughter_board_id) {
+	case DAUGHTER_BOARD_GP:
+		setup_bb_gp_db_config();
+		break;
+
+	case DAUGHTER_BOARD_IA:
+		setup_bb_ia_db_config();
+		break;
+
+	case DAUGHTER_BOARD_IPP:
+		setup_bb_ipp_db_config();
+		break;
+
+	 case DAUGHTER_BOARD_NONE:
+		 setup_bb_only_config();
+		break;
+
+	default:
+		pr_err("Invalid EVM configuration found\n");
+	}
+
+}
+
+static void am335x_set_daughter_board
+				(struct memory_accessor *mem_acc, void *context)
+{
+	u32 db_status = (u32)context;
+
+	/* update status only on daughter board detection */
+	daughter_board_id = db_status;
+}
+
+u32 am335x_get_daughter_board_id(void)
+{
+	return daughter_board_id;
+}
+EXPORT_SYMBOL(am335x_get_daughter_board_id);
+
+static struct at24_platform_data am335x_gp_eeprom_info = {
+	.byte_len       = (256*1024) / 8,
+	.page_size      = 64,
+	.flags          = AT24_FLAG_ADDR16,
+	.setup          = am335x_set_daughter_board,
+	.context        = (void *)DAUGHTER_BOARD_GP,
+};
+
+static struct at24_platform_data am335x_ia_eeprom_info = {
+	.byte_len       = (256*1024) / 8,
+	.page_size      = 64,
+	.flags          = AT24_FLAG_ADDR16,
+	.setup          = am335x_set_daughter_board,
+	.context        = (void *)DAUGHTER_BOARD_IA,
+};
+
+static struct at24_platform_data am335x_ipp_eeprom_info = {
+	.byte_len       = (256*1024) / 8,
+	.page_size      = 64,
+	.flags          = AT24_FLAG_ADDR16,
+	.setup          = am335x_set_daughter_board,
+	.context        = (void *)DAUGHTER_BOARD_IPP,
+};
+
+static struct at24_platform_data am335x_bb_eeprom_info = {
+	.byte_len       = (256*1024) / 8,
+	.page_size      = 64,
+	.flags          = AT24_FLAG_ADDR16,
+	.setup          = am335x_set_baseboard,
+	.context        = (void *)DAUGHTER_BOARD_NONE,
+};
+
+static struct i2c_board_info __initdata am335x_i2c_boardinfo[] = {
+	{
+		/* GP daughter board */
+		I2C_BOARD_INFO("24c256", GP_DAUG_BOARD_I2C_ADDR),
+		.platform_data  = &am335x_gp_eeprom_info,
+	},
+	{
+		/* IA daughter board */
+		I2C_BOARD_INFO("24c256", IA_DAUG_BOARD_I2C_ADDR),
+		.platform_data  = &am335x_ia_eeprom_info,
+	},
+	{
+		/* IP-Phone daughter board */
+		I2C_BOARD_INFO("24c256", IPP_DAUG_BOARD_I2C_ADDR),
+		.platform_data  = &am335x_ipp_eeprom_info,
+	},
+	{
+		/* Baseboard */
+		I2C_BOARD_INFO("24c256", BASEBOARD_I2C_ADDR),
+		.platform_data  = &am335x_bb_eeprom_info,
+	},
+};
+
 static void __init am335x_evm_init_irq(void)
 {
 	omap2_init_common_infrastructure();
@@ -44,10 +215,24 @@ static void __init am335x_evm_init_irq(void)
 	omap_init_irq();
 }
 
+static void __init am335x_evm_i2c_init(void)
+{
+	/* Initially no daughter board is considered */
+	daughter_board_id = DAUGHTER_BOARD_NONE;
+
+	/*
+	* There are 3 instances of I2C in AM335x but currently only one
+	* instance is being used on the AM335x EVM.
+	*/
+	omap_register_i2c_bus(1, 100, am335x_i2c_boardinfo,
+				ARRAY_SIZE(am335x_i2c_boardinfo));
+}
+
 static void __init am335x_evm_init(void)
 {
 	am335x_mux_init(board_mux);
 	omap_serial_init();
+	am335x_evm_i2c_init();
 }
 
 static void __init am335x_evm_map_io(void)
