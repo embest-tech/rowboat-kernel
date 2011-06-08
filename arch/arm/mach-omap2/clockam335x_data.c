@@ -789,22 +789,24 @@ static struct clk spare1_fck = {
 
 static struct clk spi0_fck = {
 	.name		= "spi0_fck",
-	.ops		= &clkops_omap2_dflt,
+	.parent		= &dpll_per_m2_ck ,
+	.ops            = &clkops_ti81xx_dflt_wait,
 	.enable_reg	= AM335x_CM_PER_SPI0_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &i2c_clk,
-	.recalc		= &followparent_recalc,
+	.fixed_div	= 4,
+	.recalc         = &omap_fixed_divisor_recalc,
 };
 
 static struct clk spi1_fck = {
 	.name		= "spi1_fck",
-	.ops		= &clkops_omap2_dflt,
+	.parent		= &dpll_per_m2_ck ,
+	.ops            = &clkops_ti81xx_dflt_wait,
 	.enable_reg	= AM335x_CM_PER_SPI1_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l4ls_clkdm",
-	.parent		= &i2c_clk,
-	.recalc		= &followparent_recalc,
+	.fixed_div	= 4,
+	.recalc         = &omap_fixed_divisor_recalc,
 };
 
 static struct clk spinlock_fck = {
@@ -1661,8 +1663,8 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"smartreflex1_fck",	&smartreflex1_fck,	CK_AM335X),
 	CLK(NULL,	"spare0_fck",		&spare0_fck,	CK_AM335X),
 	CLK(NULL,	"spare1_fck",		&spare1_fck,	CK_AM335X),
-	CLK(NULL,	"spi0_fck",		&spi0_fck,	CK_AM335X),
-	CLK(NULL,	"spi1_fck",		&spi1_fck,	CK_AM335X),
+	CLK("omap2_mcspi.1",	"fck",		&spi0_fck,	CK_AM335X),
+	CLK("omap2_mcspi.2",	"fck",		&spi1_fck,	CK_AM335X),
 	CLK(NULL,	"spinlock_fck",		&spinlock_fck,	CK_AM335X),
 	CLK(NULL,	"timer0_fck",		&timer0_fck,	CK_AM335X),
 	CLK(NULL,	"gpt1_fck",		&timer1_fck,	CK_AM335X),
