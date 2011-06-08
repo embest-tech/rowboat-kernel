@@ -342,7 +342,7 @@ static struct platform_device omap2_mcspi1 = {
 	},
 };
 
-#if !defined(CONFIG_ARCH_TI816X)
+#if !defined(CONFIG_ARCH_TI816X) | defined(CONFIG_ARCH_AM335X)
 static struct omap2_mcspi_platform_config omap2_mcspi2_config = {
 	.num_cs		= 2,
 };
@@ -419,17 +419,24 @@ static struct platform_device omap2_mcspi4 = {
 #ifdef CONFIG_ARCH_TI81XX
 static inline void ti81xx_mcspi_fixup(void)
 {
+
 	omap2_mcspi1_resources[0].start	= TI81XX_MCSPI1_BASE;
 	omap2_mcspi1_resources[0].end	= TI81XX_MCSPI1_BASE + 0xff;
+#ifdef CONFIG_ARCH_AM335X
+	if (cpu_is_am335x())
+		omap2_mcspi1_config.num_cs = 2;
+#endif
 
-#ifdef CONFIG_ARCH_TI814X
-	if (cpu_is_ti814x()) {
+#if defined(CONFIG_ARCH_TI814X) || defined(CONFIG_ARCH_AM335X)
+	if (cpu_is_ti814x() || (cpu_is_am335x())) {
 		omap2_mcspi2_resources[0].start	= TI814X_MCSPI2_BASE;
 		omap2_mcspi2_resources[0].end	= TI814X_MCSPI2_BASE + 0xff;
+#ifndef CONFIG_ARCH_AM335X
 		omap2_mcspi3_resources[0].start	= TI814X_MCSPI3_BASE;
 		omap2_mcspi3_resources[0].end	= TI814X_MCSPI3_BASE + 0xff;
 		omap2_mcspi4_resources[0].start	= TI814X_MCSPI4_BASE;
 		omap2_mcspi4_resources[0].end	= TI814X_MCSPI4_BASE + 0xff;
+#endif
 	}
 #endif
 }
@@ -459,7 +466,7 @@ static inline void omap4_mcspi_fixup(void)
 }
 #endif
 
-#if !defined(CONFIG_ARCH_TI816X)
+#if !defined(CONFIG_ARCH_TI816X) | defined(CONFIG_ARCH_AM335X)
 static inline void omap2_mcspi2_init(void)
 {
 	platform_device_register(&omap2_mcspi2);
