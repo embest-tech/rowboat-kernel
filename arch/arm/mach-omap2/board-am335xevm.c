@@ -28,6 +28,10 @@
 #include <plat/common.h>
 #include <plat/asp.h>
 #include <plat/mmc.h>
+#include <linux/spi/spi.h>
+#include <linux/spi/flash.h>
+#include <linux/mtd/mtd.h>
+#include <linux/mtd/partitions.h>
 
 #include "mux.h"
 #include "hsmmc.h"
@@ -43,6 +47,68 @@ static struct omap_board_mux board_mux[] __initdata = {
 #else
 #define	board_mux	NULL
 #endif
+
+
+/* SPI fLash information */
+struct mtd_partition am335x_spi_partitions[] = {
+	/* All the partition sizes are listed in terms of erase size */
+	{
+		.name       = "U-Boot-min",
+		.offset     = 0,
+		.size       = 32 * SZ_4K,
+		.mask_flags = MTD_WRITEABLE,    /* force read-only */
+	},
+	{
+		.name       = "U-Boot",
+		.offset     = MTDPART_OFS_APPEND,
+		.size       = 64 * SZ_4K,
+		.mask_flags = MTD_WRITEABLE,    /* force read-only */
+	},
+	{
+		.name       = "U-Boot Env",
+		.offset     = MTDPART_OFS_APPEND,
+		.size       = 2 * SZ_4K,
+	},
+	{
+		.name       = "Kernel",
+		.offset     = MTDPART_OFS_APPEND,
+		.size       = 640 * SZ_4K,
+	},
+	{
+		.name       = "File System",
+		.offset     = MTDPART_OFS_APPEND,
+		.size       = MTDPART_SIZ_FULL,     /* size ~= 1.1 MiB */
+	}
+};
+
+const struct flash_platform_data am335x_spi_flash = {
+	.type      = "w25q64",
+	.name      = "spi_flash",
+	.parts     = am335x_spi_partitions,
+	.nr_parts  = ARRAY_SIZE(am335x_spi_partitions),
+};
+
+struct spi_board_info __initdata am335x_spi0_slave_info[] = {
+	{
+		.modalias      = "m25p80",
+		.platform_data = &am335x_spi_flash,
+		.irq           = -1,
+		.max_speed_hz  = 80000000,
+		.bus_num       = 1,
+		.chip_select   = 0,
+	},
+};
+
+struct spi_board_info __initdata am335x_spi1_slave_info[] = {
+	{
+		.modalias      = "m25p80",
+		.platform_data = &am335x_spi_flash,
+		.irq           = -1,
+		.max_speed_hz  = 80000000,
+		.bus_num       = 2,
+		.chip_select   = 0,
+	},
+};
 
 /*
 * mmc 1 & 2 is present on GP daughter board. However they work
@@ -182,6 +248,13 @@ static void setup_bb_gp_db_config(void)
 			/* Profile 4 yet to be completed. Disable till then */
 			mmc[2].mmc = 0;
 		}
+		if (prof_sel == PROFILE_2) {
+			/* SPI flash device is available in Profile 2 */
+
+
+			spi_register_board_info(am335x_spi0_slave_info,
+					ARRAY_SIZE(am335x_spi0_slave_info));
+		}
 	}
 
 	omap_mux_init_signal("mmc0_dat3",
@@ -278,6 +351,8 @@ static void setup_bb_ia_db_config(void)
 	pr_info("Baseboard + IA daughter board detected\n");
 	pr_info("Selected profile : %d\n", prof_sel);
 
+	spi_register_board_info(am335x_spi1_slave_info,
+			ARRAY_SIZE(am335x_spi1_slave_info));
 	/*
 	* TODO/REVIST -
 	* Based on selected profile, configure Pin Mux, Clock setup,
