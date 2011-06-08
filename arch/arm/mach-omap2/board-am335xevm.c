@@ -351,6 +351,20 @@ static void setup_bb_ia_db_config(void)
 	pr_info("Baseboard + IA daughter board detected\n");
 	pr_info("Selected profile : %d\n", prof_sel);
 
+	/*
+	* SPI support is in both profiles in
+	* Industrial Automation Motor Control Daughterboard
+	*/
+
+	omap_mux_init_signal("spi1_sclk",
+			OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("spi1_d0",
+			OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("spi1_d1",
+			OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("spi1_cs0",
+			OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+
 	spi_register_board_info(am335x_spi1_slave_info,
 			ARRAY_SIZE(am335x_spi1_slave_info));
 	/*
