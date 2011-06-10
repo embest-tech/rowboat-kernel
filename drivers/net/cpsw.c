@@ -48,6 +48,7 @@ do {								\
 } while (0)
 
 #define CPSW_POLL_WEIGHT	64
+#define CPSW_PHY_ID		0x004dd000
 #define CPSW_MIN_PACKET_SIZE	60
 #define CPSW_MAX_PACKET_SIZE	(1500 + 14 + 4 + 4)
 
@@ -367,6 +368,8 @@ static void _cpsw_adjust_link(struct cpsw_slave *slave,
 			mac_control |= BIT(7);	/* GIGABITEN	*/
 		if (phy->duplex)
 			mac_control |= BIT(0);	/* FULLDUPLEXEN	*/
+		if (phy->interface == PHY_INTERFACE_MODE_RGMII) /* RGMII */
+			mac_control |= (BIT(15)|BIT(16));
 		*link = true;
 	} else {
 		mac_control = 0;
@@ -476,6 +479,7 @@ static inline u32 cpsw_get_slave_port(struct cpsw_priv *priv, u32 slave_num)
 		return slave_num;
 }
 
+#ifdef CONFIG_ARCH_TI814X
 #define PHY_CONFIG_REG	22
 static void cpsw_set_phy_config(struct cpsw_priv *priv, struct phy_device *phy)
 {
@@ -533,6 +537,61 @@ static void cpsw_set_phy_config(struct cpsw_priv *priv, struct phy_device *phy)
 
 	return;
 }
+#endif
+
+#ifdef CONFIG_ARCH_AM335X
+static void cpsw_set_phy_config(struct cpsw_priv *priv, struct phy_device *phy)
+{
+	struct cpsw_platform_data *pdata = priv->pdev->dev.platform_data;
+	struct mii_bus *miibus;
+	int phy_addr = 0;
+	u16 val = 0;
+	u16 tmp = 0;
+
+	if (!pdata->gigabit_en)
+		return;
+
+	if (!phy)
+		return;
+
+	miibus = phy->bus;
+
+	if (!miibus)
+		return;
+
+	phy_addr = phy->addr;
+
+	/* TODO : This check is required. Make it graceful*/
+	if (phy->phy_id != CPSW_PHY_ID) {
+		printk(KERN_ERR"\nCPSW PHY ID IS NOT MATCHING\n");
+		return;
+	}
+	/* Following lines enable gigbit advertisement capability even in case
+	 * the advertisement is not enabled by default
+	 */
+	val = miibus->read(miibus, phy_addr, MII_BMCR);
+	val |= (BMCR_SPEED100 | BMCR_ANENABLE | BMCR_FULLDPLX);
+	miibus->write(miibus, phy_addr, MII_BMCR, val);
+	tmp = miibus->read(miibus, phy_addr, MII_BMCR);
+
+	tmp = miibus->read(miibus, phy_addr, MII_BMSR);
+	/* Check for extended register capabilities */
+	if (tmp & 0x1) {
+		val = miibus->read(miibus, phy_addr, MII_CTRL1000);
+		val |= BIT(9);
+		miibus->write(miibus, phy_addr, MII_CTRL1000, val);
+		tmp = miibus->read(miibus, phy_addr, MII_CTRL1000);
+	}
+
+	val = miibus->read(miibus, phy_addr, MII_ADVERTISE);
+	val |= (ADVERTISE_10HALF | ADVERTISE_10FULL | \
+		ADVERTISE_100HALF | ADVERTISE_100FULL);
+	miibus->write(miibus, phy_addr, MII_ADVERTISE, val);
+	tmp = miibus->read(miibus, phy_addr, MII_ADVERTISE);
+
+	return;
+}
+#endif
 
 static void cpsw_slave_open(struct cpsw_slave *slave, struct cpsw_priv *priv)
 {

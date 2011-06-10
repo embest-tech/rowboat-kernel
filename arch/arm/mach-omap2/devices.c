@@ -1789,6 +1789,143 @@ void ti814x_cpsw_init(void)
 static inline void ti814x_cpsw_init(void) {}
 #endif
 
+/*-------------------------------------------------------------------------*/
+#ifdef CONFIG_ARCH_AM335X
+#define AM335X_CPSW_BASE		(0x4A100000)
+#define AM335X_CPSW_MDIO_BASE		(0x4A101000)
+#define AM335X_CPSW_SS_BASE		(0x4A101200)
+#define AM335X_EMAC_MDIO_FREQ		(1000000)
+
+static u64 cpsw_dma_mask = DMA_BIT_MASK(32);
+/* TODO : Verify the offsets */
+struct cpsw_slave_data cpsw_slaves[] = {
+	{
+		.slave_reg_ofs  = 0x208,
+		.sliver_reg_ofs = 0xd80,
+		.phy_id		= "0:01", /* Need to confirm on PHY Address*/
+	},
+	{
+		.slave_reg_ofs  = 0x308,
+		.sliver_reg_ofs = 0xdc0,
+		.phy_id		= "0:00",
+	},
+};
+
+static struct cpsw_platform_data am335x_cpsw_pdata = {
+	.ss_reg_ofs		= 0x1200,
+	.channels		= 8,
+	.cpdma_reg_ofs		= 0x800,
+	.slaves			= 1,
+	.slave_data		= cpsw_slaves,
+	.ale_reg_ofs		= 0xd00,
+	.ale_entries		= 1024,
+	.host_port_reg_ofs      = 0x108,
+	.hw_stats_reg_ofs       = 0x900,
+	.bd_ram_ofs		= 0x2000,
+	.bd_ram_size		= SZ_8K,
+	.rx_descs               = 64,
+	.mac_control            = BIT(5), /* MIIEN */
+	.gigabit_en		= 1,
+	.host_port_num		= 0,
+	.no_bd_ram		= false,
+};
+
+static struct mdio_platform_data cpsw_mdio_pdata = {
+	.bus_freq       = AM335X_EMAC_MDIO_FREQ,
+};
+
+static struct resource cpsw_mdio_resources[] = {
+	{
+		.start  = AM335X_CPSW_MDIO_BASE,
+		.end    = AM335X_CPSW_MDIO_BASE + SZ_256 - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+};
+
+static struct platform_device cpsw_mdio_device = {
+	.name           = "davinci_mdio",
+	.id             = 0,
+	.num_resources  = ARRAY_SIZE(cpsw_mdio_resources),
+	.resource       = cpsw_mdio_resources,
+	.dev.platform_data = &cpsw_mdio_pdata,
+};
+
+static struct resource am335x_cpsw_resources[] = {
+	{
+		.start  = AM335X_CPSW_BASE,
+		.end    = AM335X_CPSW_BASE + SZ_2K - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+	{
+		.start  = AM335X_CPSW_SS_BASE,
+		.end    = AM335X_CPSW_SS_BASE + SZ_256 - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+	{
+		.start	= AM335X_IRQ_GSWRXTHR0,
+		.end	= AM335X_IRQ_GSWRXTHR0,
+		.flags	= IORESOURCE_IRQ,
+	},
+	{
+		.start	= AM335X_IRQ_GSWRXINT0,
+		.end	= AM335X_IRQ_GSWRXINT0,
+		.flags	= IORESOURCE_IRQ,
+	},
+	{
+		.start	= AM335X_IRQ_GSWTXINT0,
+		.end	= AM335X_IRQ_GSWTXINT0,
+		.flags	= IORESOURCE_IRQ,
+	},
+	{
+		.start	= AM335X_IRQ_GSWMISC0,
+		.end	= AM335X_IRQ_GSWMISC0,
+		.flags	= IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device am335x_cpsw_device = {
+	.name		=	"cpsw",
+	.id		=	0,
+	.num_resources	=	ARRAY_SIZE(am335x_cpsw_resources),
+	.resource	=	am335x_cpsw_resources,
+	.dev		=	{
+					.platform_data	   = &am335x_cpsw_pdata,
+					.dma_mask	   = &cpsw_dma_mask,
+					.coherent_dma_mask = DMA_BIT_MASK(32),
+				},
+};
+
+void am335x_cpsw_init(void)
+{
+	u32 mac_lo, mac_hi;
+
+	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID0_LO);
+	mac_hi = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID0_HI);
+	cpsw_slaves[0].mac_addr[0] = mac_hi & 0xFF;
+	cpsw_slaves[0].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
+	cpsw_slaves[0].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
+	cpsw_slaves[0].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
+	cpsw_slaves[0].mac_addr[4] = mac_lo & 0xFF;
+	cpsw_slaves[0].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
+
+	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID1_LO);
+	mac_hi = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID1_HI);
+	cpsw_slaves[1].mac_addr[0] = mac_hi & 0xFF;
+	cpsw_slaves[1].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
+	cpsw_slaves[1].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
+	cpsw_slaves[1].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
+	cpsw_slaves[1].mac_addr[4] = mac_lo & 0xFF;
+	cpsw_slaves[1].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
+
+	platform_device_register(&cpsw_mdio_device);
+	platform_device_register(&am335x_cpsw_device);
+	clk_add_alias(NULL, dev_name(&cpsw_mdio_device.dev),
+			NULL, &am335x_cpsw_device.dev);
+}
+#else
+static inline void am335x_cpsw_init(void) {}
+#endif
+
 #ifdef CONFIG_ARCH_TI81XX
 static void ti81xx_ethernet_init(void)
 {
