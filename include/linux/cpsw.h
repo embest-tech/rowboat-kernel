@@ -3,6 +3,11 @@
 
 #include <linux/if_ether.h>
 
+enum {
+	CPSW_VERSION_1 = 0,    /* TI8148 */
+	CPSW_VERSION_2,        /* AM335X */
+};
+
 struct cpsw_slave_data {
 	u32		slave_reg_ofs;
 	u32		sliver_reg_ofs;
@@ -43,6 +48,7 @@ struct cpsw_platform_data {
 	u32	host_port_num; /* The port number for the host port */
 
 	bool	no_bd_ram; /* no embedded BD ram*/
+	u8	version;
 };
 
 #endif /* __CPSW_H__ */

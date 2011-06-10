@@ -47,6 +47,17 @@ do {								\
 		dev_##level(priv->dev, format, ## __VA_ARGS__);	\
 } while (0)
 
+#define CPDMA_RXTHRESH		0x0c0
+#define CPDMA_RXFREE		0x0e0
+#define CPDMA_TXHDP_VER1	0x100
+#define CPDMA_TXHDP_VER2	0x200
+#define CPDMA_RXHDP_VER1	0x120
+#define CPDMA_RXHDP_VER2	0x220
+#define CPDMA_TXCP_VER1		0x140
+#define CPDMA_TXCP_VER2		0x240
+#define CPDMA_RXCP_VER1		0x160
+#define CPDMA_RXCP_VER2		0x260
+
 #define CPSW_POLL_WEIGHT	64
 #define CPSW_PHY_ID		0x004dd000
 #define CPSW_MIN_PACKET_SIZE	60
@@ -108,9 +119,11 @@ struct cpsw_slave_regs {
 	u32	flow_thresh;
 	u32	port_vlan;
 	u32	tx_pri_map;
+#ifdef CONFIG_ARCH_TI814X
 	u32	ts_ctl;
 	u32	ts_seq_ltype;
 	u32	ts_vlan;
+#endif
 	u32	sa_lo;
 	u32	sa_hi;
 };
@@ -1018,17 +1031,30 @@ static int __devinit cpsw_probe(struct platform_device *pdev)
 	dma_params.dmaregs		= (void __iomem *)(((u32)priv->regs) +
 						data->cpdma_reg_ofs);
 	dma_params.rxthresh		= (void __iomem *)(((u32)priv->regs) +
-						data->cpdma_reg_ofs + 0x0c0);
+					data->cpdma_reg_ofs + CPDMA_RXTHRESH);
 	dma_params.rxfree		= (void __iomem *)(((u32)priv->regs) +
-						data->cpdma_reg_ofs + 0x0e0);
-	dma_params.txhdp		= (void __iomem *)(((u32)priv->regs) +
-						data->cpdma_reg_ofs + 0x100);
-	dma_params.rxhdp		= (void __iomem *)(((u32)priv->regs) +
-						data->cpdma_reg_ofs + 0x120);
-	dma_params.txcp			= (void __iomem *)(((u32)priv->regs) +
-						data->cpdma_reg_ofs + 0x140);
-	dma_params.rxcp			= (void __iomem *)(((u32)priv->regs) +
-						data->cpdma_reg_ofs + 0x160);
+					data->cpdma_reg_ofs + CPDMA_RXFREE);
+
+	if (data->version == CPSW_VERSION_2) {
+		dma_params.txhdp	= (void __iomem *)(((u32)priv->regs) +
+					data->cpdma_reg_ofs + CPDMA_TXHDP_VER2);
+		dma_params.rxhdp	= (void __iomem *)(((u32)priv->regs) +
+					data->cpdma_reg_ofs + CPDMA_RXHDP_VER2);
+		dma_params.txcp		= (void __iomem *)(((u32)priv->regs) +
+					data->cpdma_reg_ofs + CPDMA_TXCP_VER2);
+		dma_params.rxcp		= (void __iomem *)(((u32)priv->regs) +
+					data->cpdma_reg_ofs + CPDMA_RXCP_VER2);
+	} else {
+		dma_params.txhdp	= (void __iomem *)(((u32)priv->regs) +
+					data->cpdma_reg_ofs + CPDMA_TXHDP_VER1);
+		dma_params.rxhdp	= (void __iomem *)(((u32)priv->regs) +
+					data->cpdma_reg_ofs + CPDMA_RXHDP_VER1);
+		dma_params.txcp		= (void __iomem *)(((u32)priv->regs) +
+					data->cpdma_reg_ofs + CPDMA_TXCP_VER1);
+		dma_params.rxcp		= (void __iomem *)(((u32)priv->regs) +
+					data->cpdma_reg_ofs + CPDMA_RXCP_VER1);
+	}
+
 	dma_params.num_chan		= data->channels;
 	dma_params.has_soft_reset	= true;
 	dma_params.min_packet_size	= CPSW_MIN_PACKET_SIZE;

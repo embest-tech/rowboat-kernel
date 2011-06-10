@@ -1828,6 +1828,7 @@ static struct cpsw_platform_data am335x_cpsw_pdata = {
 	.gigabit_en		= 1,
 	.host_port_num		= 0,
 	.no_bd_ram		= false,
+	.version		= CPSW_VERSION_2,
 };
 
 static struct mdio_platform_data cpsw_mdio_pdata = {
