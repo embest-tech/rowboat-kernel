@@ -1067,20 +1067,10 @@ static struct clk dpll_core_m5_ck = {
 	.set_rate	= &omap2_clksel_set_rate,
 };
 
-static struct clk cpsw_50m_clkdiv_ck = {
-	.name           = "cpsw_50m_clkdiv_ck",
+static struct clk cpsw_250m_clkdiv_ck = {
+	.name           = "cpsw_250m_clkdiv_ck",
 	.parent         = &dpll_core_m5_ck,
 	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
-};
-
-static struct clk cpgmac0_fck = {
-	.name           = "cpgmac0_fck",
-	.ops            = &clkops_omap2_dflt,
-	.enable_reg     = AM335x_CM_PER_CPGMAC0_CLKCTRL,
-	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
-	.clkdm_name     = "cpsw_125mhz_clkdm",
-	.parent         = &cpsw_50m_clkdiv_ck,
 	.recalc         = &followparent_recalc,
 };
 
@@ -1089,14 +1079,33 @@ static struct clk cpsw_125mhz_ocp_ck = {
 	.parent		= &dpll_core_m5_ck,
 	.ops		= &clkops_null,
 	.recalc		= &followparent_recalc,
+	.fixed_div	= 2,
 };
 
+static struct clk cpsw_50m_clkdiv_ck = {
+	.name           = "cpsw_50m_clkdiv_ck",
+	.parent         = &dpll_core_m5_ck,
+	.ops            = &clkops_null,
+	.recalc         = &followparent_recalc,
+	.fixed_div	= 5,
+};
+
+static struct clk cpgmac0_fck = {
+	.name           = "cpgmac0_fck",
+	.ops            = &clkops_omap2_dflt,
+	.enable_reg     = AM335x_CM_PER_CPGMAC0_CLKCTRL,
+	.enable_bit     = AM335x_MODULEMODE_SWCTRL,
+	.clkdm_name     = "cpsw_125mhz_clkdm",
+	.parent         = &cpsw_125mhz_ocp_ck,
+	.recalc         = &followparent_recalc,
+};
 
 static struct clk cpsw_5m_clkdiv_ck = {
 	.name		= "cpsw_5m_clkdiv_ck",
 	.parent		= &cpsw_50m_clkdiv_ck,
 	.ops		= &clkops_null,
 	.recalc		= &followparent_recalc,
+	.fixed_div	= 10,
 };
 
 
@@ -1556,7 +1565,7 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"cefuse_fck",		&cefuse_fck,	CK_AM335X),
 	CLK(NULL,	"clkdiv32k_fck",	&clkdiv32k_fck,	CK_AM335X),
 	CLK(NULL,	"control_fck",		&control_fck,	CK_AM335X),
-	CLK(NULL,	"cpgmac0_fck",		&cpgmac0_fck,	CK_AM335X),
+	CLK("cpsw.0",	NULL,			&cpgmac0_fck,	CK_AM335X),
 	CLK(NULL,	"dcan0_fck",		&dcan0_fck,	CK_AM335X),
 	CLK(NULL,	"dcan1_fck",		&dcan1_fck,	CK_AM335X),
 	CLK(NULL,	"debugss_fck",		&debugss_fck,	CK_AM335X),
@@ -1644,6 +1653,8 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"sysclk_div_ck",	&sysclk_div_ck,	CK_AM335X),
 	CLK(NULL,	"core_100m_ck",		&core_100m_ck,	CK_AM335X),
 	CLK(NULL,	"dpll_core_m5_ck",	&dpll_core_m5_ck,	CK_AM335X),
+	CLK(NULL,	"cpsw_250m_clkdiv_ck",	&cpsw_250m_clkdiv_ck,
+								CK_AM335X),
 	CLK(NULL,	"cpsw_125mhz_ocp_ck",	&cpsw_125mhz_ocp_ck,	CK_AM335X),
 	CLK(NULL,	"cpsw_50m_clkdiv_ck",	&cpsw_50m_clkdiv_ck,	CK_AM335X),
 	CLK(NULL,	"cpsw_5m_clkdiv_ck",	&cpsw_5m_clkdiv_ck,	CK_AM335X),
