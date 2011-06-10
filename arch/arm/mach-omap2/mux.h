@@ -57,6 +57,7 @@
  *    correct pull setting and unintentionally pull would get disabled
  */
 #define	AM335X_PIN_OUTPUT		(0)
+#define	AM335X_PIN_OUTPUT_PULLUP	(AM335X_PULL_UP)
 #define	AM335X_PIN_INPUT		(AM335X_INPUT_EN | AM335X_PULL_DISA)
 #define	AM335X_PIN_INPUT_PULLUP		(AM335X_INPUT_EN | AM335X_PULL_UP)
 #define	AM335X_PIN_INPUT_PULLDOWN	(AM335X_INPUT_EN)
