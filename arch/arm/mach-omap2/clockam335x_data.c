@@ -1376,11 +1376,33 @@ static struct clk lcdc_fck = {
 	.recalc         = &followparent_recalc,
 };
 
+static struct clk mmc0_ick = {
+	.name		= "mmc0_ick",
+	.parent		= &l4ls_fck,
+	.ops		= &clkops_null,
+	.recalc		= &followparent_recalc,
+};
+
+static struct clk mmc1_ick = {
+	.name		= "mmc1_ick",
+	.parent		= &l4ls_fck,
+	.ops		= &clkops_null,
+	.recalc		= &followparent_recalc,
+};
+
+static struct clk mmc2_ick = {
+	.name		= "mmc2_ick",
+	.parent		= &l3_main_fck,
+	.ops		= &clkops_null,
+	.recalc		= &followparent_recalc,
+};
+
 static struct clk mmc_clk = {
 	.name		= "mmc_clk",
 	.parent		= &dpll_per_m2_ck,
 	.ops		= &clkops_null,
-	.recalc		= &followparent_recalc,
+	.fixed_div	= 2,
+	.recalc     = &omap_fixed_divisor_recalc,
 };
 
 static struct clk mmc0_fck = {
@@ -1612,6 +1634,9 @@ static struct omap_clk am335x_clks[] = {
 	CLK("davinci-mcasp.0",	NULL,		&mcasp0_fck,	CK_AM335X),
 	CLK("davinci-mcasp.1",	NULL,		&mcasp1_fck,	CK_AM335X),
 	CLK(NULL,	"mlb_fck",		&mlb_fck,	CK_AM335X),
+	CLK("mmci-omap-hs.0",	"ick",	&mmc0_ick,	CK_AM335X),
+	CLK("mmci-omap-hs.1",	"ick",	&mmc1_ick,	CK_AM335X),
+	CLK("mmci-omap-hs.2",	"ick",	&mmc2_ick,	CK_AM335X),
 	CLK("mmci-omap-hs.0",	"fck",	&mmc0_fck,	CK_AM335X),
 	CLK("mmci-omap-hs.1",	"fck",	&mmc1_fck,	CK_AM335X),
 	CLK("mmci-omap-hs.2",	"fck",	&mmc2_fck,	CK_AM335X),
