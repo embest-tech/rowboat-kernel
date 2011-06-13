@@ -605,6 +605,20 @@ static struct clk mailbox0_fck = {
 	.recalc		= &followparent_recalc,
 };
 
+static struct clk mcasp0_ick = {
+	.name		= "mcasp0_ick",
+	.parent		= &l3_main_fck,
+	.ops		= &clkops_null,
+	.recalc		= &followparent_recalc,
+};
+
+static struct clk mcasp1_ick = {
+	.name		= "mcasp1_ick",
+	.parent		= &l3_main_fck,
+	.ops		= &clkops_null,
+	.recalc		= &followparent_recalc,
+};
+
 static struct clk mcasp0_fck = {
 	.name		= "mcasp0_fck",
 	.ops		= &clkops_omap2_dflt,
@@ -1593,6 +1607,8 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"l4wkup_fck",		&l4wkup_fck,	CK_AM335X),
 	CLK(NULL,	"lcdc_fck",		&lcdc_fck,	CK_AM335X),
 	CLK(NULL,	"mailbox0_fck",		&mailbox0_fck,	CK_AM335X),
+	CLK(NULL,	"mcasp0_ick",	&mcasp0_ick,	CK_AM335X),
+	CLK(NULL,	"mcasp1_ick",	&mcasp1_ick,	CK_AM335X),
 	CLK("davinci-mcasp.0",	NULL,		&mcasp0_fck,	CK_AM335X),
 	CLK("davinci-mcasp.1",	NULL,		&mcasp1_fck,	CK_AM335X),
 	CLK(NULL,	"mlb_fck",		&mlb_fck,	CK_AM335X),
