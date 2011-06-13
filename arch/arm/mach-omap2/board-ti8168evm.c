@@ -492,7 +492,7 @@ static void __init ti8168_evm_init(void)
 	i2c_add_driver(&ti816xevm_cpld_driver);
 	ti81xx_register_mcasp(0, &ti8168_evm_snd_data);
 	board_nand_init(ti816x_nand_partitions,
-		ARRAY_SIZE(ti816x_nand_partitions), 0, NAND_BUSWIDTH_16);
+		ARRAY_SIZE(ti816x_nand_partitions), 0);
 	board_nor_init(ti816x_evm_norflash_partitions,
 		ARRAY_SIZE(ti816x_evm_norflash_partitions), 0);
 	ti816x_vpss_init();
