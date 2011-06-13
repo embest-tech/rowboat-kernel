@@ -1627,9 +1627,9 @@ static inline void ti81xx_register_edma(void) {}
 #define	TI814X_CPSW_SS_BASE		(0x4A100900)
 #define TI814X_EMAC_MDIO_FREQ		(1000000)
 
-static u64 cpsw_dma_mask = DMA_BIT_MASK(32);
+static u64 ti814x_cpsw_dmamask = DMA_BIT_MASK(32);
 /* TODO : Verify the offsets */
-struct cpsw_slave_data cpsw_slaves[] = {
+struct cpsw_slave_data ti814x_cpsw_slaves[] = {
 	{
 		.slave_reg_ofs  = 0x50,
 		.sliver_reg_ofs = 0x700,
@@ -1647,7 +1647,7 @@ static struct cpsw_platform_data ti814x_cpsw_pdata = {
 	.channels		= 8,
 	.cpdma_reg_ofs		= 0x100,
 	.slaves			= 1,
-	.slave_data		= cpsw_slaves,
+	.slave_data		= ti814x_cpsw_slaves,
 	.ale_reg_ofs		= 0x600,
 	.ale_entries		= 1024,
 	.host_port_reg_ofs      = 0x28,
@@ -1661,11 +1661,11 @@ static struct cpsw_platform_data ti814x_cpsw_pdata = {
 	.no_bd_ram		= false,
 };
 
-static struct mdio_platform_data cpsw_mdio_pdata = {
+static struct mdio_platform_data ti814x_cpsw_mdiopdata = {
 	.bus_freq       = TI814X_EMAC_MDIO_FREQ,
 };
 
-static struct resource cpsw_mdio_resources[] = {
+static struct resource ti814x_cpsw_mdioresources[] = {
 	{
 		.start  = TI814X_CPSW_MDIO_BASE,
 		.end    = TI814X_CPSW_MDIO_BASE + SZ_256 - 1,
@@ -1673,12 +1673,12 @@ static struct resource cpsw_mdio_resources[] = {
 	},
 };
 
-static struct platform_device cpsw_mdio_device = {
+static struct platform_device ti814x_cpsw_mdiodevice = {
 	.name           = "davinci_mdio",
 	.id             = 0,
-	.num_resources  = ARRAY_SIZE(cpsw_mdio_resources),
-	.resource       = cpsw_mdio_resources,
-	.dev.platform_data = &cpsw_mdio_pdata,
+	.num_resources  = ARRAY_SIZE(ti814x_cpsw_mdioresources),
+	.resource       = ti814x_cpsw_mdioresources,
+	.dev.platform_data = &ti814x_cpsw_mdiopdata,
 };
 
 static struct resource ti814x_cpsw_resources[] = {
@@ -1720,8 +1720,8 @@ static struct platform_device ti814x_cpsw_device = {
 	.num_resources	=	ARRAY_SIZE(ti814x_cpsw_resources),
 	.resource	=	ti814x_cpsw_resources,
 	.dev		=	{
-					.platform_data	   = &ti814x_cpsw_pdata,
-					.dma_mask	   = &cpsw_dma_mask,
+					.platform_data	= &ti814x_cpsw_pdata,
+					.dma_mask	= &ti814x_cpsw_dmamask,
 					.coherent_dma_mask = DMA_BIT_MASK(32),
 				},
 };
@@ -1762,27 +1762,27 @@ void ti814x_cpsw_init(void)
 
 	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID0_LO);
 	mac_hi = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID0_HI);
-	cpsw_slaves[0].mac_addr[0] = mac_hi & 0xFF;
-	cpsw_slaves[0].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
-	cpsw_slaves[0].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
-	cpsw_slaves[0].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
-	cpsw_slaves[0].mac_addr[4] = mac_lo & 0xFF;
-	cpsw_slaves[0].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
+	ti814x_cpsw_slaves[0].mac_addr[0] = mac_hi & 0xFF;
+	ti814x_cpsw_slaves[0].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
+	ti814x_cpsw_slaves[0].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
+	ti814x_cpsw_slaves[0].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
+	ti814x_cpsw_slaves[0].mac_addr[4] = mac_lo & 0xFF;
+	ti814x_cpsw_slaves[0].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
 
 	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID1_LO);
 	mac_hi = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID1_HI);
-	cpsw_slaves[1].mac_addr[0] = mac_hi & 0xFF;
-	cpsw_slaves[1].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
-	cpsw_slaves[1].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
-	cpsw_slaves[1].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
-	cpsw_slaves[1].mac_addr[4] = mac_lo & 0xFF;
-	cpsw_slaves[1].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
+	ti814x_cpsw_slaves[1].mac_addr[0] = mac_hi & 0xFF;
+	ti814x_cpsw_slaves[1].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
+	ti814x_cpsw_slaves[1].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
+	ti814x_cpsw_slaves[1].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
+	ti814x_cpsw_slaves[1].mac_addr[4] = mac_lo & 0xFF;
+	ti814x_cpsw_slaves[1].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
 #if 0
 	ti814x_cpsw_mux();
 #endif
-	platform_device_register(&cpsw_mdio_device);
+	platform_device_register(&ti814x_cpsw_mdiodevice);
 	platform_device_register(&ti814x_cpsw_device);
-	clk_add_alias(NULL, dev_name(&cpsw_mdio_device.dev),
+	clk_add_alias(NULL, dev_name(&ti814x_cpsw_mdiodevice.dev),
 			NULL, &ti814x_cpsw_device.dev);
 }
 #else
@@ -1796,9 +1796,9 @@ static inline void ti814x_cpsw_init(void) {}
 #define AM335X_CPSW_SS_BASE		(0x4A101200)
 #define AM335X_EMAC_MDIO_FREQ		(1000000)
 
-static u64 cpsw_dma_mask = DMA_BIT_MASK(32);
+static u64 am335x_cpsw_dmamask = DMA_BIT_MASK(32);
 /* TODO : Verify the offsets */
-struct cpsw_slave_data cpsw_slaves[] = {
+struct cpsw_slave_data am335x_cpsw_slaves[] = {
 	{
 		.slave_reg_ofs  = 0x208,
 		.sliver_reg_ofs = 0xd80,
@@ -1816,7 +1816,7 @@ static struct cpsw_platform_data am335x_cpsw_pdata = {
 	.channels		= 8,
 	.cpdma_reg_ofs		= 0x800,
 	.slaves			= 1,
-	.slave_data		= cpsw_slaves,
+	.slave_data		= am335x_cpsw_slaves,
 	.ale_reg_ofs		= 0xd00,
 	.ale_entries		= 1024,
 	.host_port_reg_ofs      = 0x108,
@@ -1831,11 +1831,11 @@ static struct cpsw_platform_data am335x_cpsw_pdata = {
 	.version		= CPSW_VERSION_2,
 };
 
-static struct mdio_platform_data cpsw_mdio_pdata = {
+static struct mdio_platform_data am335x_cpsw_mdiopdata = {
 	.bus_freq       = AM335X_EMAC_MDIO_FREQ,
 };
 
-static struct resource cpsw_mdio_resources[] = {
+static struct resource am335x_cpsw_mdioresources[] = {
 	{
 		.start  = AM335X_CPSW_MDIO_BASE,
 		.end    = AM335X_CPSW_MDIO_BASE + SZ_256 - 1,
@@ -1843,12 +1843,12 @@ static struct resource cpsw_mdio_resources[] = {
 	},
 };
 
-static struct platform_device cpsw_mdio_device = {
+static struct platform_device am335x_cpsw_mdiodevice = {
 	.name           = "davinci_mdio",
 	.id             = 0,
-	.num_resources  = ARRAY_SIZE(cpsw_mdio_resources),
-	.resource       = cpsw_mdio_resources,
-	.dev.platform_data = &cpsw_mdio_pdata,
+	.num_resources  = ARRAY_SIZE(am335x_cpsw_mdioresources),
+	.resource       = am335x_cpsw_mdioresources,
+	.dev.platform_data = &am335x_cpsw_mdiopdata,
 };
 
 static struct resource am335x_cpsw_resources[] = {
@@ -1890,8 +1890,8 @@ static struct platform_device am335x_cpsw_device = {
 	.num_resources	=	ARRAY_SIZE(am335x_cpsw_resources),
 	.resource	=	am335x_cpsw_resources,
 	.dev		=	{
-					.platform_data	   = &am335x_cpsw_pdata,
-					.dma_mask	   = &cpsw_dma_mask,
+					.platform_data	= &am335x_cpsw_pdata,
+					.dma_mask	= &am335x_cpsw_dmamask,
 					.coherent_dma_mask = DMA_BIT_MASK(32),
 				},
 };
@@ -1902,25 +1902,25 @@ void am335x_cpsw_init(void)
 
 	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID0_LO);
 	mac_hi = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID0_HI);
-	cpsw_slaves[0].mac_addr[0] = mac_hi & 0xFF;
-	cpsw_slaves[0].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
-	cpsw_slaves[0].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
-	cpsw_slaves[0].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
-	cpsw_slaves[0].mac_addr[4] = mac_lo & 0xFF;
-	cpsw_slaves[0].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
+	am335x_cpsw_slaves[0].mac_addr[0] = mac_hi & 0xFF;
+	am335x_cpsw_slaves[0].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
+	am335x_cpsw_slaves[0].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
+	am335x_cpsw_slaves[0].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
+	am335x_cpsw_slaves[0].mac_addr[4] = mac_lo & 0xFF;
+	am335x_cpsw_slaves[0].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
 
 	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID1_LO);
 	mac_hi = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID1_HI);
-	cpsw_slaves[1].mac_addr[0] = mac_hi & 0xFF;
-	cpsw_slaves[1].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
-	cpsw_slaves[1].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
-	cpsw_slaves[1].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
-	cpsw_slaves[1].mac_addr[4] = mac_lo & 0xFF;
-	cpsw_slaves[1].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
+	am335x_cpsw_slaves[1].mac_addr[0] = mac_hi & 0xFF;
+	am335x_cpsw_slaves[1].mac_addr[1] = (mac_hi & 0xFF00) >> 8;
+	am335x_cpsw_slaves[1].mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
+	am335x_cpsw_slaves[1].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
+	am335x_cpsw_slaves[1].mac_addr[4] = mac_lo & 0xFF;
+	am335x_cpsw_slaves[1].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
 
-	platform_device_register(&cpsw_mdio_device);
+	platform_device_register(&am335x_cpsw_mdiodevice);
 	platform_device_register(&am335x_cpsw_device);
-	clk_add_alias(NULL, dev_name(&cpsw_mdio_device.dev),
+	clk_add_alias(NULL, dev_name(&am335x_cpsw_mdiodevice.dev),
 			NULL, &am335x_cpsw_device.dev);
 }
 #else

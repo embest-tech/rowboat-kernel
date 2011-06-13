@@ -492,7 +492,6 @@ static inline u32 cpsw_get_slave_port(struct cpsw_priv *priv, u32 slave_num)
 		return slave_num;
 }
 
-#ifdef CONFIG_ARCH_TI814X
 #define PHY_CONFIG_REG	22
 static void cpsw_set_phy_config(struct cpsw_priv *priv, struct phy_device *phy)
 {
@@ -550,10 +549,8 @@ static void cpsw_set_phy_config(struct cpsw_priv *priv, struct phy_device *phy)
 
 	return;
 }
-#endif
 
-#ifdef CONFIG_ARCH_AM335X
-static void cpsw_set_phy_config(struct cpsw_priv *priv, struct phy_device *phy)
+static void cpsw_set_phy_config2(struct cpsw_priv *priv, struct phy_device *phy)
 {
 	struct cpsw_platform_data *pdata = priv->pdev->dev.platform_data;
 	struct mii_bus *miibus;
@@ -604,7 +601,6 @@ static void cpsw_set_phy_config(struct cpsw_priv *priv, struct phy_device *phy)
 
 	return;
 }
-#endif
 
 static void cpsw_slave_open(struct cpsw_slave *slave, struct cpsw_priv *priv)
 {
@@ -641,7 +637,10 @@ static void cpsw_slave_open(struct cpsw_slave *slave, struct cpsw_priv *priv)
 		slave->phy = NULL;
 	} else {
 		printk(KERN_ERR"\nCPSW phy found : id is : 0x%x\n", slave->phy->phy_id);
-		cpsw_set_phy_config(priv, slave->phy);
+		if (priv->data.version == CPSW_VERSION_2)
+			cpsw_set_phy_config2(priv, slave->phy);
+		else
+			cpsw_set_phy_config(priv, slave->phy);
 		phy_start(slave->phy);
 	}
 }
