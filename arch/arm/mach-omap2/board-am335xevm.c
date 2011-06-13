@@ -251,6 +251,14 @@ static void setup_bb_gp_db_config(void)
 		if (prof_sel == PROFILE_2) {
 			/* SPI flash device is available in Profile 2 */
 
+			omap_mux_init_signal("spi0_sclk",
+				OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("spi0_d0",
+				OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("spi0_d1",
+				OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("spi0_cs0",
+				OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
 
 			spi_register_board_info(am335x_spi0_slave_info,
 					ARRAY_SIZE(am335x_spi0_slave_info));
