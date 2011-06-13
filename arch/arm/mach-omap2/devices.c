@@ -1332,14 +1332,12 @@ static struct resource ti81xx_edma_resources[] = {
 		.end	= TI81XX_TPTC2_BASE + SZ_1K - 1,
 		.flags	= IORESOURCE_MEM,
 	},
-#ifndef	CONFIG_ARCH_AM335X
 	{
 		.name	= "edma_tc3",
 		.start	= TI81XX_TPTC3_BASE,
 		.end	= TI81XX_TPTC3_BASE + SZ_1K - 1,
 		.flags	= IORESOURCE_MEM,
 	},
-#endif
 	{
 		.name	= "edma0",
 		.start	= TI81XX_IRQ_EDMA_COMP,
@@ -1351,6 +1349,44 @@ static struct resource ti81xx_edma_resources[] = {
 		.flags	= IORESOURCE_IRQ,
 	},
 };
+
+static struct resource am335x_edma_resources[] = {
+	{
+		.name	= "edma_cc0",
+		.start	= TI81XX_TPCC_BASE,
+		.end	= TI81XX_TPCC_BASE + SZ_32K - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.name	= "edma_tc0",
+		.start	= TI81XX_TPTC0_BASE,
+		.end	= TI81XX_TPTC0_BASE + SZ_1K - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.name	= "edma_tc1",
+		.start	= TI81XX_TPTC1_BASE,
+		.end	= TI81XX_TPTC1_BASE + SZ_1K - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.name	= "edma_tc2",
+		.start	= TI81XX_TPTC2_BASE,
+		.end	= TI81XX_TPTC2_BASE + SZ_1K - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.name	= "edma0",
+		.start	= TI81XX_IRQ_EDMA_COMP,
+		.flags	= IORESOURCE_IRQ,
+	},
+	{
+		.name	= "edma0_err",
+		.start	= TI81XX_IRQ_EDMA_ERR,
+		.flags	= IORESOURCE_IRQ,
+	},
+};
+
 
 static const s16 ti816x_dma_rsv_chans[][2] = {
 	/* (offset, number) */
@@ -1516,12 +1552,14 @@ int map_xbar_event_to_channel(unsigned event, unsigned *channel, unsigned *xbar_
 	else if (event < edma_info[ctrl]->num_events){
 		*channel = xbar_event_mapping[val][1];
 		offset = (*channel)*4;
-#ifndef	CONFIG_ARCH_AM335X
-		__raw_writel(xbar_event_mapping[val][0], TI81XX_SCM_BASE + TI81XX_SCM_BASE_EDMA + offset);
-#else
-		__raw_writel(xbar_event_mapping[val][0], AM335X_SCM_BASE +
+		if (cpu_is_am335x())
+			__raw_writel(xbar_event_mapping[val][0],
+						AM335X_SCM_BASE +
 						TI81XX_SCM_BASE_EDMA + offset);
-#endif
+		else
+			__raw_writel(xbar_event_mapping[val][0],
+						TI81XX_SCM_BASE +
+						TI81XX_SCM_BASE_EDMA + offset);
 		return 0;
 	}
 	else {
@@ -1535,15 +1573,9 @@ EXPORT_SYMBOL(map_xbar_event_to_channel);
 static struct edma_soc_info ti814x_edma_info[] = {
 	{
 		.n_channel		= 64,
-#ifndef	CONFIG_ARCH_AM335X
 		.n_region		= 5,	/* 0-2, 4-5 */
 		.n_slot			= 512,
 		.n_tc			= 4,
-#else
-		.n_region		= 4,	/* 0-2, 4-5 */
-		.n_slot			= 256,
-		.n_tc			= 3,
-#endif
 		.n_cc			= 1,
 		.rsv_chans		= ti814x_dma_rsv_chans,
 		.rsv_slots		= ti814x_dma_rsv_slots,
@@ -1566,6 +1598,34 @@ static struct platform_device ti814x_edma_device = {
 	.resource	= ti81xx_edma_resources,
 };
 
+static struct edma_soc_info am335x_edma_info[] = {
+	{
+		.n_channel		= 64,
+		.n_region		= 4,
+		.n_slot			= 256,
+		.n_tc			= 3,
+		.n_cc			= 1,
+		.rsv_chans		= ti814x_dma_rsv_chans,
+		.rsv_slots		= ti814x_dma_rsv_slots,
+		.queue_tc_mapping	= ti814x_queue_tc_mapping,
+		.queue_priority_mapping	= ti814x_queue_priority_mapping,
+		.is_xbar		= 1,
+		.n_events		= 95,
+		.xbar_event_mapping	= ti814x_xbar_event_mapping,
+		.map_xbar_channel	= map_xbar_event_to_channel,
+	},
+};
+
+static struct platform_device am335x_edma_device = {
+	.name		= "edma",
+	.id		= -1,	/* !@@@ TODO replace as appropriate - Sundaram*/
+	.dev = {
+		.platform_data = am335x_edma_info,
+	},
+	.num_resources	= ARRAY_SIZE(am335x_edma_resources),
+	.resource	= am335x_edma_resources,
+};
+
 int __init ti81xx_register_edma(void)
 {
 	struct platform_device *pdev;
@@ -1575,6 +1635,8 @@ int __init ti81xx_register_edma(void)
 		pdev = &ti816x_edma_device;
 	else if (cpu_is_ti814x())
 		pdev = &ti814x_edma_device;
+	else if (cpu_is_am335x())
+		pdev = &am335x_edma_device;
 	else {
 		pr_err("%s: platform not supported\n", __func__);
 		return -ENODEV;
@@ -1604,13 +1666,15 @@ int __init ti81xx_register_edma(void)
                  return -EBUSY;
         }
         clk_enable(edma_clk);
-        edma_clk = clk_get(NULL, "tptc3_ick");
-         if (IS_ERR(edma_clk)) {
-                 printk(KERN_ERR "EDMA: Failed to get clock\n");
-                 return -EBUSY;
-        }
-        clk_enable(edma_clk);
 
+		if (!cpu_is_am335x()) {
+			edma_clk = clk_get(NULL, "tptc3_ick");
+			if (IS_ERR(edma_clk)) {
+				printk(KERN_ERR "EDMA: Failed to get clock\n");
+				return -EBUSY;
+			}
+			clk_enable(edma_clk);
+		}
 
 	return platform_device_register(pdev);
 }
