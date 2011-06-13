@@ -887,43 +887,43 @@ static struct clk timer7_fck = {
 	.recalc		= &omap2_clksel_recalc,
 };
 
-static struct clk tpcc_fck = {
-	.name		= "tpcc_fck",
+static struct clk tpcc_ick = {
+	.name		= "tpcc_ick",
 	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= AM335x_CM_PER_TPCC_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l3_clkdm",
-	.parent		= &sysclk_div_ck,
+	.parent		= &l3_main_fck,
 	.recalc		= &followparent_recalc,
 };
 
-static struct clk tptc0_fck = {
-	.name		= "tptc0_fck",
+static struct clk tptc0_ick = {
+	.name		= "tptc0_ick",
 	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= AM335x_CM_PER_TPTC0_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l3_clkdm",
-	.parent		= &sysclk_div_ck,
+	.parent		= &l3_main_fck,
 	.recalc		= &followparent_recalc,
 };
 
-static struct clk tptc1_fck = {
-	.name		= "tptc1_fck",
+static struct clk tptc1_ick = {
+	.name		= "tptc1_ick",
 	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= AM335x_CM_PER_TPTC1_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l3_clkdm",
-	.parent		= &sysclk_div_ck,
+	.parent		= &l3_main_fck,
 	.recalc		= &followparent_recalc,
 };
 
-static struct clk tptc2_fck = {
-	.name		= "tptc2_fck",
+static struct clk tptc2_ick = {
+	.name		= "tptc2_ick",
 	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= AM335x_CM_PER_TPTC2_CLKCTRL,
 	.enable_bit	= AM335x_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l3_clkdm",
-	.parent		= &sysclk_div_ck,
+	.parent		= &l3_main_fck,
 	.recalc		= &followparent_recalc,
 };
 
@@ -1624,10 +1624,10 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"gpt5_fck",		&timer5_fck,	CK_AM335X),
 	CLK(NULL,	"gpt6_fck",		&timer6_fck,	CK_AM335X),
 	CLK(NULL,	"gpt7_fck",		&timer7_fck,	CK_AM335X),
-	CLK(NULL,	"tpcc_fck",		&tpcc_fck,	CK_AM335X),
-	CLK(NULL,	"tptc0_fck",		&tptc0_fck,	CK_AM335X),
-	CLK(NULL,	"tptc1_fck",		&tptc1_fck,	CK_AM335X),
-	CLK(NULL,	"tptc2_fck",		&tptc2_fck,	CK_AM335X),
+	CLK(NULL,	"tpcc_ick",		&tpcc_ick,	CK_AM335X),
+	CLK(NULL,	"tptc0_ick",		&tptc0_ick,	CK_AM335X),
+	CLK(NULL,	"tptc1_ick",		&tptc1_ick,	CK_AM335X),
+	CLK(NULL,	"tptc2_ick",		&tptc2_ick,	CK_AM335X),
 	CLK(NULL,	"uart1_fck",		&uart1_fck,	CK_AM335X),
 	CLK(NULL,	"uart2_fck",		&uart2_fck,	CK_AM335X),
 	CLK(NULL,	"uart3_fck",		&uart3_fck,	CK_AM335X),
