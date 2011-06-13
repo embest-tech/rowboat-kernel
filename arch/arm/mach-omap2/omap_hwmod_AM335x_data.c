@@ -1166,6 +1166,11 @@ static struct omap_hwmod_class uart_class = {
 
 /* uart1 */
 
+static struct omap_hwmod_dma_info uart1_edma_reqs[] = {
+	{ .name = "tx",	.dma_req = 0, },
+	{ .name = "rx",	.dma_req = 0, },
+};
+
 static struct omap_hwmod_addr_space am335x_uart1_addr_space[] = {
 	{
 		.pa_start	= AM335X_UART1_BASE,
@@ -1195,6 +1200,8 @@ static struct omap_hwmod AM335x_uart1_hwmod = {
 	.class		= &uart_class,
 	.mpu_irqs       = am335x_uart1_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_uart1_irqs),
+	.sdma_reqs	= uart1_edma_reqs,
+	.sdma_reqs_cnt	= ARRAY_SIZE(uart1_edma_reqs),
 	.main_clk	= "uart1_fck",
 	.prcm = {
 		.omap4 = {
