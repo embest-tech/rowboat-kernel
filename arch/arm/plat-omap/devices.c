@@ -145,20 +145,38 @@ int __init omap_mmc_add(const char *name, int id, unsigned long base,
 		res[3].flags = IORESOURCE_DMA;
 		break;
 	case 1:
-		res[2].start = OMAP24XX_DMA_MMC2_RX;
-		res[2].end = OMAP24XX_DMA_MMC2_RX;
-		res[2].flags = IORESOURCE_DMA;
-		res[3].start = OMAP24XX_DMA_MMC2_TX;
-		res[3].end = OMAP24XX_DMA_MMC2_TX;
-		res[3].flags = IORESOURCE_DMA;
+		if (!cpu_is_am335x()) {
+			res[2].start = OMAP24XX_DMA_MMC2_RX;
+			res[2].end = OMAP24XX_DMA_MMC2_RX;
+			res[2].flags = IORESOURCE_DMA;
+			res[3].start = OMAP24XX_DMA_MMC2_TX;
+			res[3].end = OMAP24XX_DMA_MMC2_TX;
+			res[3].flags = IORESOURCE_DMA;
+		} else {
+			res[2].start = AM335X_DMA_MMC2_RX;
+			res[2].end = AM335X_DMA_MMC2_RX;
+			res[2].flags = IORESOURCE_DMA;
+			res[3].start = AM335X_DMA_MMC2_TX;
+			res[3].end = AM335X_DMA_MMC2_TX;
+			res[3].flags = IORESOURCE_DMA;
+		}
 		break;
 	case 2:
-		res[2].start = OMAP34XX_DMA_MMC3_RX;
-		res[2].end = OMAP34XX_DMA_MMC3_RX;
-		res[2].flags = IORESOURCE_DMA;
-		res[3].start = OMAP34XX_DMA_MMC3_TX;
-		res[3].end = OMAP34XX_DMA_MMC3_TX;
-		res[3].flags = IORESOURCE_DMA;
+		if (!cpu_is_am335x()) {
+			res[2].start = OMAP34XX_DMA_MMC3_RX;
+			res[2].end = OMAP34XX_DMA_MMC3_RX;
+			res[2].flags = IORESOURCE_DMA;
+			res[3].start = OMAP34XX_DMA_MMC3_TX;
+			res[3].end = OMAP34XX_DMA_MMC3_TX;
+			res[3].flags = IORESOURCE_DMA;
+		} else {
+			res[2].start = AM335X_DMA_MMC3_RX;
+			res[2].end = AM335X_DMA_MMC3_RX;
+			res[2].flags = IORESOURCE_DMA;
+			res[3].start = AM335X_DMA_MMC3_TX;
+			res[3].end = AM335X_DMA_MMC3_TX;
+			res[3].flags = IORESOURCE_DMA;
+		}
 		break;
 	case 3:
 		res[2].start = OMAP44XX_DMA_MMC4_RX;

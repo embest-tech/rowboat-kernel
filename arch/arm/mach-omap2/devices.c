@@ -1012,20 +1012,22 @@ void __init omap2_init_mmc(struct omap_mmc_platform_data **mmc_data,
 			name = "mmci-omap-hs";
 		} else if (cpu_is_ti81xx()) {
 
-#ifndef	CONFIG_ARCH_AM335X
-			size = TI81XX_HSMMC_SIZE;
-#else
-			switch (i) {
-			case 0:
-			case 1:
-				size = AM335X_HSMMC0_1_SIZE; /* MMC0/1 = 4KB*/
-				break;
+			if (!cpu_is_am335x())
+				size = TI81XX_HSMMC_SIZE;
+			else {
+				switch (i) {
+				case 0:
+				case 1:
+					/* MMC0/1 = 4KB*/
+					size = AM335X_HSMMC0_1_SIZE;
+					break;
 
-			case 2:
-				size = AM335X_HSMMC2_SIZE; /* MMC2 = 64KB*/
-				break;
+				case 2:
+					/* MMC2 = 64KB*/
+					size = AM335X_HSMMC2_SIZE;
+					break;
+				}
 			}
-#endif
 			name = "mmci-omap-hs";
 		} else {
 			size = OMAP3_HSMMC_SIZE;

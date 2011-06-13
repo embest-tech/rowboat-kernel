@@ -208,14 +208,23 @@ static int nop_mmc_set_power(struct device *dev, int slot, int power_on,
 static struct omap_mmc_platform_data *hsmmc_data[OMAP34XX_NR_MMC] __initdata;
 #else
 static struct omap_mmc_platform_data *hsmmc_data[TI81XX_NR_MMC] __initdata;
+
+static
+struct omap_mmc_platform_data *am335x_hsmmc_data[AM35XX_NR_MMC] __initdata;
 #endif
 
 void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 {
 	struct omap2_hsmmc_info *c;
-	int nr_hsmmc = ARRAY_SIZE(hsmmc_data);
+	int nr_hsmmc;
 	int i;
 	u32 reg;
+
+	if (!cpu_is_am335x()) {
+		nr_hsmmc = ARRAY_SIZE(hsmmc_data);
+	} else {
+		nr_hsmmc = ARRAY_SIZE(am335x_hsmmc_data);
+	}
 
 	if (!cpu_is_omap44xx()) {
 		if (cpu_is_omap2430()) {
@@ -242,7 +251,13 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 
 	for (c = controllers; c->mmc; c++) {
 		struct hsmmc_controller *hc = hsmmc + c->mmc - 1;
-		struct omap_mmc_platform_data *mmc = hsmmc_data[c->mmc - 1];
+		struct omap_mmc_platform_data *mmc;
+
+		if (!cpu_is_am335x()) {
+			mmc = hsmmc_data[c->mmc - 1];
+		} else {
+			mmc = am335x_hsmmc_data[c->mmc - 1];
+		}
 
 		if (!c->mmc || c->mmc > nr_hsmmc) {
 			pr_debug("MMC%d: no such controller\n", c->mmc);
@@ -363,18 +378,30 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 			kfree(mmc);
 			continue;
 		}
-		hsmmc_data[c->mmc - 1] = mmc;
+
+		if (!cpu_is_am335x())
+			hsmmc_data[c->mmc - 1] = mmc;
+		else
+			am335x_hsmmc_data[c->mmc - 1] = mmc;
 	}
 
 	if (!cpu_is_ti81xx()) {
 		omap2_init_mmc(hsmmc_data, OMAP34XX_NR_MMC);
 	} else {
-		omap2_init_mmc(hsmmc_data, TI81XX_NR_MMC);
+		if (!cpu_is_am335x())
+			omap2_init_mmc(hsmmc_data, TI81XX_NR_MMC);
+		else
+			omap2_init_mmc(am335x_hsmmc_data, AM35XX_NR_MMC);
 	}
 
 	/* pass the device nodes back to board setup code */
 	for (c = controllers; c->mmc; c++) {
-		struct omap_mmc_platform_data *mmc = hsmmc_data[c->mmc - 1];
+		struct omap_mmc_platform_data *mmc;
+
+		if (!cpu_is_am335x())
+			mmc = hsmmc_data[c->mmc - 1];
+		else
+			mmc = am335x_hsmmc_data[c->mmc - 1];
 
 		if (!c->mmc || c->mmc > nr_hsmmc)
 			continue;
@@ -382,8 +409,13 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 	}
 
 done:
-	for (i = 0; i < nr_hsmmc; i++)
-		kfree(hsmmc_data[i]);
+	if (!cpu_is_ti81xx()) {
+		for (i = 0; i < nr_hsmmc; i++)
+			kfree(hsmmc_data[i]);
+	} else {
+		for (i = 0; i < nr_hsmmc; i++)
+			kfree(am335x_hsmmc_data[i]);
+	}
 }
 
 #endif

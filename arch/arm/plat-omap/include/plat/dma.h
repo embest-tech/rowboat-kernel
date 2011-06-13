@@ -191,12 +191,15 @@
 #elif defined(CONFIG_ARCH_AM335X)	/* AM335X */
 #define OMAP24XX_DMA_MMC1_RX		25
 #define OMAP24XX_DMA_MMC1_TX		24
-#define OMAP24XX_DMA_MMC2_RX		3
-#define OMAP24XX_DMA_MMC2_TX		2
-#define OMAP34XX_DMA_MMC3_RX		65	/* xBar */
-#define OMAP34XX_DMA_MMC3_TX		66	/* xBar */
 
 #endif
+
+#define AM335X_DMA_MMC2_RX		3
+#define AM335X_DMA_MMC2_TX		2
+#define AM335X_DMA_MMC3_RX		65	/* xBar */
+#define AM335X_DMA_MMC3_TX		66	/* xBar */
+
+
 
 #else
 #define OMAP24XX_DMA_SPI1_TX0		35	/* S_DMA_34 */
@@ -225,10 +228,9 @@
 #define OMAP24XX_DMA_SPI2_RX1		46	/* S_DMA_45 */
 #endif
 
-#if !defined(CONFIG_ARCH_AM335X)	/* AM335X */
 #define OMAP24XX_DMA_MMC2_TX		47	/* S_DMA_46 */
 #define OMAP24XX_DMA_MMC2_RX		48	/* S_DMA_47 */
-#endif
+
 
 #define OMAP24XX_DMA_UART1_TX		49	/* S_DMA_48 */
 #define OMAP24XX_DMA_UART1_RX		50	/* S_DMA_49 */
@@ -266,10 +268,8 @@
 
 #define OMAP34XX_DSS_DMA3		75	/* S_DMA_74 */
 
-#if !defined(CONFIG_ARCH_AM335X)	/* AM335X */
 #define OMAP34XX_DMA_MMC3_TX		77	/* S_DMA_76 */
 #define OMAP34XX_DMA_MMC3_RX		78	/* S_DMA_77 */
-#endif
 
 #define OMAP34XX_DMA_USIM_TX		79	/* S_DMA_78 */
 #define OMAP34XX_DMA_USIM_RX		80	/* S_DMA_79 */
