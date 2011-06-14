@@ -366,7 +366,7 @@ static void txstate(struct musb *musb, struct musb_request *req)
 
 		/* MUSB_TXCSR_P_ISO is still set correctly */
 
-		if (is_inventra_dma()) {
+		if (is_inventra_dma(musb)) {
 			if (request_size < musb_ep->packet_sz)
 				musb_ep->dma->desired_mode = 0;
 			else
@@ -544,8 +544,8 @@ void musb_g_tx(struct musb *musb, u8 epnum)
 		if ((request->zero && request->length
 			&& (request->length % musb_ep->packet_sz == 0)
 			&& (request->actual == request->length))
-			|| (is_inventra_dma() && is_dma && (!dma->desired_mode
-				|| (request->actual &
+			|| (is_inventra_dma(musb) && is_dma &&
+				(!dma->desired_mode || (request->actual &
 					(musb_ep->packet_sz - 1))))
 		) {
 			/*
@@ -667,7 +667,7 @@ static void rxstate(struct musb *musb, struct musb_request *req)
 	if (csr & MUSB_RXCSR_RXPKTRDY) {
 		len = musb_readw(epio, MUSB_RXCOUNT);
 		if (request->actual < request->length) {
-			if (is_buffer_mapped(req) && is_inventra_dma()) {
+			if (is_buffer_mapped(req) && is_inventra_dma(musb)) {
 				struct dma_controller	*c;
 				struct dma_channel	*channel;
 				int			use_dma = 0;
@@ -873,7 +873,7 @@ void musb_g_rx(struct musb *musb, u8 epnum)
 			musb_readw(epio, MUSB_RXCSR),
 			musb_ep->dma->actual_len, request);
 
-		if (is_inventra_dma() || tusb_dma_omap()) {
+		if (is_inventra_dma(musb) || tusb_dma_omap()) {
 			/* Autoclear doesn't clear RxPktRdy for short packets */
 			if ((dma->desired_mode == 0 &&
 				!hw_ep->rx_double_buffered) ||
