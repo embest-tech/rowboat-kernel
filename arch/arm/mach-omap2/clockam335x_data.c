@@ -809,6 +809,20 @@ static struct clk spi1_fck = {
 	.recalc         = &omap_fixed_divisor_recalc,
 };
 
+static struct clk spi0_ick = {
+	.name           = "spi0_ick",
+	.parent		= &l4ls_fck,
+	.ops		= &clkops_null,
+	.recalc		= &followparent_recalc,
+};
+
+static struct clk spi1_ick = {
+	.name           = "spi1_ick",
+	.parent		= &l4ls_fck,
+	.ops		= &clkops_null,
+	.recalc		= &followparent_recalc,
+};
+
 static struct clk spinlock_fck = {
 	.name		= "spinlock_fck",
 	.ops		= &clkops_omap2_dflt,
@@ -1665,6 +1679,8 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"spare1_fck",		&spare1_fck,	CK_AM335X),
 	CLK("omap2_mcspi.1",	"fck",		&spi0_fck,	CK_AM335X),
 	CLK("omap2_mcspi.2",	"fck",		&spi1_fck,	CK_AM335X),
+	CLK("omap2_mcspi.1",	"ick",		&spi0_ick,	CK_AM335X),
+	CLK("omap2_mcspi.2",	"ick",		&spi1_ick,	CK_AM335X),
 	CLK(NULL,	"spinlock_fck",		&spinlock_fck,	CK_AM335X),
 	CLK(NULL,	"timer0_fck",		&timer0_fck,	CK_AM335X),
 	CLK(NULL,	"gpt1_fck",		&timer1_fck,	CK_AM335X),
