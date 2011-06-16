@@ -166,8 +166,8 @@ static struct snd_platform_data am335x_evm_snd_data = {
 
 static const struct display_panel disp_panel = {
 	WVGA,
-	16,
-	16,
+	24,
+	24,
 	COLOR_ACTIVE,
 };
 
@@ -176,7 +176,7 @@ static struct lcd_ctrl_config lcd_cfg = {
 	.ac_bias		= 255,
 	.ac_bias_intrpt		= 0,
 	.dma_burst_sz		= 16,
-	.bpp			= 16,
+	.bpp			= 24,
 	.fdd			= 255,
 	.tft_alt_mode		= 0,
 	.stn_565_mode		= 0,
@@ -372,6 +372,22 @@ static void setup_bb_gp_db_config(void)
 				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
 		omap_mux_init_signal("lcd_data15",
 				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data16",
+				OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data17",
+				OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data18",
+				OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data19",
+				OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data20",
+				OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data21",
+				OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data22",
+				OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data23",
+				OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT);
 		omap_mux_init_signal("lcd_vsync",
 				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
 		omap_mux_init_signal("lcd_hsync",
