@@ -1098,15 +1098,31 @@ static int __init omap2_mcspi_reset(struct omap2_mcspi *mcspi)
 static u8 __initdata spi1_rxdma_id [] = {
 	OMAP24XX_DMA_SPI1_RX0,
 	OMAP24XX_DMA_SPI1_RX1,
+	/*
+	* TODO
+	* In the latest kernel the usage of hardware dependent
+	* code is avoided in drivers. This can be fixed during
+	* updating of the kernel.
+	*/
+#ifndef CONFIG_ARCH_AM335X
 	OMAP24XX_DMA_SPI1_RX2,
 	OMAP24XX_DMA_SPI1_RX3,
+#endif
 };
 
 static u8 __initdata spi1_txdma_id [] = {
 	OMAP24XX_DMA_SPI1_TX0,
 	OMAP24XX_DMA_SPI1_TX1,
+	/*
+	* TODO
+	* In the latest kernel the usage of hardware dependent
+	* code is avoided in drivers. This can be fixed during
+	* updating of the kernel.
+	*/
+#ifndef CONFIG_ARCH_AM335X
 	OMAP24XX_DMA_SPI1_TX2,
 	OMAP24XX_DMA_SPI1_TX3,
+#endif
 };
 
 static u8 __initdata spi2_rxdma_id[] = {
