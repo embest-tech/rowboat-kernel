@@ -1929,23 +1929,23 @@ static struct resource am335x_cpsw_resources[] = {
 		.flags  = IORESOURCE_MEM,
 	},
 	{
-		.start	= AM335X_IRQ_GSWRXTHR0,
-		.end	= AM335X_IRQ_GSWRXTHR0,
+		.start	= AM335x_IRQ_CPSW_C0_RX,
+		.end	= AM335x_IRQ_CPSW_C0_RX,
 		.flags	= IORESOURCE_IRQ,
 	},
 	{
-		.start	= AM335X_IRQ_GSWRXINT0,
-		.end	= AM335X_IRQ_GSWRXINT0,
+		.start	= AM335x_IRQ_CPSW_RX,
+		.end	= AM335x_IRQ_CPSW_RX,
 		.flags	= IORESOURCE_IRQ,
 	},
 	{
-		.start	= AM335X_IRQ_GSWTXINT0,
-		.end	= AM335X_IRQ_GSWTXINT0,
+		.start	= AM335x_IRQ_CPSW_TX,
+		.end	= AM335x_IRQ_CPSW_TX,
 		.flags	= IORESOURCE_IRQ,
 	},
 	{
-		.start	= AM335X_IRQ_GSWMISC0,
-		.end	= AM335X_IRQ_GSWMISC0,
+		.start	= AM335x_IRQ_CPSW_C0,
+		.end	= AM335x_IRQ_CPSW_C0,
 		.flags	= IORESOURCE_IRQ,
 	},
 };
