@@ -1166,12 +1166,13 @@ static int __init omap2_mcspi_probe(struct platform_device *pdev)
 	int			status = 0, i;
 	const u8		*rxdma_id, *txdma_id;
 	unsigned		num_chipselect;
+	struct omap2_mcspi_platform_config *pdata = pdev->dev.platform_data;
 
 	switch (pdev->id) {
 	case 1:
 		rxdma_id = spi1_rxdma_id;
 		txdma_id = spi1_txdma_id;
-		num_chipselect = 4;
+		num_chipselect = pdata->num_cs;
 		break;
 	case 2:
 		rxdma_id = spi2_rxdma_id;
