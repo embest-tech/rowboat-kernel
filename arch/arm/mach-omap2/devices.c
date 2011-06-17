@@ -1881,7 +1881,7 @@ static struct cpsw_platform_data am335x_cpsw_pdata = {
 	.ss_reg_ofs		= 0x1200,
 	.channels		= 8,
 	.cpdma_reg_ofs		= 0x800,
-	.slaves			= 1,
+	.slaves			= 2,
 	.slave_data		= am335x_cpsw_slaves,
 	.ale_reg_ofs		= 0xd00,
 	.ale_entries		= 1024,
@@ -1998,8 +1998,10 @@ static void ti81xx_ethernet_init(void)
 {
 	if (cpu_is_ti816x())
 		ti816x_ethernet_init();
-	else
+	else if (cpu_is_ti814x())
 		ti814x_cpsw_init();
+	else
+		am335x_cpsw_init();
 }
 #endif
 
