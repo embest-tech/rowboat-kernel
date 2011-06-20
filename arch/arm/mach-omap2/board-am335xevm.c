@@ -88,7 +88,7 @@ const struct flash_platform_data am335x_spi_flash = {
 	.nr_parts  = ARRAY_SIZE(am335x_spi_partitions),
 };
 
-struct spi_board_info __initdata am335x_spi0_slave_info[] = {
+struct spi_board_info am335x_spi0_slave_info[] = {
 	{
 		.modalias      = "m25p80",
 		.platform_data = &am335x_spi_flash,
@@ -99,7 +99,7 @@ struct spi_board_info __initdata am335x_spi0_slave_info[] = {
 	},
 };
 
-struct spi_board_info __initdata am335x_spi1_slave_info[] = {
+struct spi_board_info am335x_spi1_slave_info[] = {
 	{
 		.modalias      = "m25p80",
 		.platform_data = &am335x_spi_flash,
