@@ -252,6 +252,9 @@ static void _enable_hwsup(struct clockdomain *clkdm)
 	else if (cpu_is_omap34xx())
 		omap3xxx_cm_clkdm_enable_hwsup(clkdm->pwrdm.ptr->prcm_offs,
 					       clkdm->clktrctrl_mask);
+	else if (cpu_is_ti81xx())
+		ti81xx_cm_clkdm_enable_hwsup(clkdm->cm_inst, clkdm->clkdm_offs,
+					       clkdm->clktrctrl_mask);
 	else if (cpu_is_omap44xx())
 		return omap4_cminst_clkdm_enable_hwsup(clkdm->prcm_partition,
 						       clkdm->cm_inst,
@@ -277,6 +280,9 @@ static void _disable_hwsup(struct clockdomain *clkdm)
 						clkdm->clktrctrl_mask);
 	else if (cpu_is_omap34xx())
 		omap3xxx_cm_clkdm_disable_hwsup(clkdm->pwrdm.ptr->prcm_offs,
+						clkdm->clktrctrl_mask);
+	else if (cpu_is_ti81xx())
+		ti81xx_cm_clkdm_disable_hwsup(clkdm->cm_inst, clkdm->clkdm_offs,
 						clkdm->clktrctrl_mask);
 	else if (cpu_is_omap44xx())
 		return omap4_cminst_clkdm_disable_hwsup(clkdm->prcm_partition,
@@ -767,6 +773,11 @@ int omap2_clkdm_sleep(struct clockdomain *clkdm)
 		omap3xxx_cm_clkdm_force_sleep(clkdm->pwrdm.ptr->prcm_offs,
 					      clkdm->clktrctrl_mask);
 
+	} else if (cpu_is_ti81xx()) {
+
+		ti81xx_cm_clkdm_force_sleep(clkdm->cm_inst, clkdm->clkdm_offs,
+						clkdm->clktrctrl_mask);
+
 	} else if (cpu_is_omap44xx()) {
 
 		omap4_cminst_clkdm_force_sleep(clkdm->prcm_partition,
@@ -812,6 +823,11 @@ int omap2_clkdm_wakeup(struct clockdomain *clkdm)
 		omap3xxx_cm_clkdm_force_wakeup(clkdm->pwrdm.ptr->prcm_offs,
 					       clkdm->clktrctrl_mask);
 
+	} else if (cpu_is_ti81xx()) {
+
+		ti81xx_cm_clkdm_force_wakeup(clkdm->cm_inst, clkdm->clkdm_offs,
+					       clkdm->clktrctrl_mask);
+
 	} else if (cpu_is_omap44xx()) {
 
 		omap4_cminst_clkdm_force_wakeup(clkdm->prcm_partition,
@@ -851,10 +867,11 @@ void omap2_clkdm_allow_idle(struct clockdomain *clkdm)
 
 	/*
 	 * XXX This should be removed once TI adds wakeup/sleep
-	 * dependency code and data for OMAP4.
+	 * dependency code and data for OMAP4, TI81XX
 	 */
-	if (cpu_is_omap44xx()) {
-		pr_err("clockdomain: %s: OMAP4 wakeup/sleep dependency support: not yet implemented\n", clkdm->name);
+	if (cpu_is_omap44xx() || cpu_is_ti81xx()) {
+		pr_err("clockdomain: %s: wakeup/sleep dependency "
+			  "support is not yet implemented\n", clkdm->name);
 	} else {
 		if (atomic_read(&clkdm->usecount) > 0)
 			_clkdm_add_autodeps(clkdm);
@@ -892,10 +909,11 @@ void omap2_clkdm_deny_idle(struct clockdomain *clkdm)
 
 	/*
 	 * XXX This should be removed once TI adds wakeup/sleep
-	 * dependency code and data for OMAP4.
+	 * dependency code and data for OMAP4, TI81XX.
 	 */
-	if (cpu_is_omap44xx()) {
-		pr_err("clockdomain: %s: OMAP4 wakeup/sleep dependency support: not yet implemented\n", clkdm->name);
+	if (cpu_is_omap44xx() || cpu_is_ti81xx()) {
+		pr_err("clockdomain: %s: wakeup/sleep dependency "
+			  "support is not yet implemented\n", clkdm->name);
 	} else {
 		if (atomic_read(&clkdm->usecount) > 0)
 			_clkdm_del_autodeps(clkdm);
