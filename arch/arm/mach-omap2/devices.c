@@ -723,7 +723,7 @@ static void __init omap_hsmmc_reset(void)
 	u32 i, nr_controllers;
 	struct clk *iclk, *fclk;
 
-	if (cpu_is_omap242x())
+	if (cpu_is_omap242x() || cpu_is_ti81xx())
 		return;
 
 	nr_controllers = cpu_is_omap44xx() ? OMAP44XX_NR_MMC :
