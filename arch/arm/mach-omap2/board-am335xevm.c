@@ -139,20 +139,20 @@ static struct omap2_hsmmc_info mmc[] = {
 	{}      /* Terminator */
 };
 
-static u8 am33xx_iis_serializer_direction[] = {
+static u8 am335x_iis_serializer_direction[] = {
 	TX_MODE,	RX_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
 	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
 	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
 	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
 };
 
-static struct snd_platform_data am33xx_evm_snd_data = {
+static struct snd_platform_data am335x_evm_snd_data = {
 	.tx_dma_offset	= 0x46400000,	/* McASP1 */
 	.rx_dma_offset	= 0x46400000,
 	.op_mode	= DAVINCI_MCASP_IIS_MODE,
-	.num_serializer = ARRAY_SIZE(am33xx_iis_serializer_direction),
+	.num_serializer = ARRAY_SIZE(am335x_iis_serializer_direction),
 	.tdm_slots	= 2,
-	.serial_dir	= am33xx_iis_serializer_direction,
+	.serial_dir	= am335x_iis_serializer_direction,
 	.asp_chan_q	= EVENTQ_2,
 	.version	= MCASP_VERSION_2,
 	.txnumevt	= 1,
@@ -204,7 +204,7 @@ static void setup_bb_gp_db_config(void)
 			OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
 
 		/* register device data */
-		am33xx_register_mcasp(0, &am33xx_evm_snd_data);
+		am335x_register_mcasp(0, &am335x_evm_snd_data);
 	}
 
 	/* Configure MMC */
@@ -393,7 +393,7 @@ static void setup_bb_ipp_db_config(void)
 	*/
 
 	/* Configure McASP */
-	am33xx_register_mcasp(0, &am33xx_evm_snd_data);
+	am335x_register_mcasp(0, &am335x_evm_snd_data);
 }
 
 static void setup_bb_only_config(void)
