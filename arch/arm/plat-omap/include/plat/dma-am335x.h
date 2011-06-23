@@ -73,8 +73,6 @@
 #define AM335x_DMA_TIMER_7				51
 #define AM335x_DMA_GPM					52
 #define AM335x_DMA_ADC0					53
-#define AM335x_DMA_UNUSED				54
-#define AM335x_DMA_UNUSED				55
 #define AM335x_DMA_PWMSS1_EQEP				56
 #define AM335x_DMA_ADC1					57
 #define AM335x_DMA_MSHSI2COCP0_TX			58
