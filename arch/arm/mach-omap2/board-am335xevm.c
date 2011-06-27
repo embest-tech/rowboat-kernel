@@ -286,7 +286,8 @@ static void setup_bb_gp_db_config(void)
 
 	/* Configure CPSW */
 	/* Check which profile is selected */
-	if (prof_sel == PROFILE_1) {
+	if ((prof_sel == PROFILE_1) || (prof_sel == PROFILE_2) ||
+		(prof_sel == PROFILE_4) || (prof_sel == PROFILE_6)) {
 		/* Ethernet#1 is available in Profile 1 */
 		omap_mux_init_signal("rgmii2_tctl",
 				OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
