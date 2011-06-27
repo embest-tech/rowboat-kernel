@@ -24,6 +24,7 @@
 #include <linux/i2c.h>
 #include <linux/i2c/at24.h>
 #include <linux/mtd/nand.h>
+#include <linux/regulator/machine.h>
 
 #include <mach/hardware.h>
 #include <asm/mach-types.h>
@@ -254,6 +255,7 @@ static void __init ti8148_evm_init(void)
 
 	ti814x_vpss_init();
 	ti8148_spi_init();
+	regulator_use_dummy_regulator();
 }
 
 static void __init ti8148_evm_map_io(void)
