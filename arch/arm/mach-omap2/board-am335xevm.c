@@ -131,7 +131,7 @@ static struct omap2_hsmmc_info mmc[] = {
 	},
 	{
 		.mmc            = 3,
-		.caps           = MMC_CAP_4_BIT_DATA,
+		.caps           = MMC_CAP_8_BIT_DATA,
 		.gpio_cd        = -EINVAL,
 		.gpio_wp        = -EINVAL,
 		.ocr_mask       = MMC_VDD_33_34,
@@ -245,8 +245,26 @@ static void setup_bb_gp_db_config(void)
 			/* MMC1 is not available in Profile 4 */
 			mmc[1].mmc = 0;
 
-			/* Profile 4 yet to be completed. Disable till then */
-			mmc[2].mmc = 0;
+			omap_mux_init_signal("mmc2_dat7",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc2_dat6",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc2_dat5",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc2_dat4",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc2_dat3",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc2_dat2",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc2_dat1",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc2_dat0",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc2_clk",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN);
+			omap_mux_init_signal("mmc2_cmd",
+				OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP);
 		}
 		if (prof_sel == PROFILE_2) {
 			/* SPI flash device is available in Profile 2 */
@@ -376,6 +394,31 @@ static void setup_bb_ia_db_config(void)
 
 	spi_register_board_info(am335x_spi1_slave_info,
 			ARRAY_SIZE(am335x_spi1_slave_info));
+
+
+	/* Configure MMC */
+	omap_mux_init_signal("mmc0_dat3",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat2",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat1",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat0",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_clk",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_cmd",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_wp",
+			OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("mmc0_cd",
+			OMAP_MUX_MODE5 | AM335X_PIN_INPUT_PULLUP);
+
+	/* MMC 1 & 2 are not accessible in "IA daughter board" mode */
+	mmc[1].mmc = 0;
+	mmc[2].mmc = 0;
+	omap2_hsmmc_init(mmc);
+
 	/*
 	* TODO/REVIST -
 	* Based on selected profile, configure Pin Mux, Clock setup,
@@ -395,6 +438,29 @@ static void setup_bb_ipp_db_config(void)
 
 	/* Configure McASP */
 	am335x_register_mcasp(0, &am335x_evm_snd_data);
+
+	/* Configure MMC */
+	omap_mux_init_signal("mmc0_dat3",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat2",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat1",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_dat0",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_clk",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_cmd",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mmc0_wp",
+			OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("mmc0_cd",
+			OMAP_MUX_MODE5 | AM335X_PIN_INPUT_PULLUP);
+
+	/* MMC 1 & 2 are not accessible in "IP-Phone daughter board" mode */
+	mmc[1].mmc = 0;
+	mmc[2].mmc = 0;
+	omap2_hsmmc_init(mmc);
 }
 
 static void setup_bb_only_config(void)
@@ -426,7 +492,7 @@ static void setup_bb_only_config(void)
 	omap_mux_init_signal("mmc0_cd",
 			OMAP_MUX_MODE5 | AM335X_PIN_INPUT_PULLUP);
 
-	/* MMC 1/2 are not accessible in "baseboard-only" mode */
+	/* MMC 1 & 2 are not accessible in "baseboard-only" mode */
 	mmc[1].mmc = 0;
 	mmc[2].mmc = 0;
 	omap2_hsmmc_init(mmc);
