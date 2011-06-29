@@ -2174,14 +2174,14 @@ static struct resource am335x_mcasp_resource[] = {
 	},
 	/* TX event */
 	{
-		.start = AM335X_DMA_MCASP1_AXEVT,
-		.end = AM335X_DMA_MCASP1_AXEVT,
+		.start = AM335x_DMA_MCASP1_X,
+		.end = AM335x_DMA_MCASP1_X,
 		.flags = IORESOURCE_DMA,
 	},
 	/* RX event */
 	{
-		.start = AM335X_DMA_MCASP1_AREVT,
-		.end = AM335X_DMA_MCASP1_AREVT,
+		.start = AM335x_DMA_MCASP1_R,
+		.end = AM335x_DMA_MCASP1_R,
 		.flags = IORESOURCE_DMA,
 	},
 };
