@@ -15,6 +15,8 @@
 #include <linux/i2c.h>
 #include <linux/i2c/at24.h>
 #include <linux/init.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 
 #include <mach/hardware.h>
 #include <mach/board-am335xevm.h>
@@ -628,11 +630,49 @@ static struct i2c_board_info __initdata am335x_i2c_boardinfo[] = {
 	},
 };
 
+static void __init conf_disp_pll(void)
+{
+	int ret;
+	struct clk *lcdc_clk;
+	struct clk *lcdc_parent;
+	struct clk *disp_pll;
+
+	lcdc_clk = clk_get(NULL, "lcdc_fck");
+	if (IS_ERR(lcdc_clk)) {
+		pr_err("Cannot request lcdc_fck\n");
+		goto error0;
+	}
+
+	lcdc_parent = clk_get(NULL, "disp_div2_ck");
+	if (IS_ERR(lcdc_parent)) {
+		pr_err("Cannot request lcdc_parent\n");
+		goto error1;
+	}
+	ret = clk_set_parent(lcdc_clk, lcdc_parent);
+
+	disp_pll = clk_get(NULL, "dpll_disp_ck");
+	if (IS_ERR(disp_pll)) {
+		pr_err("Cannot request disp_pll\n");
+		goto error2;
+	}
+
+	clk_set_rate(disp_pll, 600000000);
+	return;
+error2:
+	clk_put(lcdc_parent);
+error1:
+	clk_put(lcdc_clk);
+error0:
+	pr_err("Failed to configure display PLL\n");
+	return;
+}
+
 static void __init am335x_evm_init_irq(void)
 {
 	omap2_init_common_infrastructure();
 	omap2_init_common_devices(NULL, NULL);
 	omap_init_irq();
+	conf_disp_pll();
 }
 
 static void __init am335x_evm_i2c_init(void)

@@ -1043,6 +1043,7 @@ static int __init fb_probe(struct platform_device *device)
 	struct da8xx_panel *lcdc_info;
 	struct fb_info *da8xx_fb_info;
 	struct clk *fb_clk = NULL;
+	struct clk *fb_l3ick = NULL, *fb_l4ick = NULL;
 	struct da8xx_fb_par *par;
 	resource_size_t len;
 	int ret, i;
@@ -1071,15 +1072,39 @@ static int __init fb_probe(struct platform_device *device)
 		goto err_request_mem;
 	}
 
+	if (cpu_is_am335x()) {
+		fb_l3ick = clk_get(&device->dev, "lcdc_ick_l3_clk");
+		if (IS_ERR(fb_l3ick)) {
+			dev_err(&device->dev, "Can not get l3 interface"
+					"clock\n");
+			ret = -ENODEV;
+			goto err_ioremap;
+		}
+		ret = clk_enable(fb_l3ick);
+		if (ret)
+			goto err_clk_put0;
+
+		fb_l4ick = clk_get(&device->dev, "lcdc_ick_l4_clk");
+		if (IS_ERR(fb_l4ick)) {
+			dev_err(&device->dev, "Can not get l4 interface"
+					"clock\n");
+			ret = -ENODEV;
+			goto err_clk_get0;
+		}
+		ret = clk_enable(fb_l4ick);
+		if (ret)
+			goto err_clk_put1;
+	}
+
 	fb_clk = clk_get(&device->dev, NULL);
 	if (IS_ERR(fb_clk)) {
 		dev_err(&device->dev, "Can not get device clock\n");
 		ret = -ENODEV;
-		goto err_ioremap;
+		goto err_clk_get1;
 	}
 	ret = clk_enable(fb_clk);
 	if (ret)
-		goto err_clk_put;
+		goto err_clk_put2;
 
 	/* Determine LCD IP Version */
 	switch (lcdc_read(LCD_PID_REG)) {
@@ -1271,8 +1296,20 @@ err_release_fb:
 err_clk_disable:
 	clk_disable(fb_clk);
 
-err_clk_put:
+err_clk_put2:
 	clk_put(fb_clk);
+
+err_clk_get1:
+	clk_disable(fb_l4ick);
+
+err_clk_put1:
+	clk_put(fb_l4ick);
+
+err_clk_get0:
+	clk_disable(fb_l3ick);
+
+err_clk_put0:
+	clk_put(fb_l3ick);
 
 err_ioremap:
 	iounmap((void __iomem *)da8xx_fb_reg_base);
