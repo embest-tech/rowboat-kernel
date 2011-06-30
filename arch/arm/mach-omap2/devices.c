@@ -1874,12 +1874,12 @@ struct cpsw_slave_data am335x_cpsw_slaves[] = {
 	{
 		.slave_reg_ofs  = 0x208,
 		.sliver_reg_ofs = 0xd80,
-		.phy_id		= "0:01", /* Need to confirm on PHY Address*/
+		.phy_id		= "0:00",
 	},
 	{
 		.slave_reg_ofs  = 0x308,
 		.sliver_reg_ofs = 0xdc0,
-		.phy_id		= "0:00",
+		.phy_id		= "0:01",
 	},
 };
 
