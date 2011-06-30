@@ -38,6 +38,9 @@
 #include <plat/omap4-keypad.h>
 #include <plat/asp.h>
 
+/* LCD controller similar DA8xx */
+#include <video/da8xx-fb.h>
+
 #include "mux.h"
 #include "control.h"
 
@@ -2197,6 +2200,39 @@ void __init am335x_register_mcasp(int id, struct snd_platform_data *pdata)
 {
 	am335x_mcasp_device.dev.platform_data = pdata;
 	platform_device_register(&am335x_mcasp_device);
+}
+
+static struct resource am335x_lcdc_resources[] = {
+	[0] = { /* registers */
+		.start  = L4_PER_LCDC_PHYS,
+		.end    = L4_PER_LCDC_PHYS + SZ_4K - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+	[1] = { /* interrupt */
+		.start  = TI81XX_IRQ_DSSINT,
+		.end    = TI81XX_IRQ_DSSINT,
+		.flags  = IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device am335x_lcdc_device = {
+	.name		= "da8xx_lcdc",
+	.id		= 0,
+	.num_resources	= ARRAY_SIZE(am335x_lcdc_resources),
+	.resource	= am335x_lcdc_resources,
+};
+
+void __init am33xx_register_lcdc(struct da8xx_lcdc_platform_data *pdata)
+{
+	int ret;
+
+	am335x_lcdc_device.dev.platform_data = pdata;
+
+	ret = platform_device_register(&am335x_lcdc_device);
+	if (ret)
+		pr_warning("am33xx_register_lcdc: lcdc registration failed: %d\n",
+				ret);
+
 }
 #endif
 
