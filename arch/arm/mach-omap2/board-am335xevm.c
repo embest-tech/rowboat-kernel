@@ -38,6 +38,9 @@
 #include "mux.h"
 #include "hsmmc.h"
 
+/* LCD controller is similar to DA850 */
+#include <video/da8xx-fb.h>
+
 #ifdef CONFIG_OMAP_MUX
 static struct omap_board_mux board_mux[] __initdata = {
 	AM335X_MUX(UART0_CTSN, OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT),
@@ -159,6 +162,36 @@ static struct snd_platform_data am335x_evm_snd_data = {
 	.version	= MCASP_VERSION_2,
 	.txnumevt	= 1,
 	.rxnumevt	= 1,
+};
+
+static const struct display_panel disp_panel = {
+	WVGA,
+	16,
+	16,
+	COLOR_ACTIVE,
+};
+
+static struct lcd_ctrl_config lcd_cfg = {
+	&disp_panel,
+	.ac_bias		= 255,
+	.ac_bias_intrpt		= 0,
+	.dma_burst_sz		= 16,
+	.bpp			= 16,
+	.fdd			= 255,
+	.tft_alt_mode		= 0,
+	.stn_565_mode		= 0,
+	.mono_8bit_mode		= 0,
+	.invert_line_clock	= 1,
+	.invert_frm_clock	= 1,
+	.sync_edge		= 0,
+	.sync_ctrl		= 1,
+	.raster_order		= 0,
+};
+
+struct da8xx_lcdc_platform_data TFC_S9700RTWV35TR_01B_pdata = {
+	.manu_name		= "ThreeFive",
+	.controller_data	= &lcd_cfg,
+	.type			= "TFC_S9700RTWV35TR_01B",
 };
 
 /*
@@ -303,6 +336,52 @@ static void setup_bb_gp_db_config(void)
 			OMAP_MUX_MODE5 | AM335X_PIN_INPUT_PULLUP);
 
 	omap2_hsmmc_init(mmc);
+
+	/* Configure LCDC */
+	if ((prof_sel == PROFILE_0) || (prof_sel == PROFILE_1) ||
+			(prof_sel == PROFILE_2)) {
+		omap_mux_init_signal("lcd_data0",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data1",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data2",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data3",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data4",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data5",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data6",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data7",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data8",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data9",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data10",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data11",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data12",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data13",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data14",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_data15",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_vsync",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_hsync",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_pclk",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		omap_mux_init_signal("lcd_ac_bias_en",
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
+		am33xx_register_lcdc(&TFC_S9700RTWV35TR_01B_pdata);
+	}
 
 	/* Configure CPSW */
 	/* Check which profile is selected */

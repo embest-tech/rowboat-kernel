@@ -237,6 +237,20 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.pxl_clk = 7833600,
 		.invert_pxl_clk = 0,
 	},
+	/* ThreeFive S9700RTWV35TR */
+	[2] = {
+		.name = "TFC_S9700RTWV35TR_01B",
+		.width = 800,
+		.height = 480,
+		.hfp = 40,
+		.hbp = 40,
+		.hsw = 48,
+		.vfp = 13,
+		.vbp = 29,
+		.vsw = 3,
+		.pxl_clk = 230400000,
+		.invert_pxl_clk = 0,
+	},
 };
 
 /* Enable the Raster Engine of the LCD Controller */
@@ -640,7 +654,8 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
 	if (ret < 0)
 		return ret;
 
-	if (QVGA != cfg->p_disp_panel->panel_type)
+	if ((QVGA != cfg->p_disp_panel->panel_type) &&
+			(WVGA != cfg->p_disp_panel->panel_type))
 		return -EINVAL;
 
 	if (cfg->bpp <= cfg->p_disp_panel->max_bpp &&
