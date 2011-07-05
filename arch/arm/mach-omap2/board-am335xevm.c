@@ -15,6 +15,7 @@
 #include <linux/i2c.h>
 #include <linux/i2c/at24.h>
 #include <linux/init.h>
+#include <linux/platform_device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 
@@ -194,6 +195,44 @@ struct da8xx_lcdc_platform_data TFC_S9700RTWV35TR_01B_pdata = {
 	.type			= "TFC_S9700RTWV35TR_01B",
 };
 
+static void __init conf_disp_pll(struct platform_device *lcdc_device)
+{
+	int ret;
+	struct clk *lcdc_clk;
+	struct clk *lcdc_parent;
+	struct clk *disp_pll;
+
+	lcdc_clk = clk_get(&lcdc_device->dev, NULL);
+	if (IS_ERR(lcdc_clk)) {
+		pr_err("Cannot request lcdc_fck\n");
+		goto error0;
+	}
+
+	lcdc_parent = clk_get(NULL, "disp_div2_ck");
+	if (IS_ERR(lcdc_parent)) {
+		pr_err("Cannot request lcdc_parent\n");
+		goto error1;
+	}
+	ret = clk_set_parent(lcdc_clk, lcdc_parent);
+
+	disp_pll = clk_get(NULL, "dpll_disp_ck");
+	if (IS_ERR(disp_pll)) {
+		pr_err("Cannot request disp_pll\n");
+		goto error2;
+	}
+
+	clk_set_rate(disp_pll, 600000000);
+	return;
+error2:
+	clk_put(lcdc_parent);
+error1:
+	clk_put(lcdc_clk);
+error0:
+	pr_err("Failed to configure display PLL\n");
+	return;
+}
+
+
 /*
 * Daughter Card Detection.
 * Every board has a ID memory (EEPROM) on board. We probe these devices at
@@ -216,6 +255,7 @@ EXPORT_SYMBOL(am335x_get_profile_selection);
 
 static void setup_bb_gp_db_config(void)
 {
+	struct platform_device *lcdc_device;
 	u32 prof_sel = am335x_get_profile_selection();
 	pr_info("Baseboard + GP daughter board detected\n");
 	pr_info("Selected profile : %d\n", prof_sel);
@@ -396,7 +436,12 @@ static void setup_bb_gp_db_config(void)
 				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
 		omap_mux_init_signal("lcd_ac_bias_en",
 				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT);
-		am33xx_register_lcdc(&TFC_S9700RTWV35TR_01B_pdata);
+		lcdc_device = am33xx_register_lcdc(
+				&TFC_S9700RTWV35TR_01B_pdata);
+		if (lcdc_device != NULL)
+			conf_disp_pll(lcdc_device);
+		else
+			pr_info("Failed to register LCDC device\n");
 	}
 
 	/* Configure CPSW */
@@ -725,49 +770,11 @@ static struct i2c_board_info __initdata am335x_i2c_boardinfo[] = {
 	},
 };
 
-static void __init conf_disp_pll(void)
-{
-	int ret;
-	struct clk *lcdc_clk;
-	struct clk *lcdc_parent;
-	struct clk *disp_pll;
-
-	lcdc_clk = clk_get(NULL, "lcdc_fck");
-	if (IS_ERR(lcdc_clk)) {
-		pr_err("Cannot request lcdc_fck\n");
-		goto error0;
-	}
-
-	lcdc_parent = clk_get(NULL, "disp_div2_ck");
-	if (IS_ERR(lcdc_parent)) {
-		pr_err("Cannot request lcdc_parent\n");
-		goto error1;
-	}
-	ret = clk_set_parent(lcdc_clk, lcdc_parent);
-
-	disp_pll = clk_get(NULL, "dpll_disp_ck");
-	if (IS_ERR(disp_pll)) {
-		pr_err("Cannot request disp_pll\n");
-		goto error2;
-	}
-
-	clk_set_rate(disp_pll, 600000000);
-	return;
-error2:
-	clk_put(lcdc_parent);
-error1:
-	clk_put(lcdc_clk);
-error0:
-	pr_err("Failed to configure display PLL\n");
-	return;
-}
-
 static void __init am335x_evm_init_irq(void)
 {
 	omap2_init_common_infrastructure();
 	omap2_init_common_devices(NULL, NULL);
 	omap_init_irq();
-	conf_disp_pll();
 }
 
 static void __init am335x_evm_i2c_init(void)

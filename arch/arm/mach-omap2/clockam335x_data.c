@@ -326,7 +326,8 @@ static struct clk lcdc_l3ick = {
 	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
 	.parent		= &dpll_core_m4_ck,
 	.ops		= &clkops_null,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.clkdm_name	= "l3_clkdm",
+	.recalc		= &followparent_recalc,
 };
 
 static struct clk lcdc_l4ick = {
@@ -335,7 +336,8 @@ static struct clk lcdc_l4ick = {
 	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
 	.parent		= &dpll_core_m4_ck,
 	.ops		= &clkops_null,
-	.recalc		= &omap_fixed_divisor_recalc,
+	.clkdm_name	= "l4ls_clkdm",
+	.recalc		= &followparent_recalc,
 };
 
 /* Leaf clocks controlled by modules */
@@ -1681,7 +1683,7 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"l4fw_fck",		&l4fw_fck,	CK_AM335X),
 	CLK(NULL,	"l4ls_fck",		&l4ls_fck,	CK_AM335X),
 	CLK(NULL,	"l4wkup_fck",		&l4wkup_fck,	CK_AM335X),
-	CLK("da8xx_lcdc.0",	"lcdc_fck",	&lcdc_fck,	CK_AM335X),
+	CLK("da8xx_lcdc.0",	NULL,		&lcdc_fck,	CK_AM335X),
 	CLK(NULL,	"disp_div2_ck",		&disp_m2_divby2,	CK_AM335X),
 	CLK(NULL,	"mailbox0_fck",		&mailbox0_fck,	CK_AM335X),
 	CLK("davinci-mcasp.0",	"ick",	&mcasp0_ick,	CK_AM335X),
@@ -1722,8 +1724,8 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"gpt5_fck",		&timer5_fck,	CK_AM335X),
 	CLK(NULL,	"gpt6_fck",		&timer6_fck,	CK_AM335X),
 	CLK(NULL,	"gpt7_fck",		&timer7_fck,	CK_AM335X),
-	CLK("da8xx_lcdc.0",	"lcdc_ick_l3_clk",	&lcdc_l3ick,	CK_AM335X),
-	CLK("da8xx_lcdc.0",	"lcdc_ick_l4_clk",	&lcdc_l4ick,	CK_AM335X),
+	CLK(NULL,	"lcdc_ick_l3_clk",	&lcdc_l3ick,	CK_AM335X),
+	CLK(NULL,	"lcdc_ick_l4_clk",	&lcdc_l4ick,	CK_AM335X),
 	CLK(NULL,	"tpcc_ick",		&tpcc_ick,	CK_AM335X),
 	CLK(NULL,	"tptc0_ick",		&tptc0_ick,	CK_AM335X),
 	CLK(NULL,	"tptc1_ick",		&tptc1_ick,	CK_AM335X),

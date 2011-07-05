@@ -2247,17 +2247,20 @@ static struct platform_device am335x_lcdc_device = {
 	.resource	= am335x_lcdc_resources,
 };
 
-void __init am33xx_register_lcdc(struct da8xx_lcdc_platform_data *pdata)
+struct platform_device * __init am33xx_register_lcdc(
+		struct da8xx_lcdc_platform_data *pdata)
 {
 	int ret;
 
 	am335x_lcdc_device.dev.platform_data = pdata;
 
 	ret = platform_device_register(&am335x_lcdc_device);
-	if (ret)
+	if (ret) {
 		pr_warning("am33xx_register_lcdc: lcdc registration failed: %d\n",
 				ret);
-
+		return NULL;
+	}
+	return &am335x_lcdc_device;
 }
 #endif
 
