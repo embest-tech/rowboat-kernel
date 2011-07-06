@@ -478,7 +478,7 @@ static void setup_bb_gp_db_config(void)
 		omap_mux_init_signal("mdio_data",
 				OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
 		omap_mux_init_signal("mdio_clk",
-			OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP);
+				OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP);
 	}
 
 	omap_mux_init_signal("rgmii1_tctl",
@@ -603,6 +603,69 @@ static void setup_bb_ipp_db_config(void)
 	mmc[1].mmc = 0;
 	mmc[2].mmc = 0;
 	omap2_hsmmc_init(mmc);
+
+	/* Configure CPSW */
+	/* Ethernet0 */
+	omap_mux_init_signal("rgmii1_tctl",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii1_rctl",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii1_td3",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii1_td2",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii1_td1",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii1_td0",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii1_tclk",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii1_rclk",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii1_rd3",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii1_rd2",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii1_rd1",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii1_rd0",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rmii1_refclk",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("mdio_data",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mdio_clk",
+			OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP);
+
+	/* Ethernet1 */
+	omap_mux_init_signal("rgmii2_tctl",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii2_rctl",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii2_td3",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii2_td2",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii2_td1",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii2_td0",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii2_tclk",
+			OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT);
+	omap_mux_init_signal("rgmii2_rclk",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii2_rd3",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii2_rd2",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii2_rd1",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("rgmii2_rd0",
+			OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN);
+	omap_mux_init_signal("mdio_data",
+			OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mdio_clk",
+			OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP);
 }
 
 static void setup_bb_only_config(void)
