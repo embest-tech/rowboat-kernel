@@ -56,28 +56,175 @@ static struct omap_hwmod am335x_uart6_hwmod;
 static struct omap_hwmod am335x_cpgmac0_hwmod;
 static struct omap_hwmod am335x_icss_hwmod;
 static struct omap_hwmod am335x_ieee5000_hwmod;
+static struct omap_hwmod am335x_mpu_hwmod;
+static struct omap_hwmod am335x_l3slow_hwmod;
 static struct omap_hwmod am335x_l4wkup_hwmod;
+static struct omap_hwmod am335x_l4per_hwmod;
 static struct omap_hwmod am335x_tptc0_hwmod;
 static struct omap_hwmod am335x_tptc1_hwmod;
 static struct omap_hwmod am335x_tptc2_hwmod;
 static struct omap_hwmod am335x_usb0_hwmod;
+static struct omap_hwmod am335x_gpio0_hwmod;
+static struct omap_hwmod am335x_gpio1_hwmod;
+static struct omap_hwmod am335x_gpio2_hwmod;
+static struct omap_hwmod am335x_gpio3_hwmod;
 
 	/*
 	* Interconnects hwmod structures
 	* hwmods that compose the global AM335X OCP interconnect
 	*/
 
-/* l4wkup interface data */
-static struct omap_hwmod_class am335x_l4wkup_hwmod_class = {
-	.name = "l4wkup",
+/* MPU -> L3_SLOW Peripheral interface */
+static struct omap_hwmod_ocp_if am335x_mpu__l3_slow = {
+	.master = &am335x_mpu_hwmod,
+	.slave  = &am335x_l3slow_hwmod,
+	.user   = OCP_USER_MPU,
+};
+
+/* L3 SLOW -> L4_PER Peripheral interface */
+static struct omap_hwmod_ocp_if am335x_l3_slow__l4_per = {
+	.master = &am335x_l3slow_hwmod,
+	.slave  = &am335x_l4per_hwmod,
+	.user   = OCP_USER_MPU,
+};
+
+/* L3 SLOW -> L4_WKUP Peripheral interface */
+static struct omap_hwmod_ocp_if am335x_l3_slow__l4_wkup = {
+	.master = &am335x_l3slow_hwmod,
+	.slave  = &am335x_l4wkup_hwmod,
+	.user   = OCP_USER_MPU,
+};
+
+/* Master interfaces on the L4_WKUP interconnect */
+static struct omap_hwmod_ocp_if *am335x_l3_slow_masters[] = {
+	&am335x_l3_slow__l4_per,
+	&am335x_l3_slow__l4_wkup,
+};
+
+/* Slave interfaces on the L3_SLOW interconnect */
+static struct omap_hwmod_ocp_if *am335x_l3_slow_slaves[] = {
+	&am335x_mpu__l3_slow,
+};
+
+static struct omap_hwmod am335x_l3slow_hwmod = {
+	.name           = "l3_slow",
+	.class          = &l3_hwmod_class,
+	.masters        = am335x_l3_slow_masters,
+	.masters_cnt    = ARRAY_SIZE(am335x_l3_slow_masters),
+	.slaves         = am335x_l3_slow_slaves,
+	.slaves_cnt     = ARRAY_SIZE(am335x_l3_slow_slaves),
+	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
+};
+
+/* L4 PER -> GPIO2 */
+static struct omap_hwmod_addr_space am335x_gpio1_addrs[] = {
+	{
+		.pa_start       = AM335X_GPIO1_BASE,
+		.pa_end         = AM335X_GPIO1_BASE + SZ_4K - 1,
+		.flags          = ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_per__gpio1 = {
+	.master         = &am335x_l4per_hwmod,
+	.slave          = &am335x_gpio1_hwmod,
+	.addr           = am335x_gpio1_addrs,
+	.addr_cnt       = ARRAY_SIZE(am335x_gpio1_addrs),
+	.user           = OCP_USER_MPU | OCP_USER_SDMA,
+};
+
+/* L4 PER -> GPIO3 */
+static struct omap_hwmod_addr_space am335x_gpio2_addrs[] = {
+	{
+		.pa_start       = AM335X_GPIO2_BASE,
+		.pa_end         = AM335X_GPIO2_BASE + SZ_4K - 1,
+		.flags          = ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_per__gpio2 = {
+	.master         = &am335x_l4per_hwmod,
+	.slave          = &am335x_gpio2_hwmod,
+	.addr           = am335x_gpio2_addrs,
+	.addr_cnt       = ARRAY_SIZE(am335x_gpio2_addrs),
+	.user           = OCP_USER_MPU | OCP_USER_SDMA,
+};
+
+/* L4 PER -> GPIO4 */
+static struct omap_hwmod_addr_space am335x_gpio3_addrs[] = {
+	{
+		.pa_start       = AM335X_GPIO3_BASE,
+		.pa_end         = AM335X_GPIO3_BASE + SZ_4K - 1,
+		.flags          = ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_per__gpio3 = {
+	.master         = &am335x_l4per_hwmod,
+	.slave          = &am335x_gpio3_hwmod,
+	.addr           = am335x_gpio3_addrs,
+	.addr_cnt       = ARRAY_SIZE(am335x_gpio3_addrs),
+	.user           = OCP_USER_MPU | OCP_USER_SDMA,
+};
+
+/* Master interfaces on the L4_PER interconnect */
+static struct omap_hwmod_ocp_if *am335x_l4_per_masters[] = {
+	&am335x_l4_per__gpio1,
+	&am335x_l4_per__gpio2,
+	&am335x_l4_per__gpio3,
+};
+
+/* Slave interfaces on the L4_PER interconnect */
+static struct omap_hwmod_ocp_if *am335x_l4_per_slaves[] = {
+	&am335x_l3_slow__l4_per,
+};
+
+static struct omap_hwmod am335x_l4per_hwmod = {
+	.name           = "l4_per",
+	.class          = &l4_hwmod_class,
+	.masters        = am335x_l4_per_masters,
+	.masters_cnt    = ARRAY_SIZE(am335x_l4_per_masters),
+	.slaves         = am335x_l4_per_slaves,
+	.slaves_cnt     = ARRAY_SIZE(am335x_l4_per_slaves),
+	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
+};
+
+/* L4 WKUP -> GPIO1 */
+static struct omap_hwmod_addr_space am335x_gpio0_addrs[] = {
+	{
+		.pa_start       = AM335X_GPIO0_BASE,
+		.pa_end         = AM335X_GPIO0_BASE + SZ_4K - 1,
+		.flags          = ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_wkup__gpio0 = {
+	.master         = &am335x_l4wkup_hwmod,
+	.slave          = &am335x_gpio0_hwmod,
+	.addr           = am335x_gpio0_addrs,
+	.addr_cnt       = ARRAY_SIZE(am335x_gpio0_addrs),
+	.user           = OCP_USER_MPU | OCP_USER_SDMA,
+};
+
+/* Master interfaces on the L4_WKUP interconnect */
+static struct omap_hwmod_ocp_if *am335x_l4_wkup_masters[] = {
+	&am335x_l4_wkup__gpio0,
+};
+
+/* Slave interfaces on the L4_WKUP interconnect */
+static struct omap_hwmod_ocp_if *am335x_l4_wkup_slaves[] = {
+	&am335x_l3_slow__l4_wkup,
 };
 
 static struct omap_hwmod am335x_l4wkup_hwmod = {
-	.name		= "l4wkup",
-	.class		= &am335x_l4wkup_hwmod_class,
+	.name           = "l4_wkup",
+	.class          = &l4_hwmod_class,
+	.masters        = am335x_l4_wkup_masters,
+	.masters_cnt    = ARRAY_SIZE(am335x_l4_wkup_masters),
+	.slaves         = am335x_l4_wkup_slaves,
+	.slaves_cnt     = ARRAY_SIZE(am335x_l4_wkup_slaves),
 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
-
 
 /* 'adc_tsc' class */
 
@@ -354,61 +501,151 @@ static struct omap_hwmod am335x_epwmss2_hwmod = {
 	},
 };
 
-/* 'gpio' class */
+static struct omap_hwmod_class_sysconfig am335x_gpio_sysc = {
+	.rev_offs       = 0x0000,
+	.sysc_offs      = 0x0010,
+	.syss_offs      = 0x0114,
+	.sysc_flags     = (SYSC_HAS_AUTOIDLE | SYSC_HAS_ENAWAKEUP |
+			SYSC_HAS_SIDLEMODE | SYSC_HAS_SOFTRESET |
+			SYSS_HAS_RESET_STATUS),
+	.idlemodes      = (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART |
+			SIDLE_SMART_WKUP),
+	.sysc_fields    = &omap_hwmod_sysc_type1,
+};
 
+/* 'gpio' class */
 static struct omap_hwmod_class am335x_gpio_hwmod_class = {
 	.name = "gpio",
+	.sysc   = &am335x_gpio_sysc,
+	.rev    = 2,
+};
+
+/* gpio dev_attr */
+static struct omap_gpio_dev_attr gpio_dev_attr = {
+	.bank_width     = 32,
+	.dbck_flag      = true,
+};
+
+/* gpio0 */
+static struct omap_hwmod_irq_info am335x_gpio0_irqs[] = {
+	{ .irq = AM335X_IRQ_GPIO_WKUP_1 },
+	{ .irq = AM335X_IRQ_GPIO_WKUP_2 },
+};
+
+/* gpio0 slave ports */
+static struct omap_hwmod_ocp_if *am335x_gpio0_slaves[] = {
+	&am335x_l4_wkup__gpio0,
+};
+
+static struct omap_hwmod_opt_clk gpio0_opt_clks[] = {
+	{ .role = "dbclk", .clk = "gpio_dbclk_mux_ck" },
 };
 
 /* gpio0 */
 static struct omap_hwmod am335x_gpio0_hwmod = {
 	.name		= "gpio0",
 	.class		= &am335x_gpio_hwmod_class,
+	.mpu_irqs       = am335x_gpio0_irqs,
+	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_gpio0_irqs),
 	.main_clk	= "gpio0_fck",
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_WKUP_GPIO0_CLKCTRL,
 		},
 	},
+	.opt_clks       = gpio0_opt_clks,
+	.opt_clks_cnt   = ARRAY_SIZE(gpio0_opt_clks),
+	.dev_attr       = &gpio_dev_attr,
+	.slaves         = am335x_gpio0_slaves,
+	.slaves_cnt     = ARRAY_SIZE(am335x_gpio0_slaves),
+	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
+};
+
+/* gpio1 */
+static struct omap_hwmod_irq_info am335x_gpio1_irqs[] = {
+	{ .irq = AM335X_IRQ_GPIO1 },
+	{ .irq = AM335X_IRQ_GPIO2 },
+};
+
+/* gpio1 slave ports */
+static struct omap_hwmod_ocp_if *am335x_gpio1_slaves[] = {
+	&am335x_l4_per__gpio1,
 };
 
 /* gpio1 */
 static struct omap_hwmod am335x_gpio1_hwmod = {
 	.name		= "gpio1",
 	.class		= &am335x_gpio_hwmod_class,
+	.mpu_irqs       = am335x_gpio1_irqs,
+	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_gpio1_irqs),
+	.main_clk       = "gpio1_fck",
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_GPIO1_CLKCTRL,
 		},
 	},
+	.dev_attr       = &gpio_dev_attr,
+	.slaves         = am335x_gpio1_slaves,
+	.slaves_cnt     = ARRAY_SIZE(am335x_gpio1_slaves),
+	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* gpio2 */
 static struct omap_hwmod_irq_info am335x_gpio2_irqs[] = {
-	{ .irq = 32 + AM335X_IRQ_GIC_START },
+	{ .irq = AM335X_IRQ_GPIO2_1 },
+	{ .irq = AM335X_IRQ_GPIO2_2 },
 };
 
+/* gpio2 slave ports */
+static struct omap_hwmod_ocp_if *am335x_gpio2_slaves[] = {
+	&am335x_l4_per__gpio2,
+};
+
+/* gpio2 */
 static struct omap_hwmod am335x_gpio2_hwmod = {
 	.name		= "gpio2",
 	.class		= &am335x_gpio_hwmod_class,
 	.mpu_irqs       = am335x_gpio2_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_gpio2_irqs),
+	.main_clk       = "gpio2_fck",
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_GPIO2_CLKCTRL,
 		},
 	},
+	.dev_attr       = &gpio_dev_attr,
+	.slaves         = am335x_gpio2_slaves,
+	.slaves_cnt     = ARRAY_SIZE(am335x_gpio2_slaves),
+	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
+};
+
+/* gpio3 */
+static struct omap_hwmod_irq_info am335x_gpio3_irqs[] = {
+	{ .irq = AM335X_IRQ_GPIO3_1 },
+	{ .irq = AM335X_IRQ_GPIO3_2 },
+};
+
+/* gpio3 slave ports */
+static struct omap_hwmod_ocp_if *am335x_gpio3_slaves[] = {
+	&am335x_l4_per__gpio3,
 };
 
 /* gpio3 */
 static struct omap_hwmod am335x_gpio3_hwmod = {
 	.name		= "gpio3",
 	.class		= &am335x_gpio_hwmod_class,
+	.mpu_irqs       = am335x_gpio3_irqs,
+	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_gpio3_irqs),
+	.main_clk       = "gpio3_fck",
 	.prcm = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_GPIO3_CLKCTRL,
 		},
 	},
+	.dev_attr       = &gpio_dev_attr,
+	.slaves         = am335x_gpio3_slaves,
+	.slaves_cnt     = ARRAY_SIZE(am335x_gpio3_slaves),
+	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'gpmc' class */
@@ -717,16 +954,17 @@ static struct omap_hwmod am335x_mmc2_hwmod = {
 	},
 };
 
-/* 'mpu' class */
-
-static struct omap_hwmod_class am335x_mpu_hwmod_class = {
-	.name = "mpu",
+/* Master interfaces on the MPU interconnect */
+static struct omap_hwmod_ocp_if *am335x_l3_mpu_masters[] = {
+	&am335x_mpu__l3_slow,
 };
 
 /* mpu */
 static struct omap_hwmod am335x_mpu_hwmod = {
 	.name		= "mpu",
-	.class		= &am335x_mpu_hwmod_class,
+	.class          = &mpu_hwmod_class,
+	.masters        = am335x_l3_mpu_masters,
+	.masters_cnt    = ARRAY_SIZE(am335x_l3_mpu_masters),
 	.flags		= (HWMOD_INIT_NO_IDLE | HWMOD_INIT_NO_RESET),
 	.main_clk	= "mpu_fck",
 	.prcm = {
@@ -1532,6 +1770,10 @@ static struct omap_hwmod am335x_wkup_m3_hwmod = {
 };
 
 static __initdata struct omap_hwmod *am335x_hwmods[] = {
+	/* l3s class */
+	&am335x_l3slow_hwmod,
+	/* l4per class */
+	&am335x_l4per_hwmod,
 	/* l4wkup class */
 	&am335x_l4wkup_hwmod,
 
