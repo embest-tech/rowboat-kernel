@@ -18,6 +18,8 @@
 
 #include <mach/board-am335xevm.h>
 
+#include <plat/asp.h>
+
 #include "mux.h"
 
 /* module pin mux structure */
@@ -38,6 +40,54 @@ struct evm_dev_cfg {
 * specific profile if the evm has profiles).
 */
 
+/* Module pin mux for mcasp1 */
+static struct module_pinmux_config mcasp1_pin_mux[] = {
+	{"mcasp1_aclkx",	OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp1_fsx",		OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp1_axr2",		OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp1_axr3",		OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{0, 0},
+};
+
+/*
+* Module Platform data.
+* Place all Platform specific data below.
+*/
+
+/* Audio Platform Data */
+static u8 am335x_iis_serializer_direction[] = {
+	INACTIVE_MODE,	INACTIVE_MODE,	TX_MODE,	RX_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+};
+
+static struct snd_platform_data am335x_evm_snd_data = {
+	.tx_dma_offset	= 0x46400000,	/* McASP1 */
+	.rx_dma_offset	= 0x46400000,
+	.op_mode	= DAVINCI_MCASP_IIS_MODE,
+	.num_serializer	= ARRAY_SIZE(am335x_iis_serializer_direction),
+	.tdm_slots	= 2,
+	.serial_dir	= am335x_iis_serializer_direction,
+	.asp_chan_q	= EVENTQ_2,
+	.version	= MCASP_VERSION_2,
+	.txnumevt	= 1,
+	.rxnumevt	= 1,
+};
+
+/*
+* Module Initialization/setup function.
+* Place all module init/setup function call below.
+*/
+
+/* Setup McASP */
+static void mcasp1_init(int evm_id, int profile)
+{
+	/* Configure McASP */
+	am335x_register_mcasp(0, &am335x_evm_snd_data);
+	return;
+}
+
 /* Low-Cost EVM */
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{0, 0, 0},
@@ -45,6 +95,7 @@ static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 
 /* General Purpose EVM */
 static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
+	{mcasp1_pin_mux, mcasp1_init, (PROFILE_0 | PROFILE_3 | PROFILE_7) },
 	{0, 0, 0},
 };
 
@@ -55,6 +106,7 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 
 /* IP-Phone EVM */
 static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
+	{mcasp1_pin_mux, mcasp1_init, PROFILE_NONE},
 	{0, 0, 0},
 };
 
