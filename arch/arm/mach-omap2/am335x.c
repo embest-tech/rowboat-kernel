@@ -49,6 +49,45 @@ static struct module_pinmux_config mcasp1_pin_mux[] = {
 	{0, 0},
 };
 
+static struct module_pinmux_config rgmii1_pin_mux[] = {
+	{"rgmii1_tctl",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii1_rctl",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii1_td3",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii1_td2",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii1_td1",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii1_td0",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii1_tclk",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii1_rclk",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii1_rd3",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii1_rd2",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii1_rd1",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii1_rd0",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rmii1_refclk",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mdio_data",		OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mdio_clk",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
+	{0, 0},
+};
+
+/* Module pin mux for rgmii2 */
+static struct module_pinmux_config rgmii2_pin_mux[] = {
+	{"rgmii2_tctl",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii2_rctl",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii2_td3",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii2_td2",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii2_td1",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii2_td0",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii2_tclk",		OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"rgmii2_rclk",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii2_rd3",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii2_rd2",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii2_rd1",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rgmii2_rd0",		OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rmii2_refclk",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mdio_data",		OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mdio_clk",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
+	{0, 0},
+};
+
 /*
 * Module Platform data.
 * Place all Platform specific data below.
@@ -90,12 +129,16 @@ static void mcasp1_init(int evm_id, int profile)
 
 /* Low-Cost EVM */
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
+	{rgmii1_pin_mux, NULL, PROFILE_NONE},
 	{0, 0, 0},
 };
 
 /* General Purpose EVM */
 static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{mcasp1_pin_mux, mcasp1_init, (PROFILE_0 | PROFILE_3 | PROFILE_7) },
+	{rgmii1_pin_mux, NULL, PROFILE_ALL},
+	{rgmii2_pin_mux, NULL, (PROFILE_1 | PROFILE_2 | PROFILE_4 |
+								PROFILE_6) },
 	{0, 0, 0},
 };
 
