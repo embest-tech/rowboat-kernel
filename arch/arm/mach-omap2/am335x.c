@@ -19,6 +19,12 @@
 #include <linux/spi/flash.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/partitions.h>
+#include <linux/platform_device.h>
+#include <linux/clk.h>
+#include <linux/err.h>
+
+/* LCD controller is similar to DA850 */
+#include <video/da8xx-fb.h>
 
 #include <mach/board-am335xevm.h>
 
@@ -112,6 +118,39 @@ static struct module_pinmux_config spi1_pin_mux[] = {
 	{0, 0},
 };
 
+/* Module pin mux for LCDC */
+static struct module_pinmux_config lcdc_pin_mux[] = {
+	{"lcd_data0",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data1",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data2",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data3",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data4",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data5",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data6",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data7",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data8",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data9",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data10",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data11",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data12",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data13",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data14",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data15",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data16",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
+	{"lcd_data17",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
+	{"lcd_data18",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
+	{"lcd_data19",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
+	{"lcd_data20",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
+	{"lcd_data21",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
+	{"lcd_data22",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
+	{"lcd_data23",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
+	{"lcd_vsync",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_hsync",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_pclk",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_ac_bias_en",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{0, 0},
+};
+
 /*
 * Module Platform data.
 * Place all Platform specific data below.
@@ -201,6 +240,38 @@ struct spi_board_info am335x_spi1_slave_info[] = {
 	},
 };
 
+
+static const struct display_panel disp_panel = {
+	WVGA,
+	24,
+	24,
+	COLOR_ACTIVE,
+};
+
+static struct lcd_ctrl_config lcd_cfg = {
+	&disp_panel,
+	.ac_bias		= 255,
+	.ac_bias_intrpt		= 0,
+	.dma_burst_sz		= 16,
+	.bpp			= 24,
+	.fdd			= 255,
+	.tft_alt_mode		= 0,
+	.stn_565_mode		= 0,
+	.mono_8bit_mode		= 0,
+	.invert_line_clock	= 1,
+	.invert_frm_clock	= 1,
+	.sync_edge		= 0,
+	.sync_ctrl		= 1,
+	.raster_order		= 0,
+};
+
+struct da8xx_lcdc_platform_data TFC_S9700RTWV35TR_01B_pdata = {
+	.manu_name		= "ThreeFive",
+	.controller_data	= &lcd_cfg,
+	.type			= "TFC_S9700RTWV35TR_01B",
+};
+
+
 /*
 * Module Initialization/setup function.
 * Place all module init/setup function call below.
@@ -230,6 +301,56 @@ static void spi1_init(int evm_id, int profile)
 	return;
 }
 
+/* setup lcd */
+
+static void __init conf_disp_pll(struct platform_device *lcdc_device)
+{
+	int ret;
+	struct clk *lcdc_clk;
+	struct clk *lcdc_parent;
+	struct clk *disp_pll;
+
+	lcdc_clk = clk_get(&lcdc_device->dev, NULL);
+	if (IS_ERR(lcdc_clk)) {
+		pr_err("Cannot request lcdc_fck\n");
+		goto error0;
+	}
+
+	lcdc_parent = clk_get(NULL, "disp_div2_ck");
+	if (IS_ERR(lcdc_parent)) {
+		pr_err("Cannot request lcdc_parent\n");
+		goto error1;
+	}
+	ret = clk_set_parent(lcdc_clk, lcdc_parent);
+
+	disp_pll = clk_get(NULL, "dpll_disp_ck");
+	if (IS_ERR(disp_pll)) {
+		pr_err("Cannot request disp_pll\n");
+		goto error2;
+	}
+
+	clk_set_rate(disp_pll, 600000000);
+	return;
+error2:
+	clk_put(lcdc_parent);
+error1:
+	clk_put(lcdc_clk);
+error0:
+	pr_err("Failed to configure display PLL\n");
+	return;
+}
+
+static void lcdc_init(int evm_id, int profile)
+{
+	struct platform_device *lcdc_device;
+	lcdc_device = am33xx_register_lcdc(&TFC_S9700RTWV35TR_01B_pdata);
+	if (lcdc_device != NULL)
+		conf_disp_pll(lcdc_device);
+	else
+		pr_info("Failed to register LCDC device\n");
+	return;
+}
+
 /* Low-Cost EVM */
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_NONE},
@@ -243,6 +364,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{rgmii2_pin_mux, NULL, (PROFILE_1 | PROFILE_2 | PROFILE_4 |
 								PROFILE_6) },
 	{spi0_pin_mux, spi0_init, PROFILE_2},
+	{lcdc_pin_mux, lcdc_init, (PROFILE_0 | PROFILE_1 | PROFILE_2) },
 	{0, 0, 0},
 };
 
