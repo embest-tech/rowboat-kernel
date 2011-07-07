@@ -31,8 +31,10 @@
 #include <asm/mach/map.h>
 
 #include <plat/asp.h>
+#include <plat/mmc.h>
 
 #include "mux.h"
+#include "hsmmc.h"
 
 /* module pin mux structure */
 struct module_pinmux_config {
@@ -148,6 +150,51 @@ static struct module_pinmux_config lcdc_pin_mux[] = {
 	{"lcd_hsync",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"lcd_pclk",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"lcd_ac_bias_en",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{0, 0},
+};
+
+/* Module pin mux for mmc0 */
+static struct module_pinmux_config mmc0_pin_mux[] = {
+	{"mmc0_dat3",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_dat2",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_dat1",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_dat0",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_clk",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_cmd",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_wp",	OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc0_cd",	OMAP_MUX_MODE5 | AM335X_PIN_INPUT_PULLUP},
+	{0, 0},
+};
+
+/* Module pin mux for mmc1 */
+static struct module_pinmux_config mmc1_pin_mux[] = {
+	{"mmc1_dat7",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc1_dat6",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc1_dat5",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc1_dat4",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc1_dat3",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc1_dat2",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc1_dat1",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc1_dat0",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc1_clk",	OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc1_cmd",	OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc1_wp",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc1_cd",	OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{0, 0},
+};
+
+/* Module pin mux for mmc2 */
+static struct module_pinmux_config mmc2_pin_mux[] = {
+	{"mmc2_dat7",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc2_dat6",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc2_dat5",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc2_dat4",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc2_dat3",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc2_dat2",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc2_dat1",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc2_dat0",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc2_clk",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mmc2_cmd",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
 	{0, 0},
 };
 
@@ -271,6 +318,22 @@ struct da8xx_lcdc_platform_data TFC_S9700RTWV35TR_01B_pdata = {
 	.type			= "TFC_S9700RTWV35TR_01B",
 };
 
+static struct omap2_hsmmc_info mmc[] = {
+	{
+		.mmc            = 1,
+		.caps           = MMC_CAP_4_BIT_DATA,
+		.gpio_cd        = -EINVAL,/* Dedicated pins for CD and WP */
+		.gpio_wp        = -EINVAL,
+		.ocr_mask       = MMC_VDD_33_34,
+	},
+	{
+		.mmc            = 0,	/* will be set at runtime */
+	},
+	{
+		.mmc            = 0,	/* will be set at runtime */
+	},
+	{}      /* Terminator */
+};
 
 /*
 * Module Initialization/setup function.
@@ -351,9 +414,40 @@ static void lcdc_init(int evm_id, int profile)
 	return;
 }
 
+static void mmc1_init(int evm_id, int profile)
+{
+	mmc[1].mmc = 2;
+	mmc[1].caps = MMC_CAP_8_BIT_DATA;
+	mmc[1].gpio_cd = -EINVAL;
+	mmc[1].gpio_wp = -EINVAL;
+	mmc[1].ocr_mask = MMC_VDD_33_34;
+
+	/* mmc will be initialized when mmc)_init is called */
+	return;
+}
+
+static void mmc2_init(int evm_id, int profile)
+{
+	mmc[2].mmc = 3;
+	mmc[2].caps = MMC_CAP_8_BIT_DATA;
+	mmc[2].gpio_cd = -EINVAL;
+	mmc[2].gpio_wp = -EINVAL;
+	mmc[2].ocr_mask = MMC_VDD_33_34;
+
+	/* mmc will be initialized when mmc)_init is called */
+	return;
+}
+
+static void mmc0_init(int evm_id, int profile)
+{
+	omap2_hsmmc_init(mmc);
+	return;
+}
+
 /* Low-Cost EVM */
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_NONE},
+	{mmc0_pin_mux, mmc0_init, PROFILE_NONE},
 	{0, 0, 0},
 };
 
@@ -365,18 +459,23 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 								PROFILE_6) },
 	{spi0_pin_mux, spi0_init, PROFILE_2},
 	{lcdc_pin_mux, lcdc_init, (PROFILE_0 | PROFILE_1 | PROFILE_2) },
+	{mmc1_pin_mux, mmc1_init, PROFILE_2},
+	{mmc2_pin_mux, mmc2_init, PROFILE_4},
+	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
 	{0, 0, 0},
 };
 
 /* Industrial Auto Motor Control EVM */
 static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 	{spi1_pin_mux, spi1_init, PROFILE_ALL},
+	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
 	{0, 0, 0},
 };
 
 /* IP-Phone EVM */
 static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{mcasp1_pin_mux, mcasp1_init, PROFILE_NONE},
+	{mmc0_pin_mux, mmc0_init, PROFILE_NONE},
 	{0, 0, 0},
 };
 
