@@ -42,4 +42,6 @@ u32 am335x_get_am335x_evm_id(void);
 u32 am335x_get_daughter_board_rev(void);
 u32 am335x_get_baseboard_rev(void);
 
+int am335x_configure_evm_devices(int evm_id, int profile);
+
 #endif

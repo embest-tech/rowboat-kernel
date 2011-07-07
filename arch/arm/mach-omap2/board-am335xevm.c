@@ -122,6 +122,8 @@ void setup_general_purpose_evm(struct eeprom_config *evm_config)
 	* TODO/REVIST -
 	* configure Pin Mux, Clock setup & register devices.
 	*/
+
+	am335x_configure_evm_devices(GEN_PURP_EVM, prof_sel);
 }
 
 void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config)
@@ -135,6 +137,8 @@ void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config)
 	* TODO/REVIST -
 	* configure Pin Mux, Clock setup & register devices.
 	*/
+
+	am335x_configure_evm_devices(IND_AUT_MTR_EVM, prof_sel);
 }
 
 void setup_ip_phone_evm(struct eeprom_config *evm_config)
@@ -146,6 +150,7 @@ void setup_ip_phone_evm(struct eeprom_config *evm_config)
 	* configure Pin Mux, Clock setup & register devices.
 	*/
 
+	am335x_configure_evm_devices(IP_PHN_EVM, PROFILE_NONE);
 }
 
 void setup_low_cost_evm(struct eeprom_config *evm_config)
@@ -156,6 +161,8 @@ void setup_low_cost_evm(struct eeprom_config *evm_config)
 	* TODO/REVIST -
 	* configure Pin Mux, Clock setup & register devices.
 	*/
+
+	am335x_configure_evm_devices(LOW_COST_EVM, PROFILE_NONE);
 }
 
 static void am335x_setup_daughter_board_evm
