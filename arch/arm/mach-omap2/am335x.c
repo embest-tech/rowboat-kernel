@@ -15,8 +15,14 @@
 
 #include <linux/module.h>
 #include <linux/init.h>
+#include <linux/spi/spi.h>
+#include <linux/spi/flash.h>
+#include <linux/mtd/mtd.h>
+#include <linux/mtd/partitions.h>
 
 #include <mach/board-am335xevm.h>
+
+#include <asm/mach/map.h>
 
 #include <plat/asp.h>
 
@@ -88,6 +94,24 @@ static struct module_pinmux_config rgmii2_pin_mux[] = {
 	{0, 0},
 };
 
+/* Module pin mux for spi0 */
+static struct module_pinmux_config spi0_pin_mux[] = {
+	{"spi0_sclk",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"spi0_d0",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"spi0_d1",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"spi0_cs0",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{0, 0},
+};
+
+/* Module pin mux for spi1 */
+static struct module_pinmux_config spi1_pin_mux[] = {
+	{"spi1_sclk",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"spi1_d0",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"spi1_d1",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"spi1_cs0",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{0, 0},
+};
+
 /*
 * Module Platform data.
 * Place all Platform specific data below.
@@ -114,6 +138,69 @@ static struct snd_platform_data am335x_evm_snd_data = {
 	.rxnumevt	= 1,
 };
 
+/* SPI 0/1 Platform Data */
+
+/* SPI flash information */
+struct mtd_partition am335x_spi_partitions[] = {
+	/* All the partition sizes are listed in terms of erase size */
+	{
+		.name       = "U-Boot-min",
+		.offset     = 0,
+		.size       = 32 * SZ_4K,
+		.mask_flags = MTD_WRITEABLE,    /* force read-only */
+	},
+	{
+		.name       = "U-Boot",
+		.offset     = MTDPART_OFS_APPEND,
+		.size       = 64 * SZ_4K,
+		.mask_flags = MTD_WRITEABLE,    /* force read-only */
+	},
+	{
+		.name       = "U-Boot Env",
+		.offset     = MTDPART_OFS_APPEND,
+		.size       = 2 * SZ_4K,
+	},
+	{
+		.name       = "Kernel",
+		.offset     = MTDPART_OFS_APPEND,
+		.size       = 640 * SZ_4K,
+	},
+	{
+		.name       = "File System",
+		.offset     = MTDPART_OFS_APPEND,
+		.size       = MTDPART_SIZ_FULL,     /* size ~= 1.1 MiB */
+	}
+};
+
+const struct flash_platform_data am335x_spi_flash = {
+	.type      = "w25q64",
+	.name      = "spi_flash",
+	.parts     = am335x_spi_partitions,
+	.nr_parts  = ARRAY_SIZE(am335x_spi_partitions),
+};
+
+struct spi_board_info am335x_spi0_slave_info[] = {
+	{
+		.modalias      = "m25p80",
+		.platform_data = &am335x_spi_flash,
+		.irq           = -1,
+		.max_speed_hz  = 80000000,
+		.bus_num       = 1,
+		.chip_select   = 0,
+	},
+};
+
+struct spi_board_info am335x_spi1_slave_info[] = {
+	{
+		.modalias      = "m25p80",
+		.platform_data = &am335x_spi_flash,
+		.irq           = -1,
+		.max_speed_hz  = 80000000,
+		.bus_num       = 2,
+		.chip_select   = 0,
+	},
+};
+
 /*
 * Module Initialization/setup function.
 * Place all module init/setup function call below.
@@ -124,6 +211,22 @@ static void mcasp1_init(int evm_id, int profile)
 {
 	/* Configure McASP */
 	am335x_register_mcasp(0, &am335x_evm_snd_data);
+	return;
+}
+
+/* setup spi0 */
+static void spi0_init(int evm_id, int profile)
+{
+	spi_register_board_info(am335x_spi0_slave_info,
+					ARRAY_SIZE(am335x_spi0_slave_info));
+	return;
+}
+
+/* setup spi1 */
+static void spi1_init(int evm_id, int profile)
+{
+	spi_register_board_info(am335x_spi1_slave_info,
+			ARRAY_SIZE(am335x_spi1_slave_info));
 	return;
 }
 
@@ -139,11 +242,13 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_ALL},
 	{rgmii2_pin_mux, NULL, (PROFILE_1 | PROFILE_2 | PROFILE_4 |
 								PROFILE_6) },
+	{spi0_pin_mux, spi0_init, PROFILE_2},
 	{0, 0, 0},
 };
 
 /* Industrial Auto Motor Control EVM */
 static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
+	{spi1_pin_mux, spi1_init, PROFILE_ALL},
 	{0, 0, 0},
 };
 
