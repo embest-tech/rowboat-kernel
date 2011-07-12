@@ -265,6 +265,29 @@ static struct snd_soc_dai_link ti81xx_evm_dai = {
 	.ops = &evm_ops,
 };
 
+static struct snd_soc_dai_link am335x_evm_dai[] = {
+	{
+		.name = "TLV320AIC3X",
+		.stream_name = "AIC3X",
+		.cpu_dai_name = "davinci-mcasp.0",
+		.codec_dai_name = "tlv320aic3x-hifi",
+		.codec_name = "tlv320aic3x-codec.1-001b",
+		.platform_name = "davinci-pcm-audio",
+		.init = evm_aic3x_init,
+		.ops = &evm_ops,
+	},
+	{
+		.name = "TLV320AIC3X",
+		.stream_name = "AIC3X",
+		.cpu_dai_name = "davinci-mcasp.1",
+		.codec_dai_name = "tlv320aic3x-hifi",
+		.codec_name = "tlv320aic3x-codec.1-001b",
+		.platform_name = "davinci-pcm-audio",
+		.init = evm_aic3x_init,
+		.ops = &evm_ops,
+	},
+};
+
 /* davinci dm6446 evm audio machine driver */
 static struct snd_soc_card dm6446_snd_soc_card_evm = {
 	.name = "DaVinci DM6446 EVM",
@@ -311,6 +334,12 @@ static struct snd_soc_card ti81xx_snd_soc_card = {
 	.num_links = 1,
 };
 
+static struct snd_soc_card am335x_snd_soc_card = {
+	.name = "AM335X EVM",
+	.dai_link = am335x_evm_dai,
+	.num_links = ARRAY_SIZE(am335x_evm_dai),
+};
+
 static struct platform_device *evm_snd_device;
 
 static int __init evm_init(void)
@@ -341,8 +370,7 @@ static int __init evm_init(void)
 		evm_snd_dev_data = &ti81xx_snd_soc_card;
 		index = 0;
 	} else if (machine_is_am335xevm()) {
-		ti81xx_snd_soc_card.dai_link->cpu_dai_name = "davinci-mcasp.1";
-		evm_snd_dev_data = &ti81xx_snd_soc_card;
+		evm_snd_dev_data = &am335x_snd_soc_card;
 		index = 0;
 	} else
 		return -EINVAL;
