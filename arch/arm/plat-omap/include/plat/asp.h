@@ -118,6 +118,7 @@ enum {
 #define DAVINCI_MCASP_DIT_MODE	1
 
 void ti81xx_register_mcasp(int id, struct snd_platform_data *pdata);
-void am335x_register_mcasp(int id, struct snd_platform_data *pdata);
+void am335x_register_mcasp0(struct snd_platform_data *pdata);
+void am335x_register_mcasp1(struct snd_platform_data *pdata);
 
 #endif /* __ASM_ARCH_TI81XX_ASP_H */

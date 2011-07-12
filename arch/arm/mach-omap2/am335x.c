@@ -54,11 +54,20 @@ struct evm_dev_cfg {
 * specific profile if the evm has profiles).
 */
 
+/* Module pin mux for mcasp0 */
+static struct module_pinmux_config mcasp0_pin_mux[] = {
+	{"mcasp0_aclkx",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp0_fsx",		OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp0_axr0",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"mcasp0_axr1",		OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{0, 0},
+};
+
 /* Module pin mux for mcasp1 */
 static struct module_pinmux_config mcasp1_pin_mux[] = {
 	{"mcasp1_aclkx",	OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mcasp1_fsx",		OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
-	{"mcasp1_axr2",		OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp1_axr2",		OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT},
 	{"mcasp1_axr3",		OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
 	{0, 0},
 };
@@ -204,20 +213,40 @@ static struct module_pinmux_config mmc2_pin_mux[] = {
 */
 
 /* Audio Platform Data */
-static u8 am335x_iis_serializer_direction[] = {
+static u8 am335x_iis_serializer_direction0[] = {
+	TX_MODE,	RX_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+};
+
+static struct snd_platform_data am335x_evm_snd_data0 = {
+	.tx_dma_offset	= 0x46000000,	/* McASP0 */
+	.rx_dma_offset	= 0x46000000,
+	.op_mode	= DAVINCI_MCASP_IIS_MODE,
+	.num_serializer	= ARRAY_SIZE(am335x_iis_serializer_direction0),
+	.tdm_slots	= 2,
+	.serial_dir	= am335x_iis_serializer_direction0,
+	.asp_chan_q	= EVENTQ_2,
+	.version	= MCASP_VERSION_2,
+	.txnumevt	= 1,
+	.rxnumevt	= 1,
+};
+
+static u8 am335x_iis_serializer_direction1[] = {
 	INACTIVE_MODE,	INACTIVE_MODE,	TX_MODE,	RX_MODE,
 	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
 	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
 	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
 };
 
-static struct snd_platform_data am335x_evm_snd_data = {
+static struct snd_platform_data am335x_evm_snd_data1 = {
 	.tx_dma_offset	= 0x46400000,	/* McASP1 */
 	.rx_dma_offset	= 0x46400000,
 	.op_mode	= DAVINCI_MCASP_IIS_MODE,
-	.num_serializer	= ARRAY_SIZE(am335x_iis_serializer_direction),
+	.num_serializer	= ARRAY_SIZE(am335x_iis_serializer_direction1),
 	.tdm_slots	= 2,
-	.serial_dir	= am335x_iis_serializer_direction,
+	.serial_dir	= am335x_iis_serializer_direction1,
 	.asp_chan_q	= EVENTQ_2,
 	.version	= MCASP_VERSION_2,
 	.txnumevt	= 1,
@@ -340,11 +369,19 @@ static struct omap2_hsmmc_info mmc[] = {
 * Place all module init/setup function call below.
 */
 
-/* Setup McASP */
+/* Setup McASP 0 & 1 */
+
+static void mcasp0_init(int evm_id, int profile)
+{
+	/* Configure McASP */
+	am335x_register_mcasp0(&am335x_evm_snd_data0);
+	return;
+}
+
 static void mcasp1_init(int evm_id, int profile)
 {
 	/* Configure McASP */
-	am335x_register_mcasp(0, &am335x_evm_snd_data);
+	am335x_register_mcasp1(&am335x_evm_snd_data1);
 	return;
 }
 
@@ -453,7 +490,8 @@ static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 
 /* General Purpose EVM */
 static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
-	{mcasp1_pin_mux, mcasp1_init, (PROFILE_0 | PROFILE_3 | PROFILE_7) },
+	{mcasp1_pin_mux, mcasp1_init, (PROFILE_0 | PROFILE_3) },
+	{mcasp0_pin_mux, mcasp0_init, PROFILE_7},
 	{rgmii1_pin_mux, NULL, PROFILE_ALL},
 	{rgmii2_pin_mux, NULL, (PROFILE_1 | PROFILE_2 | PROFILE_4 |
 								PROFILE_6) },

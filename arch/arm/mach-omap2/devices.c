@@ -2176,9 +2176,43 @@ void __init ti81xx_register_mcasp(int id, struct snd_platform_data *pdata)
 
 #if defined(CONFIG_ARCH_AM335X)
 
-static struct resource am335x_mcasp_resource[] = {
+static struct resource am335x_mcasp0_resource[] = {
 	{
-		.name = "mcasp",
+		.name = "mcasp0",
+		.start = AM335X_ASP0_BASE,
+		.end = AM335X_ASP0_BASE + (SZ_1K * 12) - 1,
+		.flags = IORESOURCE_MEM,
+	},
+	/* TX event */
+	{
+		.start = AM335X_DMA_MCASP0_X,
+		.end = AM335X_DMA_MCASP0_X,
+		.flags = IORESOURCE_DMA,
+	},
+	/* RX event */
+	{
+		.start = AM335X_DMA_MCASP0_R,
+		.end = AM335X_DMA_MCASP0_R,
+		.flags = IORESOURCE_DMA,
+	},
+};
+
+static struct platform_device am335x_mcasp0_device = {
+	.name = "davinci-mcasp",
+	.id = 0,
+	.num_resources = ARRAY_SIZE(am335x_mcasp0_resource),
+	.resource = am335x_mcasp0_resource,
+};
+
+void __init am335x_register_mcasp0(struct snd_platform_data *pdata)
+{
+	am335x_mcasp0_device.dev.platform_data = pdata;
+	platform_device_register(&am335x_mcasp0_device);
+}
+
+static struct resource am335x_mcasp1_resource[] = {
+	{
+		.name = "mcasp1",
 		.start = AM335X_ASP1_BASE,
 		.end = AM335X_ASP1_BASE + (SZ_1K * 12) - 1,
 		.flags = IORESOURCE_MEM,
@@ -2197,17 +2231,17 @@ static struct resource am335x_mcasp_resource[] = {
 	},
 };
 
-static struct platform_device am335x_mcasp_device = {
+static struct platform_device am335x_mcasp1_device = {
 	.name = "davinci-mcasp",
 	.id = 1,
-	.num_resources = ARRAY_SIZE(am335x_mcasp_resource),
-	.resource = am335x_mcasp_resource,
+	.num_resources = ARRAY_SIZE(am335x_mcasp1_resource),
+	.resource = am335x_mcasp1_resource,
 };
 
-void __init am335x_register_mcasp(int id, struct snd_platform_data *pdata)
+void __init am335x_register_mcasp1(struct snd_platform_data *pdata)
 {
-	am335x_mcasp_device.dev.platform_data = pdata;
-	platform_device_register(&am335x_mcasp_device);
+	am335x_mcasp1_device.dev.platform_data = pdata;
+	platform_device_register(&am335x_mcasp1_device);
 }
 
 static struct resource am335x_lcdc_resources[] = {

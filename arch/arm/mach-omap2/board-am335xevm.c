@@ -292,6 +292,12 @@ static struct i2c_board_info __initdata am335x_i2c_boardinfo[] = {
 
 };
 
+static struct i2c_board_info __initdata am335x_i2c_boardinfo1[] = {
+	{
+		I2C_BOARD_INFO("tlv320aic3x", 0x1b),
+	}
+};
+
 static int cpld_reg_probe(struct i2c_client *client,
 	    const struct i2c_device_id *id)
 {
@@ -332,12 +338,11 @@ static void __init am335x_evm_i2c_init(void)
 
 	evm_init_cpld();
 
-	/*
-	* There are 3 instances of I2C in AM335x but instance one is
-	* connected to eeprom on EVM.
-	*/
 	omap_register_i2c_bus(1, 100, am335x_i2c_boardinfo,
 				ARRAY_SIZE(am335x_i2c_boardinfo));
+
+	omap_register_i2c_bus(2, 100, am335x_i2c_boardinfo1,
+		ARRAY_SIZE(am335x_i2c_boardinfo1));
 }
 
 #ifdef CONFIG_OMAP_MUX
