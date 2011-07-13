@@ -138,7 +138,13 @@ void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config)
 	* configure Pin Mux, Clock setup & register devices.
 	*/
 
-	am335x_configure_evm_devices(IND_AUT_MTR_EVM, prof_sel);
+	/* Only Profile 0 is supported */
+	if (prof_sel != PROFILE_0) {
+		pr_err("AM335X: Only Profile 0 is supported\n");
+		return;
+	}
+
+	am335x_configure_evm_devices(IND_AUT_MTR_EVM, PROFILE_0);
 }
 
 void setup_ip_phone_evm(struct eeprom_config *evm_config)
