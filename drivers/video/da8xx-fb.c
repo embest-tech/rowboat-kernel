@@ -484,7 +484,7 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
 		width &= 0x3f0;
 	} else {
 		/*
-		 * 0x7F in bits 3..9 gives max horizontal resolution = 2048
+		 * 0x7F in bits 4..10 gives max horizontal resolution = 2048
 		 * pixels.
 		 */
 		width &= 0x7f0;
@@ -495,7 +495,7 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
 	if (lcd_revision == LCD_VERSION_1) {
 		reg |= ((width >> 4) - 1) << 4;
 	} else {
-		width = ((width >> 4) - 1);
+		width = (width >> 4) - 1;
 		reg |= ((width & 0x3f) << 4) | ((width & 0x40) >> 3);
 	}
 	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
@@ -509,7 +509,7 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
 	/* Set bit 10 of Lines Per Pixel */
 	if (lcd_revision == LCD_VERSION_2) {
 		reg = lcdc_read(LCD_RASTER_TIMING_2_REG);
-		reg |= (((height - 1) & 0x40) << 20);
+		reg |= ((height - 1) & 0x400) << 16;
 		lcdc_write(reg, LCD_RASTER_TIMING_2_REG);
 	}
 
@@ -518,8 +518,10 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
 	if (raster_order)
 		reg |= LCD_RASTER_ORDER;
 
-	if (bpp == 24)
-		reg |= (LCD_TFT_MODE | LCD_V2_TFT_24BPP_MODE);
+	if (bpp == 32)
+		reg |= (LCD_TFT_MODE | LCD_V2_TFT_24BPP_MODE
+				| LCD_V2_TFT_24BPP_UNPACK);
+
 
 	lcdc_write(reg, LCD_RASTER_CTRL_REG);
 
@@ -528,7 +530,7 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
 	case 2:
 	case 4:
 	case 16:
-	case 24:
+	case 32:
 		par->palette_sz = 16 * 2;
 		break;
 
@@ -847,7 +849,7 @@ static int fb_check_var(struct fb_var_screeninfo *var,
 		var->transp.offset = 0;
 		var->transp.length = 0;
 		break;
-	case 24:
+	case 32:
 		var->transp.offset = 24;
 		var->transp.length = 8;
 		var->red.offset = 16;

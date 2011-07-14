@@ -2232,7 +2232,7 @@ config FB_DA8XX_CONSISTENT_DMA_SIZE
 	int "Consistent DMA memory size (MB)"
 	depends on (FB_DA8XX && MACH_AM335XEVM)
 	range 1 14
-	default 2
+	default 4
 	help
 	  Increase the DMA consistent memory size according to your video
 	  memory needs, for example if you want to use multiple planes.

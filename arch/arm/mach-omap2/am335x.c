@@ -319,8 +319,8 @@ struct spi_board_info am335x_spi1_slave_info[] = {
 
 static const struct display_panel disp_panel = {
 	WVGA,
-	24,
-	24,
+	32,
+	32,
 	COLOR_ACTIVE,
 };
 
@@ -329,7 +329,7 @@ static struct lcd_ctrl_config lcd_cfg = {
 	.ac_bias		= 255,
 	.ac_bias_intrpt		= 0,
 	.dma_burst_sz		= 16,
-	.bpp			= 24,
+	.bpp			= 32,
 	.fdd			= 255,
 	.tft_alt_mode		= 0,
 	.stn_565_mode		= 0,
