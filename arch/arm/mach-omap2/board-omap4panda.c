@@ -785,10 +785,10 @@ static struct omap_board_mux board_mux[] __initdata = {
 #endif
 
 /* Dummy keypad to get compilation going for panda */
-/*void keyboard_mux_init(void)
+void keyboard_mux_init(void)
 {
     return;
-}*/
+}
 
 
 /*
