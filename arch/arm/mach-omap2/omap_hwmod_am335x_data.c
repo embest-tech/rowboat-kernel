@@ -543,7 +543,7 @@ static struct omap_hwmod_opt_clk gpio0_opt_clks[] = {
 
 /* gpio0 */
 static struct omap_hwmod am335x_gpio0_hwmod = {
-	.name		= "gpio0",
+	.name		= "gpio1",
 	.class		= &am335x_gpio_hwmod_class,
 	.mpu_irqs       = am335x_gpio0_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_gpio0_irqs),
@@ -578,7 +578,7 @@ static struct omap_hwmod_opt_clk gpio1_opt_clks[] = {
 
 /* gpio1 */
 static struct omap_hwmod am335x_gpio1_hwmod = {
-	.name		= "gpio1",
+	.name		= "gpio2",
 	.class		= &am335x_gpio_hwmod_class,
 	.mpu_irqs       = am335x_gpio1_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_gpio1_irqs),
@@ -613,7 +613,7 @@ static struct omap_hwmod_opt_clk gpio2_opt_clks[] = {
 
 /* gpio2 */
 static struct omap_hwmod am335x_gpio2_hwmod = {
-	.name		= "gpio2",
+	.name		= "gpio3",
 	.class		= &am335x_gpio_hwmod_class,
 	.mpu_irqs       = am335x_gpio2_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_gpio2_irqs),
@@ -648,7 +648,7 @@ static struct omap_hwmod_opt_clk gpio3_opt_clks[] = {
 
 /* gpio3 */
 static struct omap_hwmod am335x_gpio3_hwmod = {
-	.name		= "gpio3",
+	.name		= "gpio4",
 	.class		= &am335x_gpio_hwmod_class,
 	.mpu_irqs       = am335x_gpio3_irqs,
 	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_gpio3_irqs),
