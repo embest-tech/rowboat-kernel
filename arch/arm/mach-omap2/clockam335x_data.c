@@ -1383,12 +1383,56 @@ static const struct clksel gpio_dbclk_mux_sel[] = {
 };
 
 static struct clk gpio_dbclk_mux_ck = {
-	.name		= "gpio_dbclk_mux_ck",
-	.parent		= &clk_rc32k_ck,
-	.ops		= &clkops_null,
-	.recalc		= &followparent_recalc,
+	.name           = "gpio_dbclk_mux_ck",
+	.parent         = &sys_clkin_ck,
+	.init           = &omap2_init_clksel_parent,
+	.clksel         = gpio_dbclk_mux_sel,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.clksel_reg     = AM335X_CLKSEL_GPIO0_DBCLK,
+	.clksel_mask    = TI81XX_CLKSEL_0_1_MASK,
+	.clkdm_name     = "l4_wkup_clkdm",
+	.recalc         = &omap2_clksel_recalc,
 };
 
+static struct clk gpio0_dbclk = {
+	.name           = "gpio0_dbclk",
+	.parent         = &gpio_dbclk_mux_ck,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg     = AM335X_CM_WKUP_GPIO0_CLKCTRL,
+	.enable_bit     = AM335X_OPTFCLKEN_GPIO0_GDBCLK_SHIFT,
+	.clkdm_name     = "l4_wkup_clkdm",
+	.recalc         = &followparent_recalc,
+};
+
+static struct clk gpio1_dbclk = {
+	.name           = "gpio1_dbclk",
+	.parent         = &clk_32khz_ck,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg     = AM335X_CM_PER_GPIO1_CLKCTRL,
+	.enable_bit     = AM335X_OPTFCLKEN_GPIO_1_GDBCLK_SHIFT,
+	.clkdm_name     = "l4ls_clkdm",
+	.recalc         = &followparent_recalc,
+};
+
+static struct clk gpio2_dbclk = {
+	.name           = "gpio2_dbclk",
+	.parent         = &clk_32khz_ck,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg     = AM335X_CM_PER_GPIO2_CLKCTRL,
+	.enable_bit     = AM335X_OPTFCLKEN_GPIO_2_GDBCLK_SHIFT,
+	.clkdm_name     = "l4ls_clkdm",
+	.recalc         = &followparent_recalc,
+};
+
+static struct clk gpio3_dbclk = {
+	.name           = "gpio3_dbclk",
+	.parent         = &clk_32khz_ck,
+	.ops            = &clkops_ti81xx_dflt_wait,
+	.enable_reg     = AM335X_CM_PER_GPIO3_CLKCTRL,
+	.enable_bit     = AM335X_OPTFCLKEN_GPIO_3_GDBCLK_SHIFT,
+	.clkdm_name     = "l4ls_clkdm",
+	.recalc         = &followparent_recalc,
+};
 
 static const struct clksel icss_ocp_clk_mux_sel[] = {
 	{ .parent = &sysclk_div_ck, .rates = div_1_0_rates },
@@ -1773,6 +1817,10 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"dpll_mpu_m2_ck",	&dpll_mpu_m2_ck,	CK_AM335X),
 	CLK(NULL,	"dpll_per_clkdcoldo_ck", &dpll_per_clkdcoldo_ck,	CK_AM335X),
 	CLK(NULL,	"gpio_dbclk_mux_ck",	&gpio_dbclk_mux_ck,	CK_AM335X),
+	CLK(NULL,       "gpio0_dbclk",          &gpio0_dbclk,       CK_AM335X),
+	CLK(NULL,       "gpio1_dbclk",          &gpio1_dbclk,       CK_AM335X),
+	CLK(NULL,       "gpio2_dbclk",          &gpio2_dbclk,       CK_AM335X),
+	CLK(NULL,       "gpio3_dbclk",          &gpio3_dbclk,       CK_AM335X),
 	CLK(NULL,	"icss_ocp_clk_mux_ck",	&icss_ocp_clk_mux_ck,	CK_AM335X),
 	CLK(NULL,	"lcd_clk_mux_ck",	&lcd_clk_mux_ck,	CK_AM335X),
 	CLK(NULL,	"mmc_clk",		&mmc_clk,	CK_AM335X),

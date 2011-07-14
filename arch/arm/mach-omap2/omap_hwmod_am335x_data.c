@@ -538,7 +538,7 @@ static struct omap_hwmod_ocp_if *am335x_gpio0_slaves[] = {
 };
 
 static struct omap_hwmod_opt_clk gpio0_opt_clks[] = {
-	{ .role = "dbclk", .clk = "gpio_dbclk_mux_ck" },
+	{ .role = "dbclk", .clk = "gpio0_dbclk" },
 };
 
 /* gpio0 */
@@ -572,6 +572,10 @@ static struct omap_hwmod_ocp_if *am335x_gpio1_slaves[] = {
 	&am335x_l4_per__gpio1,
 };
 
+static struct omap_hwmod_opt_clk gpio1_opt_clks[] = {
+	{ .role = "dbclk", .clk = "gpio1_dbclk" },
+};
+
 /* gpio1 */
 static struct omap_hwmod am335x_gpio1_hwmod = {
 	.name		= "gpio1",
@@ -584,6 +588,8 @@ static struct omap_hwmod am335x_gpio1_hwmod = {
 			.clkctrl_reg = AM335X_CM_PER_GPIO1_CLKCTRL,
 		},
 	},
+	.opt_clks       = gpio1_opt_clks,
+	.opt_clks_cnt   = ARRAY_SIZE(gpio1_opt_clks),
 	.dev_attr       = &gpio_dev_attr,
 	.slaves         = am335x_gpio1_slaves,
 	.slaves_cnt     = ARRAY_SIZE(am335x_gpio1_slaves),
@@ -601,6 +607,10 @@ static struct omap_hwmod_ocp_if *am335x_gpio2_slaves[] = {
 	&am335x_l4_per__gpio2,
 };
 
+static struct omap_hwmod_opt_clk gpio2_opt_clks[] = {
+	{ .role = "dbclk", .clk = "gpio2_dbclk" },
+};
+
 /* gpio2 */
 static struct omap_hwmod am335x_gpio2_hwmod = {
 	.name		= "gpio2",
@@ -613,6 +623,8 @@ static struct omap_hwmod am335x_gpio2_hwmod = {
 			.clkctrl_reg = AM335X_CM_PER_GPIO2_CLKCTRL,
 		},
 	},
+	.opt_clks       = gpio2_opt_clks,
+	.opt_clks_cnt   = ARRAY_SIZE(gpio2_opt_clks),
 	.dev_attr       = &gpio_dev_attr,
 	.slaves         = am335x_gpio2_slaves,
 	.slaves_cnt     = ARRAY_SIZE(am335x_gpio2_slaves),
@@ -630,6 +642,10 @@ static struct omap_hwmod_ocp_if *am335x_gpio3_slaves[] = {
 	&am335x_l4_per__gpio3,
 };
 
+static struct omap_hwmod_opt_clk gpio3_opt_clks[] = {
+	{ .role = "dbclk", .clk = "gpio3_dbclk" },
+};
+
 /* gpio3 */
 static struct omap_hwmod am335x_gpio3_hwmod = {
 	.name		= "gpio3",
@@ -642,6 +658,8 @@ static struct omap_hwmod am335x_gpio3_hwmod = {
 			.clkctrl_reg = AM335X_CM_PER_GPIO3_CLKCTRL,
 		},
 	},
+	.opt_clks       = gpio3_opt_clks,
+	.opt_clks_cnt   = ARRAY_SIZE(gpio3_opt_clks),
 	.dev_attr       = &gpio_dev_attr,
 	.slaves         = am335x_gpio3_slaves,
 	.slaves_cnt     = ARRAY_SIZE(am335x_gpio3_slaves),
