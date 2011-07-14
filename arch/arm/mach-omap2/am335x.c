@@ -514,6 +514,8 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{mcasp1_pin_mux, mcasp1_init, PROFILE_NONE},
 	{mmc0_pin_mux, mmc0_init, PROFILE_NONE},
+	{rgmii1_pin_mux, NULL, PROFILE_NONE},
+	{rgmii2_pin_mux, NULL, PROFILE_NONE},
 	{0, 0, 0},
 };
 
