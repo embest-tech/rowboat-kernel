@@ -56,19 +56,20 @@ struct evm_dev_cfg {
 
 /* Module pin mux for mcasp0 */
 static struct module_pinmux_config mcasp0_pin_mux[] = {
-	{"mcasp0_aclkx",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"mcasp0_fsx",		OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"mcasp0_axr0",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"mcasp0_axr1",		OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp0_aclkx.mcasp0_aclkx", OMAP_MUX_MODE0 |
+						AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp0_fsx.mcasp0_fsx", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp0_axr0.mcasp0_axr0", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"mcasp0_axr1.mcasp0_axr1", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
 	{0, 0},
 };
 
 /* Module pin mux for mcasp1 */
 static struct module_pinmux_config mcasp1_pin_mux[] = {
-	{"mcasp1_aclkx",	OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
-	{"mcasp1_fsx",		OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
-	{"mcasp1_axr2",		OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT},
-	{"mcasp1_axr3",		OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_crs.mcasp1_aclkx", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_rxerr.mcasp1_fsx", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_col.mcasp1_axr2", OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT},
+	{"mii1_refclk.mcasp1_axr3", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
 	{0, 0},
 };
 
