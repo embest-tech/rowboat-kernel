@@ -1176,7 +1176,7 @@ static struct omap_mux __initdata am335x_muxmodes[] = {
 		NULL, NULL, NULL, NULL),
 	_AM335X_MUXENTRY(LCD_DATA11, 0,
 		"lcd_data11", NULL, NULL, "mcasp0_ahclkr",
-		"mcasp0_axr2", NULL, NULL),
+		"mcasp0_axr2", NULL, NULL, NULL),
 	_AM335X_MUXENTRY(LCD_DATA12, 0,
 		"lcd_data12", NULL, NULL, "mcasp0_aclkr",
 		"mcasp0_axr2", NULL, NULL, NULL),
@@ -1193,7 +1193,7 @@ static struct omap_mux __initdata am335x_muxmodes[] = {
 		"gpmc_ad8", "lcd_data16", NULL, NULL,
 		NULL, NULL, NULL, NULL),
 	_AM335X_MUXENTRY(GPMC_AD9, 0,
-		"gpmc_ad9", "lcd_data17", NULL, NULL
+		"gpmc_ad9", "lcd_data17", NULL, NULL,
 		NULL, NULL, NULL, NULL),
 	_AM335X_MUXENTRY(GPMC_AD10, 0,
 		"gpmc_ad10", "lcd_data18", NULL, NULL,
