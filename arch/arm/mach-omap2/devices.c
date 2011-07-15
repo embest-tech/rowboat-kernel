@@ -1471,20 +1471,22 @@ static struct platform_device ti816x_edma_device = {
 
 static const s16 ti814x_dma_rsv_chans[][2] = {
 	/* (offset, number) */
-	/* { 0,  4}, */	/* !@@@ TODO replace as appropriate - Sundaram*/
-	{24,  4},
-	{30,  2},
-	{54,  3},
+	{0, 2},
+	{14, 2},
+	{26, 6},
+	{48, 4},
+	{56, 8},
 	{-1, -1}
 };
 
 static const s16 ti814x_dma_rsv_slots[][2] = {
 	/* (offset, number) */
-	/* { 0,  4}, */ /* !@@@ TODO replace as appropriate - Sundaram*/
-	{24,  4},
-	{30,  2},
-	{54,  3},
-	{128, 384},
+	{0, 2},
+	{14, 2},
+	{26, 6},
+	{48, 4},
+	{56, 8},
+	{64, 127},
 	{-1, -1}
 };
 
@@ -1500,16 +1502,16 @@ static const s8 ti814x_queue_tc_mapping[][2] = {
 
 static const s8 ti814x_queue_priority_mapping[][2] = {
 	/* {event queue no, Priority} */
-	{0, 4},	/* !@@@ TODO replace as appropriate - Sundaram*/
-	{1, 0},
-	{2, 5},
-	{3, 1},
+	{0, 0},
+	{1, 1},
+	{2, 2},
+	{3, 3},
 	{-1, -1}
 };
 
-static unsigned ti814x_xbar_event_mapping[][2] = {
+static struct event_to_channel_map ti814x_xbar_event_mapping[] = {
 	/* {xbar event no, Channel} */
-	{1, -1},	/* !@@@ TODO replace as appropriate - Sundaram*/
+	{1, -1},
 	{2, -1},
 	{3, -1},
 	{4, -1},
@@ -1556,32 +1558,48 @@ static unsigned ti814x_xbar_event_mapping[][2] = {
  *
  * Returns zero on success, else negative errno.
  */
-int map_xbar_event_to_channel(unsigned event, unsigned *channel, unsigned *xbar_event_mapping[])
+int map_xbar_event_to_channel(unsigned event, unsigned *channel,
+			struct event_to_channel_map *xbar_event_mapping)
 {
 	unsigned ctrl = 0;
+	unsigned xbar_evt_no = 0;
 	unsigned val = 0;
 	unsigned offset = 0;
+	unsigned mask = 0;
 
 	ctrl = EDMA_CTLR(event);
-	val = event - (edma_info[ctrl]->num_channels);
+	xbar_evt_no = event - (edma_info[ctrl]->num_channels);
 
 	if (event < edma_info[ctrl]->num_channels) {
 		*channel = event;
-	}
-	else if (event < edma_info[ctrl]->num_events){
-		*channel = xbar_event_mapping[val][1];
-		offset = (*channel)*4;
-		if (cpu_is_am335x())
-			__raw_writel(xbar_event_mapping[val][0],
-						AM335X_SCM_BASE +
-						TI81XX_SCM_BASE_EDMA + offset);
-		else
-			__raw_writel(xbar_event_mapping[val][0],
-						TI81XX_SCM_BASE +
-						TI81XX_SCM_BASE_EDMA + offset);
+	} else if (event < edma_info[ctrl]->num_events) {
+		*channel = xbar_event_mapping[xbar_evt_no].channel_no;
+		offset = (*channel)/4;
+		if (!cpu_is_am335x()) {
+			val = (unsigned)__raw_readl(TI81XX_CTRL_REGADDR(
+						TI81XX_SCM_BASE_EDMA + offset));
+			mask = (*channel)%4;
+			val = val & (~((0xFF) << mask));
+			val = val |
+				(xbar_event_mapping[xbar_evt_no].xbar_event_no
+								<< mask);
+			__raw_writel(val,
+				TI81XX_CTRL_REGADDR(TI81XX_SCM_BASE_EDMA
+								+ offset));
+		} else {
+			val = (unsigned)__raw_readl(AM335X_CTRL_REGADDR(
+						TI81XX_SCM_BASE_EDMA + offset));
+			mask = (*channel)%4;
+			val = val & (~((0xFF) << mask));
+			val = val |
+				(xbar_event_mapping[xbar_evt_no].xbar_event_no
+								<< mask);
+			__raw_writel(val,
+				AM335X_CTRL_REGADDR(TI81XX_SCM_BASE_EDMA
+								+ offset));
+		}
 		return 0;
-	}
-	else {
+	} else {
 		return -EINVAL;
 	}
 
@@ -1609,7 +1627,7 @@ static struct edma_soc_info ti814x_edma_info[] = {
 
 static struct platform_device ti814x_edma_device = {
 	.name		= "edma",
-	.id		= -1,	/* !@@@ TODO replace as appropriate - Sundaram*/
+	.id		= -1,
 	.dev = {
 		.platform_data = ti814x_edma_info,
 	},
@@ -1637,7 +1655,7 @@ static struct edma_soc_info am335x_edma_info[] = {
 
 static struct platform_device am335x_edma_device = {
 	.name		= "edma",
-	.id		= -1,	/* !@@@ TODO replace as appropriate - Sundaram*/
+	.id		= -1,
 	.dev = {
 		.platform_data = am335x_edma_info,
 	},
@@ -1686,14 +1704,14 @@ int __init ti81xx_register_edma(void)
         }
         clk_enable(edma_clk);
 
-		if (!cpu_is_am335x()) {
-			edma_clk = clk_get(NULL, "tptc3_ick");
-			if (IS_ERR(edma_clk)) {
-				printk(KERN_ERR "EDMA: Failed to get clock\n");
-				return -EBUSY;
-			}
-			clk_enable(edma_clk);
+	if (!cpu_is_am335x()) {
+		edma_clk = clk_get(NULL, "tptc3_ick");
+		if (IS_ERR(edma_clk)) {
+			printk(KERN_ERR "EDMA: Failed to get clock\n");
+			return -EBUSY;
 		}
+		clk_enable(edma_clk);
+	}
 
 	return platform_device_register(pdev);
 }

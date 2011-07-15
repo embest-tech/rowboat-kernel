@@ -1,28 +1,16 @@
 /*
- *  TI EDMA definitions	!@@@ TODO replace as appropriate - Sundaram
+ * TI EDMA3 definitions
  *
- *  Copyright (C) 2006-2009 Texas Instruments.
+ * Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
  *
- *  This program is free software; you can redistribute  it and/or modify it
- *  under  the terms of  the GNU General  Public License as published by the
- *  Free Software Foundation;  either version 2 of the  License, or (at your
- *  option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation version 2.
  *
- *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLIED
- *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
- *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
- *  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- *  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *  You should have received a copy of the  GNU General Public License along
- *  with this program; if not, write  to the Free Software Foundation, Inc.,
- *  675 Mass Ave, Cambridge, MA 02139, USA.
- *
+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+ * kind, whether express or implied; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 /*
@@ -51,7 +39,6 @@
  * by the TCs are thus shared by many logical channels.
  *
  * EDMA hardware also has a "QDMA" mechanism which is not currently
- * !@@@ TODO replace as appropriate - Sundaram
  * supported through this interface.  (DSP firmware uses it though.)
  */
 
@@ -136,6 +123,12 @@ enum sync_dimension {
 #define EDMA_MAX_CC               2
 
 
+/* Mapping of crossbar event numbers to actual DMA channels*/
+struct event_to_channel_map {
+	unsigned        xbar_event_no;
+	int		channel_no;
+};
+
 /* actual number of DMA channels and slots on this silicon */
 struct edma {
 	/* how many dma resources of each type */
@@ -171,7 +164,7 @@ struct edma {
 
 	unsigned	is_xbar;
 	unsigned	num_events;
-	unsigned	(*xbar_event_mapping)[2];
+	struct event_to_channel_map	*xbar_event_mapping;
 };
 
 extern struct edma *edma_info[EDMA_MAX_CC];
@@ -232,8 +225,9 @@ struct edma_soc_info {
 	const s8	(*queue_priority_mapping)[2];
 	unsigned	is_xbar;
 	unsigned	n_events;
-	unsigned	(*xbar_event_mapping)[2];
-	int		(*map_xbar_channel)(unsigned a, unsigned *b, unsigned *c[]);
+	struct event_to_channel_map    *xbar_event_mapping;
+	int		(*map_xbar_channel)(unsigned event, unsigned *channel,
+				struct event_to_channel_map *xbar_event_map);
 };
 
 #endif

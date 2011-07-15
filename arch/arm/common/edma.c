@@ -1,21 +1,16 @@
 /*
- * EDMA3 support for DaVinci	!@@@ TODO replace as appropriate - Sundaram
+ * EDMA3 Driver
  *
- * Copyright (C) 2006-2009 Texas Instruments.
+ * Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation version 2.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+ * kind, whether express or implied; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -24,7 +19,6 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/io.h>
-#include <linux/slab.h>
 
 #include <asm/hardware/edma.h>
 
@@ -100,7 +94,8 @@
 
 
 /*function that maps the cross bar events to channels */
-int (*xbar_event_to_channel_map)(unsigned a, unsigned *b, unsigned *c[]) = NULL;
+int (*xbar_event_to_channel_map)(unsigned event, unsigned *channel,
+			struct event_to_channel_map *xbar_event_map) = NULL;
 
 /*****************************************************************************/
 
@@ -460,37 +455,7 @@ static irqreturn_t dma_ccerr_handler(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
-/******************************************************************************
- *
- * Transfer controller error interrupt handlers
- *
- *****************************************************************************/
-
-#define tc_errs_handled	false	/* disabled as long as they're NOPs */
-
-static irqreturn_t dma_tc0err_handler(int irq, void *data)
-{
-	dev_dbg(data, "dma_tc0err_handler\n");
-	return IRQ_HANDLED;
-}
-
-static irqreturn_t dma_tc1err_handler(int irq, void *data)
-{
-	dev_dbg(data, "dma_tc1err_handler\n");
-	return IRQ_HANDLED;
-}
-
-static irqreturn_t dma_tc2err_handler(int irq, void *data)
-{
-	dev_dbg(data, "dma_tc2err_handler\n");
-	return IRQ_HANDLED;
-}
-
-static irqreturn_t dma_tc3err_handler(int irq, void *data)
-{
-	dev_dbg(data, "dma_tc3err_handler\n");
-	return IRQ_HANDLED;
-}
+/*-----------------------------------------------------------------------*/
 
 static int reserve_contiguous_slots(int ctlr, unsigned int id,
 				     unsigned int num_slots,
@@ -626,7 +591,9 @@ int edma_alloc_channel(int channel,
 			ctlr = EDMA_CTLR(channel);
 			channel = EDMA_CHAN_SLOT(channel);
 			if (xbar_event_to_channel_map) {
-				ret = xbar_event_to_channel_map(channel, &channel, edma_info[ctlr]->xbar_event_mapping);
+				ret = xbar_event_to_channel_map(channel,
+						&channel, edma_info[ctlr]->
+						xbar_event_mapping);
 				if (ret != 0)
 					return ret;
 			}
@@ -1522,44 +1489,14 @@ static int __init edma_probe(struct platform_device *pdev)
 
 		edma_info[j]->is_xbar = info[j].is_xbar;
 
-		if (edma_info[j]->is_xbar){
+		if (edma_info[j]->is_xbar) {
 			edma_info[j]->num_events = info[j].n_events;
-			edma_info[j]->xbar_event_mapping = info[j].xbar_event_mapping;
+			edma_info[j]->xbar_event_mapping =
+						info[j].xbar_event_mapping;
 			xbar_event_to_channel_map = info[j].map_xbar_channel;
 		}
 
 		arch_num_cc++;
-	}
-
-	if (tc_errs_handled) {
-		status = request_irq(TI81XX_IRQ_TPTC0, dma_tc0err_handler, 0,
-					"edma_tc0", &pdev->dev);
-		if (status < 0) {
-			dev_dbg(&pdev->dev, "request_irq %d failed --> %d\n",
-				TI81XX_IRQ_TPTC0, status);
-			return status;
-		}
-		status = request_irq(TI81XX_IRQ_TPTC1, dma_tc1err_handler, 0,
-					"edma_tc1", &pdev->dev);
-		if (status < 0) {
-			dev_dbg(&pdev->dev, "request_irq %d --> %d\n",
-				TI81XX_IRQ_TPTC1, status);
-			return status;
-		}
-		status = request_irq(TI81XX_IRQ_TPTC2, dma_tc2err_handler, 0,
-					"edma_tc2", &pdev->dev);
-		if (status < 0) {
-			dev_dbg(&pdev->dev, "request_irq %d failed --> %d\n",
-				TI81XX_IRQ_TPTC2, status);
-			return status;
-		}
-		status = request_irq(TI81XX_IRQ_TPTC3, dma_tc3err_handler, 0,
-					"edma_tc3", &pdev->dev);
-		if (status < 0) {
-			dev_dbg(&pdev->dev, "request_irq %d --> %d\n",
-				TI81XX_IRQ_TPTC3, status);
-			return status;
-		}
 	}
 
 	return 0;
@@ -1581,7 +1518,6 @@ fail1:
 	}
 	return status;
 }
-
 
 static struct platform_driver edma_driver = {
 	.driver.name	= "edma",
