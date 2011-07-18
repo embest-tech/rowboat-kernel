@@ -38,9 +38,6 @@
 #include <plat/omap4-keypad.h>
 #include <plat/asp.h>
 
-/* LCD controller similar DA8xx */
-#include <video/da8xx-fb.h>
-
 #include "mux.h"
 #include "control.h"
 
@@ -2261,6 +2258,8 @@ void __init am335x_register_mcasp1(struct snd_platform_data *pdata)
 	am335x_mcasp1_device.dev.platform_data = pdata;
 	platform_device_register(&am335x_mcasp1_device);
 }
+
+#define L4_PER_LCDC_PHYS	0x4830E000
 
 static struct resource am335x_lcdc_resources[] = {
 	[0] = { /* registers */

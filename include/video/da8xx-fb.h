@@ -12,8 +12,6 @@
 #ifndef DA8XX_FB_H
 #define DA8XX_FB_H
 
-#define L4_PER_LCDC_PHYS	0x4830E000
-
 enum panel_type {
 	QVGA = 0,
 	WVGA,
