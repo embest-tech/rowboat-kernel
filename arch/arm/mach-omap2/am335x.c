@@ -207,6 +207,8 @@ static struct module_pinmux_config mmc2_pin_mux[] = {
 	{"gpmc_ad12.mmc2_dat0",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
 	{"gpmc_clk.mmc2_clk",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
 	{"gpmc_csn3.mmc2_cmd",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"spi0_cs0.mmc2_sdwp",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"mcasp0_axr0.mmc2_sdcd", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
 	{0, 0},
 };
 
