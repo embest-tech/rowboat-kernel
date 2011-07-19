@@ -38,6 +38,9 @@
 #include <plat/omap4-keypad.h>
 #include <plat/asp.h>
 
+/* LCD controller similar DA8xx */
+#include <video/da8xx-fb.h>
+
 #include "mux.h"
 #include "control.h"
 
