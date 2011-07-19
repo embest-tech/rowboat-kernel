@@ -22,6 +22,7 @@
 
 #include <mach/hardware.h>
 #include <mach/irqs.h>
+#include <mach/board-am335xevm.h>
 #include <asm/mach-types.h>
 #include <asm/mach/map.h>
 #include <asm/pmu.h>
@@ -2018,6 +2019,11 @@ void am335x_cpsw_init(void)
 	am335x_cpsw_slaves[1].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
 	am335x_cpsw_slaves[1].mac_addr[4] = mac_lo & 0xFF;
 	am335x_cpsw_slaves[1].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
+
+	if (am335x_get_am335x_evm_id() == IND_AUT_MTR_EVM) {
+		am335x_cpsw_slaves[0].phy_id = "0:01";
+		am335x_cpsw_slaves[1].phy_id = "0:00";
+	}
 
 	platform_device_register(&am335x_cpsw_mdiodevice);
 	platform_device_register(&am335x_cpsw_device);

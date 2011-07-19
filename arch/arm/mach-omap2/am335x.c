@@ -114,6 +114,25 @@ static struct module_pinmux_config rgmii2_pin_mux[] = {
 	{0, 0},
 };
 
+/* Module pin mux for mii1 */
+static struct module_pinmux_config mii1_pin_mux[] = {
+	{"mii1_rxerr.mii1_rxerr", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_txen.mii1_txen", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"mii1_rxdv.mii1_rxdv", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_txd3.mii1_txd3", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"mii1_txd2.mii1_txd2", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"mii1_txd1.mii1_txd1", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"mii1_txd0.mii1_txd0", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"mii1_txclk.mii1_txclk", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_rxclk.mii1_rxclk", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_rxd3.mii1_rxd3", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_rxd2.mii1_rxd2", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_rxd1.mii1_rxd1", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mii1_rxd0.mii1_rxd0", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mdio_data.mdio_data", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mdio_clk.mdio_clk", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
+	{0, 0},
+};
 /* Module pin mux for spi0 */
 static struct module_pinmux_config spi0_pin_mux[] = {
 	{"spi0_sclk.spi0_sclk", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
@@ -513,6 +532,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 	{spi1_pin_mux, spi1_init, PROFILE_ALL},
 	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
+	{mii1_pin_mux, NULL, PROFILE_ALL},
 	{0, 0, 0},
 };
 

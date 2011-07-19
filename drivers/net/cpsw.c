@@ -59,9 +59,10 @@ do {								\
 #define CPDMA_RXCP_VER2		0x260
 
 #define CPSW_POLL_WEIGHT	64
-#define CPSW_PHY_ID		0x004dd000
 #define CPSW_MIN_PACKET_SIZE	60
 #define CPSW_MAX_PACKET_SIZE	(1500 + 14 + 4 + 4)
+
+#define CPSW_PHY_SPEED		1000
 
 #define CPSW_IRQ_QUIRK
 #ifdef CPSW_IRQ_QUIRK
@@ -522,12 +523,15 @@ static void cpsw_set_phy_config(struct cpsw_priv *priv, struct phy_device *phy)
 	miibus->write(miibus, phy_addr, MII_BMCR, val);
 	tmp = miibus->read(miibus, phy_addr, MII_BMCR);
 
-	tmp = miibus->read(miibus, phy_addr, MII_BMSR);
-	if (tmp & 0x1) {
-		val = miibus->read(miibus, phy_addr, MII_CTRL1000);
-		val |= BIT(9);
-		miibus->write(miibus, phy_addr, MII_CTRL1000, val);
-		tmp = miibus->read(miibus, phy_addr, MII_CTRL1000);
+	/* Enable gigabit support only if the speed is 1000Mbps */
+	if (phy->speed == CPSW_PHY_SPEED) {
+		tmp = miibus->read(miibus, phy_addr, MII_BMSR);
+		if (tmp & 0x1) {
+			val = miibus->read(miibus, phy_addr, MII_CTRL1000);
+			val |= BIT(9);
+			miibus->write(miibus, phy_addr, MII_CTRL1000, val);
+			tmp = miibus->read(miibus, phy_addr, MII_CTRL1000);
+		}
 	}
 
 	val = miibus->read(miibus, phy_addr, MII_ADVERTISE);
