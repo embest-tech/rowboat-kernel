@@ -409,7 +409,7 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 	}
 
 done:
-	if (!cpu_is_ti81xx()) {
+	if (!cpu_is_am335x()) {
 		for (i = 0; i < nr_hsmmc; i++)
 			kfree(hsmmc_data[i]);
 	} else {
