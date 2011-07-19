@@ -90,3 +90,5 @@ obj-$(CONFIG_JS_RTC)		+= js-rtc.o
 js-rtc-y = rtc.o
 
 obj-$(CONFIG_TI816X_PCIE_BOOTDRV) += ti816x_pcie_bootdrv.o
+
+obj-$(CONFIG_DCC_TTY)		+= dcc_tty.o
