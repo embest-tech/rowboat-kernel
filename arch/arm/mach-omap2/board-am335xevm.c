@@ -410,6 +410,72 @@ static struct module_pinmux_config nand_pin_mux[] = {
 	{0, 0},
 };
 
+/* Module pin mux for nor device */
+static struct module_pinmux_config nor_pin_mux[] = {
+	{"lcd_data0.gpmc_a0",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data1.gpmc_a1",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data2.gpmc_a2",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data3.gpmc_a3",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data4.gpmc_a4",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data5.gpmc_a5",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data6.gpmc_a6",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data7.gpmc_a7",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"gpmc_a8.gpmc_a8",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"gpmc_a9.gpmc_a9",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"gpmc_a10.gpmc_a10",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"gpmc_a11.gpmc_a11",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data8.gpmc_a12",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data9.gpmc_a13",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data10.gpmc_a14",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data11.gpmc_a15",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data12.gpmc_a16",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data13.gpmc_a17",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data14.gpmc_a18",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"lcd_data15.gpmc_a19",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
+		AM335X_PULL_DISA},
+	{"gpmc_a4.gpmc_a20",	OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT},
+	{"gpmc_a5.gpmc_a21",	OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT},
+	{"gpmc_a6.gpmc_a22",	OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT},
+	{"gpmc_ad0.gpmc_ad0",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad1.gpmc_ad1",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad2.gpmc_ad2",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad3.gpmc_ad3",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad4.gpmc_ad4",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad5.gpmc_ad5",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad6.gpmc_ad6",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad7.gpmc_ad7",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad8.gpmc_ad8",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad9.gpmc_ad9",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad10.gpmc_ad10",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad11.gpmc_ad11",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad12.gpmc_ad12",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad13.gpmc_ad13",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad14.gpmc_ad14",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad15.gpmc_ad15",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_csn0.gpmc_csn0",	OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_oen_ren.gpmc_oen_ren",	OMAP_MUX_MODE0 |
+						AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_wen.gpmc_wen",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_wait0.gpmc_wait0", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"lcd_ac_bias_en.gpio2_25", OMAP_MUX_MODE5 | AM335X_PIN_INPUT},
+	{0, 0},
+};
+
 /*
 * Module Platform data.
 * Place all Platform specific data below.
@@ -786,6 +852,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{mmc2_pin_mux, mmc2_init, PROFILE_4},
 	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
 	{nand_pin_mux, evm_nand_init, (PROFILE_ALL & ~PROFILE_2 & ~PROFILE_3)},
+	{nor_pin_mux, NULL, PROFILE_3},
 	{0, 0, 0},
 };
 
