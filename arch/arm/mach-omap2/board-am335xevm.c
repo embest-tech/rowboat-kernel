@@ -25,6 +25,7 @@
 #include <linux/platform_device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/input/ti_tscadc.h>
 
 #include <mach/hardware.h>
 #include <mach/board-am335xevm.h>
@@ -373,6 +374,17 @@ static struct module_pinmux_config mmc2_pin_mux[] = {
 	{0, 0},
 };
 
+/* Module pin mux for TSC */
+static struct module_pinmux_config tsc_pin_mux[] = {
+	{"ain0.ain0",           OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"ain1.ain1",           OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"ain2.ain2",           OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"ain3.ain3",           OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"vrefp.vrefp",         OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"vrefn.vrefn",         OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{0, 0},
+};
+
 /*
 * Module Platform data.
 * Place all Platform specific data below.
@@ -530,6 +542,33 @@ static struct omap2_hsmmc_info mmc[] = {
 	{}      /* Terminator */
 };
 
+static struct resource tsc_resources[] = {
+	[0] = {
+		.start  = AM335X_TSC_BASE,
+		.end    = AM335X_TSC_BASE + SZ_8K - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start  = AM335X_IRQ_ADC_GEN,
+		.end    = AM335X_IRQ_ADC_GEN,
+		.flags  = IORESOURCE_IRQ,
+	},
+};
+
+struct tsc_data am335x_touchscreen_data = {
+	.wires = 4,
+};
+
+static struct platform_device tsc_device = {
+	.name = "tsc",
+	.id = -1,
+	.dev = {
+		.platform_data = &am335x_touchscreen_data,
+	},
+	.num_resources = ARRAY_SIZE(tsc_resources),
+	.resource       = tsc_resources,
+};
+
 /*
 * Module Initialization/setup function.
 * Place all module init/setup function call below.
@@ -647,6 +686,14 @@ static void mmc0_init(int evm_id, int profile)
 	return;
 }
 
+static void am335x_tsc_init(int evm_id, int profile)
+{
+	int err;
+	err = platform_device_register(&tsc_device);
+	if (err)
+		pr_err("failed to register touchscreen device\n");
+}
+
 /* Low-Cost EVM */
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_NONE},
@@ -663,6 +710,8 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 								PROFILE_6) },
 	{spi0_pin_mux, spi0_init, PROFILE_2},
 	{lcdc_pin_mux, lcdc_init, (PROFILE_0 | PROFILE_1 | PROFILE_2
+			| PROFILE_7) },
+	{tsc_pin_mux, am335x_tsc_init, (PROFILE_0 | PROFILE_1 | PROFILE_2 
 			| PROFILE_7) },
 	{mmc1_pin_mux, mmc1_init, PROFILE_2},
 	{mmc2_pin_mux, mmc2_init, PROFILE_4},
@@ -685,6 +734,7 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_NONE},
 	{rgmii2_pin_mux, NULL, PROFILE_NONE},
 	{lcdc_pin_mux, lcdc_init, PROFILE_NONE},
+	{tsc_pin_mux, am335x_tsc_init, PROFILE_NONE},
 	{0, 0, 0},
 };
 
