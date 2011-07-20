@@ -380,16 +380,14 @@ void __init omap2_init_common_infrastructure(void)
 		omap3xxx_powerdomains_init();
 		omap2_clockdomains_init();
 		omap3xxx_hwmod_init();
-	} else if (cpu_is_ti81xx()) {
-		if (cpu_is_am335x()) {
-			am335x_powerdomains_init();
-			omap2_clockdomains_init();
-			am335x_hwmod_init();
-		} else {
-			ti81xx_powerdomains_init();
-			omap2_clockdomains_init();
-			ti81xx_hwmod_init();
-		}
+	} else if (cpu_is_am335x()) {
+		am335x_powerdomains_init();
+		omap2_clockdomains_init();
+		am335x_hwmod_init();
+	} else if ((cpu_is_ti816x()) || (cpu_is_ti814x())) {
+		ti81xx_powerdomains_init();
+		omap2_clockdomains_init();
+		ti81xx_hwmod_init();
 	} else if (cpu_is_omap44xx()) {
 		omap44xx_powerdomains_init();
 		omap44xx_clockdomains_init();

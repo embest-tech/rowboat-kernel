@@ -1028,25 +1028,23 @@ void __init omap2_init_mmc(struct omap_mmc_platform_data **mmc_data,
 				irq += OMAP44XX_IRQ_GIC_START;
 			size = OMAP4_HSMMC_SIZE;
 			name = "mmci-omap-hs";
-		} else if (cpu_is_ti81xx()) {
-
-			if (!cpu_is_am335x())
-				size = TI81XX_HSMMC_SIZE;
-			else {
-				switch (i) {
-				case 0:
-				case 1:
-					/* MMC0/1 = 4KB*/
-					size = AM335X_HSMMC0_1_SIZE;
-					break;
-
-				case 2:
-					/* MMC2 = 64KB*/
-					size = AM335X_HSMMC2_SIZE;
-					break;
-				}
-			}
+		} else if ((cpu_is_ti816x()) || (cpu_is_ti814x())) {
+			size = TI81XX_HSMMC_SIZE;
 			name = "mmci-omap-hs";
+		} else if (cpu_is_am335x()) {
+			name = "mmci-omap-hs";
+			switch (i) {
+			case 0:
+			case 1:
+				/* MMC0/1 = 4KB*/
+				size = AM335X_HSMMC0_1_SIZE;
+				break;
+
+			case 2:
+				/* MMC2 = 64KB*/
+				size = AM335X_HSMMC2_SIZE;
+				break;
+			}
 		} else {
 			size = OMAP3_HSMMC_SIZE;
 			name = "mmci-omap-hs";

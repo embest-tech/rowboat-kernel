@@ -819,22 +819,22 @@ int __init omap_dm_timer_init(void)
 		dm_timer_count = omap4_dm_timer_count;
 		dm_source_names = omap4_dm_source_names;
 		dm_source_clocks = omap4_dm_source_clocks;
-	} else if (cpu_is_ti81xx()) {
-		dm_timers = ti81xx_dm_timers;
+	} else if (cpu_is_ti816x()) {
 		/* TI816X has difference clock sources and 1 timer less */
-		if (cpu_is_ti816x()) {
-			dm_timer_count = ti81xx_dm_timer_count - 1;
-			dm_source_names = ti816x_dm_source_names;
-			dm_source_clocks = ti816x_dm_source_clocks;
-		} else if (cpu_is_am335x()) {
-			dm_timer_count = ti81xx_dm_timer_count - 1;
-			dm_source_names = am335x_dm_source_names;
-			dm_source_clocks = am335x_dm_source_clocks;
-		} else {
-			dm_timer_count = ti81xx_dm_timer_count;
-			dm_source_names = ti814x_dm_source_names;
-			dm_source_clocks = ti814x_dm_source_clocks;
-		}
+		dm_timer_count = ti81xx_dm_timer_count - 1;
+		dm_source_names = ti816x_dm_source_names;
+		dm_source_clocks = ti816x_dm_source_clocks;
+		dm_timers = ti81xx_dm_timers;
+	} else if (cpu_is_am335x()) {
+		dm_timer_count = ti81xx_dm_timer_count - 1;
+		dm_source_names = am335x_dm_source_names;
+		dm_source_clocks = am335x_dm_source_clocks;
+		dm_timers = ti81xx_dm_timers;
+	} else if (cpu_is_ti814x()) {
+		dm_timer_count = ti81xx_dm_timer_count;
+		dm_source_names = ti814x_dm_source_names;
+		dm_source_clocks = ti814x_dm_source_clocks;
+		dm_timers = ti81xx_dm_timers;
 	}
 
 	if (cpu_class_is_omap2())
