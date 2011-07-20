@@ -385,6 +385,29 @@ static struct module_pinmux_config tsc_pin_mux[] = {
 	{0, 0},
 };
 
+/* Module pin mux for nand */
+static struct module_pinmux_config nand_pin_mux[] = {
+	{"gpmc_ad0.gpmc_ad0",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad1.gpmc_ad1",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad2.gpmc_ad2",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad3.gpmc_ad3",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad4.gpmc_ad4",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad5.gpmc_ad5",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad6.gpmc_ad6",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad7.gpmc_ad7",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_wait0.gpmc_wait0", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_wpn.gpmc_wpn",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_csn0.gpmc_csn0",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_advn_ale.gpmc_advn_ale",	OMAP_MUX_MODE0 |
+						AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_oen_ren.gpmc_oen_ren",	OMAP_MUX_MODE0 |
+						AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_wen.gpmc_wen", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_ben0_cle.gpmc_ben0_cle",	OMAP_MUX_MODE0 |
+						AM335X_PIN_OUTPUT_PULLUP},
+	{0, 0},
+};
+
 /*
 * Module Platform data.
 * Place all Platform specific data below.
@@ -698,6 +721,7 @@ static void am335x_tsc_init(int evm_id, int profile)
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_NONE},
 	{mmc0_pin_mux, mmc0_init, PROFILE_NONE},
+	{nand_pin_mux, NULL, PROFILE_NONE},
 	{0, 0, 0},
 };
 
@@ -716,6 +740,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{mmc1_pin_mux, mmc1_init, PROFILE_2},
 	{mmc2_pin_mux, mmc2_init, PROFILE_4},
 	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
+	{nand_pin_mux, NULL, (PROFILE_ALL & ~PROFILE_2 & ~PROFILE_3)},
 	{0, 0, 0},
 };
 
@@ -724,6 +749,7 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 	{spi1_pin_mux, spi1_init, PROFILE_ALL},
 	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
 	{mii1_pin_mux, NULL, PROFILE_ALL},
+	{nand_pin_mux, NULL, PROFILE_ALL},
 	{0, 0, 0},
 };
 
@@ -735,6 +761,7 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{rgmii2_pin_mux, NULL, PROFILE_NONE},
 	{lcdc_pin_mux, lcdc_init, PROFILE_NONE},
 	{tsc_pin_mux, am335x_tsc_init, PROFILE_NONE},
+	{nand_pin_mux, NULL, PROFILE_NONE},
 	{0, 0, 0},
 };
 
