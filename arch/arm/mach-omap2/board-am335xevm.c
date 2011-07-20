@@ -21,6 +21,7 @@
 #include <linux/spi/spi.h>
 #include <linux/spi/flash.h>
 #include <linux/mtd/mtd.h>
+#include <linux/mtd/nand.h>
 #include <linux/mtd/partitions.h>
 #include <linux/platform_device.h>
 #include <linux/clk.h>
@@ -43,6 +44,7 @@
 #include <plat/asp.h>
 #include <plat/mmc.h>
 
+#include "board-flash.h"
 #include "mux.h"
 #include "hsmmc.h"
 
@@ -717,11 +719,54 @@ static void am335x_tsc_init(int evm_id, int profile)
 		pr_err("failed to register touchscreen device\n");
 }
 
+/* NAND partition information */
+static struct mtd_partition am335x_nand_partitions[] = {
+/* All the partition sizes are listed in terms of NAND block size */
+	{
+		.name           = "U-Boot-min",
+		.offset         = 0,    /* Offset = 0x0 */
+		.size           = SZ_128K,
+		.mask_flags     = MTD_WRITEABLE,        /* force read-only */
+	},
+	{
+		.name           = "U-Boot",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x128K */
+		.size           = 18 * SZ_128K,
+		.mask_flags     = MTD_WRITEABLE,        /* force read-only */
+	},
+	{
+		.name           = "U-Boot Env",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x260000 */
+		.size           = 1 * SZ_128K,
+	},
+	{
+		.name           = "Kernel",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x280000 */
+		.size           = 34 * SZ_128K,
+	},
+	{
+		.name           = "File System",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x6C0000 */
+		.size           = 1601 * SZ_128K,
+	},
+	{
+		.name           = "Reserved",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0xCEE0000 */
+		.size           = MTDPART_SIZ_FULL,
+	},
+};
+
+static void evm_nand_init(int evm_id, int profile)
+{
+	board_nand_init(am335x_nand_partitions,
+		ARRAY_SIZE(am335x_nand_partitions), 0, 0);
+}
+
 /* Low-Cost EVM */
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_NONE},
 	{mmc0_pin_mux, mmc0_init, PROFILE_NONE},
-	{nand_pin_mux, NULL, PROFILE_NONE},
+	{nand_pin_mux, evm_nand_init, PROFILE_NONE},
 	{0, 0, 0},
 };
 
@@ -740,7 +785,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{mmc1_pin_mux, mmc1_init, PROFILE_2},
 	{mmc2_pin_mux, mmc2_init, PROFILE_4},
 	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
-	{nand_pin_mux, NULL, (PROFILE_ALL & ~PROFILE_2 & ~PROFILE_3)},
+	{nand_pin_mux, evm_nand_init, (PROFILE_ALL & ~PROFILE_2 & ~PROFILE_3)},
 	{0, 0, 0},
 };
 
@@ -749,7 +794,7 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 	{spi1_pin_mux, spi1_init, PROFILE_ALL},
 	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
 	{mii1_pin_mux, NULL, PROFILE_ALL},
-	{nand_pin_mux, NULL, PROFILE_ALL},
+	{nand_pin_mux, evm_nand_init, PROFILE_ALL},
 	{0, 0, 0},
 };
 
@@ -761,7 +806,7 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{rgmii2_pin_mux, NULL, PROFILE_NONE},
 	{lcdc_pin_mux, lcdc_init, PROFILE_NONE},
 	{tsc_pin_mux, am335x_tsc_init, PROFILE_NONE},
-	{nand_pin_mux, NULL, PROFILE_NONE},
+	{nand_pin_mux, evm_nand_init, PROFILE_NONE},
 	{0, 0, 0},
 };
 
