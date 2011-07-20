@@ -828,6 +828,52 @@ static void evm_nand_init(int evm_id, int profile)
 		ARRAY_SIZE(am335x_nand_partitions), 0, 0);
 }
 
+/* NOR partition information */
+static struct mtd_partition am335x_nor_partitions[] = {
+	/*(U-Boot min) in the first sector */
+	{
+		.name		= "U-Boot-min",
+		.offset		= 0,
+		.size		= SZ_128K,
+		.mask_flags	= MTD_WRITEABLE, /* force read-only */
+	},
+
+	/* U-Boot full */
+	{
+		.name		= "U-Boot",
+		.offset		= MTDPART_OFS_APPEND,
+		.size		= 2 * SZ_128K,
+		.mask_flags	= 0,
+	},
+	/* bootloader params */
+	{
+		.name		= "env",
+		.offset		= MTDPART_OFS_APPEND,
+		.size		= SZ_128K,
+		.mask_flags	= 0,
+	},
+	/* kernel */
+	{
+		.name		= "kernel",
+		.offset		= MTDPART_OFS_APPEND,
+		.size		= 2 * SZ_2M,
+		.mask_flags	= 0
+	},
+	/* file system */
+	{
+		.name		= "filesystem",
+		.offset		= MTDPART_OFS_APPEND,
+		.size		= MTDPART_SIZ_FULL,
+		.mask_flags	= 0
+	},
+};
+
+static void evm_nor_init(int evm_id, int profile)
+{
+	board_nor_init(am335x_nor_partitions,
+		ARRAY_SIZE(am335x_nor_partitions), 0);
+}
+
 /* Low-Cost EVM */
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_NONE},
@@ -852,7 +898,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{mmc2_pin_mux, mmc2_init, PROFILE_4},
 	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
 	{nand_pin_mux, evm_nand_init, (PROFILE_ALL & ~PROFILE_2 & ~PROFILE_3)},
-	{nor_pin_mux, NULL, PROFILE_3},
+	{nor_pin_mux, evm_nor_init, PROFILE_3},
 	{0, 0, 0},
 };
 
