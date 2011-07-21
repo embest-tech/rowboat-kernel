@@ -20,6 +20,7 @@
 #include <linux/phy.h>
 #include <linux/spi/spi.h>
 #include <linux/spi/flash.h>
+#include <linux/gpio.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/partitions.h>
@@ -47,6 +48,8 @@
 #include "board-flash.h"
 #include "mux.h"
 #include "hsmmc.h"
+
+#define AM335X_LCD_BL_PIN	GPIO_TO_PIN(0, 7)
 
 /* module pin mux structure */
 struct module_pinmux_config {
@@ -342,6 +345,7 @@ static struct module_pinmux_config lcdc_pin_mux[] = {
 	{"lcd_hsync.lcd_hsync",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"lcd_pclk.lcd_pclk",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"lcd_ac_bias_en.lcd_ac_bias_en", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"ecap0_in_pwm0_out.gpio0_7", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT},
 	{0, 0},
 };
 
@@ -767,6 +771,14 @@ error0:
 static void lcdc_init(int evm_id, int profile)
 {
 	struct platform_device *lcdc_device;
+	int status;
+
+	status = gpio_request(AM335X_LCD_BL_PIN, "lcd bl\n");
+	if (status < 0)
+		pr_warn("Failed to request gpio for LCD backlight\n");
+
+	gpio_direction_output(AM335X_LCD_BL_PIN, 1);
+
 	lcdc_device = am33xx_register_lcdc(&TFC_S9700RTWV35TR_01B_pdata);
 	if (lcdc_device != NULL)
 		conf_disp_pll(lcdc_device);

@@ -3,3 +3,6 @@
  */
 
 #include <plat/gpio.h>
+
+/* Convert GPIO signal to GPIO pin number */
+#define GPIO_TO_PIN(bank, gpio)	(32 * (bank) + (gpio))
