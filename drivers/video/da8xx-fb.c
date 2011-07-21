@@ -31,6 +31,7 @@
 #include <linux/cpufreq.h>
 #include <linux/console.h>
 #include <linux/slab.h>
+#include <asm/mach-types.h>
 #include <video/da8xx-fb.h>
 
 #define DRIVER_NAME "da8xx_lcdc"
@@ -1123,7 +1124,7 @@ static int __init fb_probe(struct platform_device *device)
 		goto err_request_mem;
 	}
 
-	if (cpu_is_am335x()) {
+	if (machine_is_am335xevm()) {
 		fb_l3ick = clk_get(&device->dev, "lcdc_ick_l3_clk");
 		if (IS_ERR(fb_l3ick)) {
 			dev_err(&device->dev, "Can not get l3 interface"
