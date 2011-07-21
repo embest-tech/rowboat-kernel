@@ -44,4 +44,7 @@ u32 am335x_get_baseboard_rev(void);
 
 int am335x_configure_evm_devices(int evm_id, int profile);
 
+struct platform_device *am33xx_register_lcdc(
+		struct da8xx_lcdc_platform_data *pdata);
+
 #endif

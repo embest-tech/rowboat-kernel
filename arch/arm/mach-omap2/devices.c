@@ -20,6 +20,9 @@
 #include <linux/cpsw.h>
 #include <linux/ahci_platform.h>
 
+/* LCD controller similar DA8xx */
+#include <video/da8xx-fb.h>
+
 #include <mach/hardware.h>
 #include <mach/irqs.h>
 #include <mach/board-am335xevm.h>
@@ -38,9 +41,6 @@
 #include <plat/omap_device.h>
 #include <plat/omap4-keypad.h>
 #include <plat/asp.h>
-
-/* LCD controller similar DA8xx */
-#include <video/da8xx-fb.h>
 
 #include "mux.h"
 #include "control.h"

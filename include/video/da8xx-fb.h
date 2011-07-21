@@ -101,8 +101,5 @@ struct lcd_sync_arg {
 #define FBIPUT_HSYNC		_IOW('F', 9, int)
 #define FBIPUT_VSYNC		_IOW('F', 10, int)
 
-struct platform_device *am33xx_register_lcdc(
-		struct da8xx_lcdc_platform_data *pdata);
-
 #endif  /* ifndef DA8XX_FB_H */
 

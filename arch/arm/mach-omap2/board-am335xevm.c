@@ -28,15 +28,15 @@
 #include <linux/err.h>
 #include <linux/input/ti_tscadc.h>
 
+/* LCD controller is similar to DA850 */
+#include <video/da8xx-fb.h>
+
 #include <mach/hardware.h>
 #include <mach/board-am335xevm.h>
 
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
 #include <asm/mach/map.h>
-
-/* LCD controller is similar to DA850 */
-#include <video/da8xx-fb.h>
 
 #include <plat/irqs.h>
 #include <plat/board.h>
