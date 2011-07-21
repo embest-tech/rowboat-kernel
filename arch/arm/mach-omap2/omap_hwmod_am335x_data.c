@@ -68,6 +68,8 @@ static struct omap_hwmod am335x_gpio0_hwmod;
 static struct omap_hwmod am335x_gpio1_hwmod;
 static struct omap_hwmod am335x_gpio2_hwmod;
 static struct omap_hwmod am335x_gpio3_hwmod;
+static struct omap_hwmod am335x_i2c1_hwmod;
+static struct omap_hwmod am335x_i2c2_hwmod;
 
 	/*
 	* Interconnects hwmod structures
@@ -114,6 +116,23 @@ static struct omap_hwmod am335x_l3slow_hwmod = {
 	.slaves         = am335x_l3_slow_slaves,
 	.slaves_cnt     = ARRAY_SIZE(am335x_l3_slow_slaves),
 	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
+};
+
+/* L4 PER -> I2C2 */
+static struct omap_hwmod_addr_space am335x_i2c2_addr_space[] = {
+	{
+		.pa_start       = 0x4802A000,
+		.pa_end         = 0x4802A000 + SZ_4K - 1,
+		.flags          = ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335_l4_per_i2c2 = {
+	.master         = &am335x_l4per_hwmod,
+	.slave          = &am335x_i2c2_hwmod,
+	.addr           = am335x_i2c2_addr_space,
+	.addr_cnt       = ARRAY_SIZE(am335x_i2c2_addr_space),
+	.user           = OCP_USER_MPU,
 };
 
 /* L4 PER -> GPIO2 */
@@ -188,6 +207,24 @@ static struct omap_hwmod am335x_l4per_hwmod = {
 	.slaves_cnt     = ARRAY_SIZE(am335x_l4_per_slaves),
 	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
+
+/* L4 WKUP -> I2C1 */
+static struct omap_hwmod_addr_space am335x_i2c1_addr_space[] = {
+	{
+		.pa_start       = 0x44E0B000,
+		.pa_end         = 0x44E0B000 + SZ_4K - 1,
+		.flags          = ADDR_MAP_ON_INIT | ADDR_TYPE_RT,
+	},
+};
+
+static struct omap_hwmod_ocp_if am335x_l4_wkup_i2c1 = {
+	.master         = &am335x_l4wkup_hwmod,
+	.slave          = &am335x_i2c1_hwmod,
+	.addr           = am335x_i2c1_addr_space,
+	.addr_cnt       = ARRAY_SIZE(am335x_i2c1_addr_space),
+	.user           = OCP_USER_MPU,
+};
+
 
 /* L4 WKUP -> GPIO1 */
 static struct omap_hwmod_addr_space am335x_gpio0_addrs[] = {
@@ -685,56 +722,72 @@ static struct omap_hwmod am335x_gpmc_hwmod = {
 
 /* 'i2c' class */
 
-static struct omap_hwmod_class am335x_i2c_hwmod_class = {
+static struct omap_hwmod_class i2c_class = {
 	.name = "i2c",
 };
 
-/* i2c0 */
-static struct omap_hwmod_irq_info am335x_i2c0_irqs[] = {
+/* I2C1 */
+static struct omap_hwmod_irq_info i2c1_mpu_irqs[] = {
 	{ .irq = 70 + AM335X_IRQ_GIC_START },
 };
 
-static struct omap_hwmod am335x_i2c0_hwmod = {
-	.name		= "i2c0",
-	.class		= &am335x_i2c_hwmod_class,
-	.mpu_irqs       = am335x_i2c0_irqs,
-	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_i2c0_irqs),
-	.main_clk	= "i2c0_fck",
-	.prcm = {
+static struct omap_hwmod_dma_info i2c1_edma_reqs[] = {
+	{ .name = "tx", .dma_req = 0, },
+	{ .name = "rx", .dma_req = 0, },
+};
+
+static struct omap_hwmod_ocp_if *am335x_i2c1_slaves[] = {
+	&am335x_l4_wkup_i2c1,
+};
+
+static struct omap_hwmod am335x_i2c1_hwmod = {
+	.name           = "i2c1",
+	.mpu_irqs       = i2c1_mpu_irqs,
+	.mpu_irqs_cnt   = ARRAY_SIZE(i2c1_mpu_irqs),
+	.sdma_reqs      = i2c1_edma_reqs,
+	.sdma_reqs_cnt  = ARRAY_SIZE(i2c1_edma_reqs),
+	.main_clk       = "i2c1_fck",
+	.prcm           = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_WKUP_I2C0_CLKCTRL,
 		},
 	},
+	.slaves         = am335x_i2c1_slaves,
+	.slaves_cnt     = ARRAY_SIZE(am335x_i2c1_slaves),
+	.class          = &i2c_class,
+	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
-/* i2c1 */
-static struct omap_hwmod_irq_info am335x_i2c1_irqs[] = {
-	{ .irq = 71 + AM335X_IRQ_GIC_START },
+/* I2C2 */
+static struct omap_hwmod_irq_info i2c2_mpu_irqs[] = {
+	{ .irq = 71 + AM335X_IRQ_GIC_START, },
 };
 
-static struct omap_hwmod am335x_i2c1_hwmod = {
-	.name		= "i2c1",
-	.class		= &am335x_i2c_hwmod_class,
-	.mpu_irqs       = am335x_i2c1_irqs,
-	.mpu_irqs_cnt   = ARRAY_SIZE(am335x_i2c1_irqs),
-	.main_clk	= "i2c_clk",
-	.prcm = {
+static struct omap_hwmod_dma_info i2c2_edma_reqs[] = {
+	{ .name = "tx", .dma_req = 0, },
+	{ .name = "rx", .dma_req = 0, },
+};
+
+static struct omap_hwmod_ocp_if *am335x_i2c2_slaves[] = {
+	&am335_l4_per_i2c2,
+};
+
+static struct omap_hwmod am335x_i2c2_hwmod = {
+	.name           = "i2c2",
+	.mpu_irqs       = i2c2_mpu_irqs,
+	.mpu_irqs_cnt   = ARRAY_SIZE(i2c2_mpu_irqs),
+	.sdma_reqs      = i2c2_edma_reqs,
+	.sdma_reqs_cnt  = ARRAY_SIZE(i2c2_edma_reqs),
+	.main_clk       = "i2c2_fck",
+	.prcm           = {
 		.omap4 = {
 			.clkctrl_reg = AM335X_CM_PER_I2C1_CLKCTRL,
 		},
 	},
-};
-
-/* i2c2 */
-static struct omap_hwmod am335x_i2c2_hwmod = {
-	.name		= "i2c2",
-	.class		= &am335x_i2c_hwmod_class,
-	.main_clk	= "i2c_clk",
-	.prcm = {
-		.omap4 = {
-			.clkctrl_reg = AM335X_CM_PER_I2C2_CLKCTRL,
-		},
-	},
+	.slaves         = am335x_i2c2_slaves,
+	.slaves_cnt     = ARRAY_SIZE(am335x_i2c2_slaves),
+	.class          = &i2c_class,
+	.omap_chip      = OMAP_CHIP_INIT(CHIP_IS_AM335X),
 };
 
 /* 'icss' class */
@@ -1830,7 +1883,6 @@ static __initdata struct omap_hwmod *am335x_hwmods[] = {
 	/* gpmc class */
 	&am335x_gpmc_hwmod,
 	/* i2c class */
-	&am335x_i2c0_hwmod,
 	&am335x_i2c1_hwmod,
 	&am335x_i2c2_hwmod,
 	/* icss class */

@@ -522,8 +522,8 @@ static struct clk gpmc_fck = {
 	.recalc		= &followparent_recalc,
 };
 
-static struct clk i2c0_fck = {
-	.name		= "i2c0_fck",
+static struct clk i2c1_fck = {
+	.name		= "i2c1_fck",
 	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= AM335X_CM_WKUP_I2C0_CLKCTRL,
 	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
@@ -532,8 +532,8 @@ static struct clk i2c0_fck = {
 	.recalc		= &followparent_recalc,
 };
 
-static struct clk i2c1_fck = {
-	.name		= "i2c1_fck",
+static struct clk i2c2_fck = {
+	.name		= "i2c2_fck",
 	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= AM335X_CM_PER_I2C1_CLKCTRL,
 	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
@@ -542,8 +542,8 @@ static struct clk i2c1_fck = {
 	.recalc		= &followparent_recalc,
 };
 
-static struct clk i2c2_fck = {
-	.name		= "i2c2_fck",
+static struct clk i2c3_fck = {
+	.name		= "i2c3_fck",
 	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= AM335X_CM_PER_I2C2_CLKCTRL,
 	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
@@ -1716,9 +1716,9 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"gpio2_fck",		&gpio2_fck,	CK_AM335X),
 	CLK(NULL,	"gpio3_fck",		&gpio3_fck,	CK_AM335X),
 	CLK(NULL,	"gpmc_fck",		&gpmc_fck,	CK_AM335X),
-	CLK(NULL,	"i2c0_fck",		&i2c0_fck,	CK_AM335X),
 	CLK(NULL,	"i2c1_fck",		&i2c1_fck,	CK_AM335X),
 	CLK(NULL,	"i2c2_fck",		&i2c2_fck,	CK_AM335X),
+	CLK(NULL,	"i2c3_fck",		&i2c3_fck,	CK_AM335X),
 	CLK(NULL,	"icss_fck",		&icss_fck,	CK_AM335X),
 	CLK(NULL,	"ieee5000_fck",		&ieee5000_fck,	CK_AM335X),
 	CLK(NULL,	"l3_instr_fck",		&l3_instr_fck,	CK_AM335X),

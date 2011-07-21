@@ -93,6 +93,8 @@ static int __init omap_i2c_nr_ports(void)
 		ports = 2;
 	else if (cpu_is_ti814x())
 		ports = 4;
+	else if (cpu_is_am335x())
+		ports = 3;
 
 	return ports;
 }

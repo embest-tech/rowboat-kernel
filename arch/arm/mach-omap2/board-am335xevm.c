@@ -410,6 +410,18 @@ static struct module_pinmux_config nand_pin_mux[] = {
 	{0, 0},
 };
 
+static struct module_pinmux_config i2c0_pin_mux[] = {
+	{"i2c0_sda.i2c0_sda",   OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"i2c0_scl.i2c0_scl",   OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{0,0},
+};
+
+static struct module_pinmux_config i2c1_pin_mux[] = {
+	{"spi0_d1.i2c1_sda",    OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"spi0_cs0.i2c1_scl",   OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{0,0},
+};
+
 /* Module pin mux for nor device */
 static struct module_pinmux_config nor_pin_mux[] = {
 	{"lcd_data0.gpmc_a0",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT |
@@ -879,6 +891,7 @@ static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_NONE},
 	{mmc0_pin_mux, mmc0_init, PROFILE_NONE},
 	{nand_pin_mux, evm_nand_init, PROFILE_NONE},
+	{i2c0_pin_mux, NULL, PROFILE_NONE },
 	{0, 0, 0},
 };
 
@@ -899,6 +912,8 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
 	{nand_pin_mux, evm_nand_init, (PROFILE_ALL & ~PROFILE_2 & ~PROFILE_3)},
 	{nor_pin_mux, evm_nor_init, PROFILE_3},
+	{i2c0_pin_mux, NULL, PROFILE_ALL },
+	{i2c1_pin_mux, NULL, (PROFILE_0 | PROFILE_3 | PROFILE_7)},
 	{0, 0, 0},
 };
 
@@ -908,6 +923,7 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 	{mmc0_pin_mux, mmc0_init, PROFILE_ALL},
 	{mii1_pin_mux, NULL, PROFILE_ALL},
 	{nand_pin_mux, evm_nand_init, PROFILE_ALL},
+	{i2c0_pin_mux, NULL, PROFILE_ALL },
 	{0, 0, 0},
 };
 
@@ -920,6 +936,8 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{lcdc_pin_mux, lcdc_init, PROFILE_NONE},
 	{tsc_pin_mux, am335x_tsc_init, PROFILE_NONE},
 	{nand_pin_mux, evm_nand_init, PROFILE_NONE},
+	{i2c0_pin_mux, NULL, PROFILE_NONE},
+	{i2c1_pin_mux, NULL, PROFILE_NONE},
 	{0, 0, 0},
 };
 
