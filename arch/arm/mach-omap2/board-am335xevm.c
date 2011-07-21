@@ -467,12 +467,12 @@ static struct module_pinmux_config nor_pin_mux[] = {
 	{"gpmc_ad13.gpmc_ad13",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
 	{"gpmc_ad14.gpmc_ad14",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
 	{"gpmc_ad15.gpmc_ad15",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_csn0.gpmc_csn0",	OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_csn0.gpmc_csn0",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
 	{"gpmc_oen_ren.gpmc_oen_ren",	OMAP_MUX_MODE0 |
 						AM335X_PIN_OUTPUT_PULLUP},
 	{"gpmc_wen.gpmc_wen",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
 	{"gpmc_wait0.gpmc_wait0", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
-	{"lcd_ac_bias_en.gpio2_25", OMAP_MUX_MODE5 | AM335X_PIN_INPUT},
+	{"lcd_ac_bias_en.gpio2_25", OMAP_MUX_MODE7 | AM335X_PIN_INPUT_PULLDOWN},
 	{0, 0},
 };
 
