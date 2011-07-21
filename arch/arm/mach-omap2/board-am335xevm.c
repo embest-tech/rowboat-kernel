@@ -298,22 +298,38 @@ static struct module_pinmux_config spi1_pin_mux[] = {
 
 /* Module pin mux for LCDC */
 static struct module_pinmux_config lcdc_pin_mux[] = {
-	{"lcd_data0.lcd_data0",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data1.lcd_data1",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data2.lcd_data2",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data3.lcd_data3",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data4.lcd_data4",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data5.lcd_data5",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data6.lcd_data6",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data7.lcd_data7",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data8.lcd_data8",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data9.lcd_data9",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data10.lcd_data10",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data11.lcd_data11",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data12.lcd_data12",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data13.lcd_data13",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data14.lcd_data14",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"lcd_data15.lcd_data15",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"lcd_data0.lcd_data0",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data1.lcd_data1",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data2.lcd_data2",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data3.lcd_data3",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data4.lcd_data4",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data5.lcd_data5",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data6.lcd_data6",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data7.lcd_data7",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data8.lcd_data8",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data9.lcd_data9",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data10.lcd_data10",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data11.lcd_data11",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data12.lcd_data12",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data13.lcd_data13",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data14.lcd_data14",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
+	{"lcd_data15.lcd_data15",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
+						       | AM335X_PULL_DISA},
 	{"gpmc_ad8.lcd_data16",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
 	{"gpmc_ad9.lcd_data17",		OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
 	{"gpmc_ad10.lcd_data18",	OMAP_MUX_MODE1 | AM335X_PIN_OUTPUT},
