@@ -109,8 +109,7 @@ struct evm_dev_cfg {
 #define TLK110_SCFALLBACK_VAL	0xC11D
 #define TLK110_PHYRCR_VAL	0x4000
 
-#define AM335X_TLK110_WORKAROUND
-#ifdef AM335X_TLK110_WORKAROUND
+#ifdef CONFIG_TLK110_WORKAROUND
 #define am335x_tlk110_phy_init()\
 	do {	\
 		phy_register_fixup_for_uid(TLK110_PHY_ID,\
@@ -914,6 +913,65 @@ static void evm_nor_init(int evm_id, int profile)
 		ARRAY_SIZE(am335x_nor_partitions), 0);
 }
 
+/* Ethernet TLK110 PHY register configuration */
+#ifdef CONFIG_TLK110_WORKAROUND
+static int am335x_tlk110_phy_fixup(struct phy_device *phydev)
+{
+	unsigned int val;
+
+	/* This is done as a workaround to support TLK110 rev1.0 phy */
+	val = phy_read(phydev, TLK110_COARSEGAIN_REG);
+	phy_write(phydev, TLK110_COARSEGAIN_REG, (val | TLK110_COARSEGAIN_VAL));
+
+	val = phy_read(phydev, TLK110_LPFHPF_REG);
+	phy_write(phydev, TLK110_LPFHPF_REG, (val | TLK110_LPFHPF_VAL));
+
+	val = phy_read(phydev, TLK110_SPAREANALOG_REG);
+	phy_write(phydev, TLK110_SPAREANALOG_REG, (val | TLK110_SPANALOG_VAL));
+
+	val = phy_read(phydev, TLK110_VRCR_REG);
+	phy_write(phydev, TLK110_VRCR_REG, (val | TLK110_VRCR_VAL));
+
+	val = phy_read(phydev, TLK110_SETFFE_REG);
+	phy_write(phydev, TLK110_SETFFE_REG, (val | TLK110_SETFFE_VAL));
+
+	val = phy_read(phydev, TLK110_FTSP_REG);
+	phy_write(phydev, TLK110_FTSP_REG, (val | TLK110_FTSP_VAL));
+
+	val = phy_read(phydev, TLK110_ALFATPIDL_REG);
+	phy_write(phydev, TLK110_ALFATPIDL_REG, (val | TLK110_ALFATPIDL_VAL));
+
+	val = phy_read(phydev, TLK110_PSCOEF21_REG);
+	phy_write(phydev, TLK110_PSCOEF21_REG, (val | TLK110_PSCOEF21_VAL));
+
+	val = phy_read(phydev, TLK110_PSCOEF3_REG);
+	phy_write(phydev, TLK110_PSCOEF3_REG, (val | TLK110_PSCOEF3_VAL));
+
+	val = phy_read(phydev, TLK110_ALFAFACTOR1_REG);
+	phy_write(phydev, TLK110_ALFAFACTOR1_REG, (val | TLK110_ALFACTOR1_VAL));
+
+	val = phy_read(phydev, TLK110_ALFAFACTOR2_REG);
+	phy_write(phydev, TLK110_ALFAFACTOR2_REG, (val | TLK110_ALFACTOR2_VAL));
+
+	val = phy_read(phydev, TLK110_CFGPS_REG);
+	phy_write(phydev, TLK110_CFGPS_REG, (val | TLK110_CFGPS_VAL));
+
+	val = phy_read(phydev, TLK110_FTSPTXGAIN_REG);
+	phy_write(phydev, TLK110_FTSPTXGAIN_REG, (val | TLK110_FTSPTXGAIN_VAL));
+
+	val = phy_read(phydev, TLK110_SWSCR3_REG);
+	phy_write(phydev, TLK110_SWSCR3_REG, (val | TLK110_SWSCR3_VAL));
+
+	val = phy_read(phydev, TLK110_SCFALLBACK_REG);
+	phy_write(phydev, TLK110_SCFALLBACK_REG, (val | TLK110_SCFALLBACK_VAL));
+
+	val = phy_read(phydev, TLK110_PHYRCR_REG);
+	phy_write(phydev, TLK110_PHYRCR_REG, (val | TLK110_PHYRCR_VAL));
+
+	return 0;
+}
+#endif
+
 /* Low-Cost EVM */
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_pin_mux, NULL, PROFILE_NONE},
@@ -1076,6 +1134,9 @@ void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config)
 	}
 
 	am335x_configure_evm_devices(IND_AUT_MTR_EVM, PROFILE_0);
+
+	/* Initialize TLK110 PHY registers for phy version 1.0 */
+	am335x_tlk110_phy_init();
 }
 
 void setup_ip_phone_evm(struct eeprom_config *evm_config)
@@ -1294,64 +1355,6 @@ static struct omap_board_mux board_mux[] __initdata = {
 #define	board_mux	NULL
 #endif
 
-#ifdef AM335X_TLK110_WORKAROUND
-static int am335x_tlk110_phy_fixup(struct phy_device *phydev)
-{
-	unsigned int val;
-
-	/* This is done as a workaround to support TLK110 rev1.0 phy */
-	val = phy_read(phydev, TLK110_COARSEGAIN_REG);
-	phy_write(phydev, TLK110_COARSEGAIN_REG, (val | TLK110_COARSEGAIN_VAL));
-
-	val = phy_read(phydev, TLK110_LPFHPF_REG);
-	phy_write(phydev, TLK110_LPFHPF_REG, (val | TLK110_LPFHPF_VAL));
-
-	val = phy_read(phydev, TLK110_SPAREANALOG_REG);
-	phy_write(phydev, TLK110_SPAREANALOG_REG, (val | TLK110_SPANALOG_VAL));
-
-	val = phy_read(phydev, TLK110_VRCR_REG);
-	phy_write(phydev, TLK110_VRCR_REG, (val | TLK110_VRCR_VAL));
-
-	val = phy_read(phydev, TLK110_SETFFE_REG);
-	phy_write(phydev, TLK110_SETFFE_REG, (val | TLK110_SETFFE_VAL));
-
-	val = phy_read(phydev, TLK110_FTSP_REG);
-	phy_write(phydev, TLK110_FTSP_REG, (val | TLK110_FTSP_VAL));
-
-	val = phy_read(phydev, TLK110_ALFATPIDL_REG);
-	phy_write(phydev, TLK110_ALFATPIDL_REG, (val | TLK110_ALFATPIDL_VAL));
-
-	val = phy_read(phydev, TLK110_PSCOEF21_REG);
-	phy_write(phydev, TLK110_PSCOEF21_REG, (val | TLK110_PSCOEF21_VAL));
-
-	val = phy_read(phydev, TLK110_PSCOEF3_REG);
-	phy_write(phydev, TLK110_PSCOEF3_REG, (val | TLK110_PSCOEF3_VAL));
-
-	val = phy_read(phydev, TLK110_ALFAFACTOR1_REG);
-	phy_write(phydev, TLK110_ALFAFACTOR1_REG, (val | TLK110_ALFACTOR1_VAL));
-
-	val = phy_read(phydev, TLK110_ALFAFACTOR2_REG);
-	phy_write(phydev, TLK110_ALFAFACTOR2_REG, (val | TLK110_ALFACTOR2_VAL));
-
-	val = phy_read(phydev, TLK110_CFGPS_REG);
-	phy_write(phydev, TLK110_CFGPS_REG, (val | TLK110_CFGPS_VAL));
-
-	val = phy_read(phydev, TLK110_FTSPTXGAIN_REG);
-	phy_write(phydev, TLK110_FTSPTXGAIN_REG, (val | TLK110_FTSPTXGAIN_VAL));
-
-	val = phy_read(phydev, TLK110_SWSCR3_REG);
-	phy_write(phydev, TLK110_SWSCR3_REG, (val | TLK110_SWSCR3_VAL));
-
-	val = phy_read(phydev, TLK110_SCFALLBACK_REG);
-	phy_write(phydev, TLK110_SCFALLBACK_REG, (val | TLK110_SCFALLBACK_VAL));
-
-	val = phy_read(phydev, TLK110_PHYRCR_REG);
-	phy_write(phydev, TLK110_PHYRCR_REG, (val | TLK110_PHYRCR_VAL));
-
-	return 0;
-}
-#endif
-
 static void __init am335x_evm_init_irq(void)
 {
 	omap2_init_common_infrastructure();
@@ -1364,7 +1367,6 @@ static void __init am335x_evm_init(void)
 	am335x_mux_init(board_mux);
 	omap_serial_init();
 	am335x_evm_i2c_init();
-	am335x_tlk110_phy_init();
 }
 
 static void __init am335x_evm_map_io(void)
