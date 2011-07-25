@@ -194,6 +194,15 @@ config KEYBOARD_TCA6416
 	  If enabled the complete TCA6416 device will be managed through
 	  this driver.
 
+config KEYBOARD_TCA8418
+	tristate "TCA8418 Keypad Support"
+	depends on I2C
+	help
+	  This driver implements basic keypad functionality
+	  for keys connected through TCA8418 IO expander
+
+	  Say Y here if your device has keys connected to
+	  TCA8418 IO expander.
 
 config KEYBOARD_MATRIX
 	tristate "GPIO driven matrix keypad support"
