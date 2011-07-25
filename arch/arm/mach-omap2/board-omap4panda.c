@@ -44,6 +44,7 @@
 #include <plat/display.h>
 #include <linux/delay.h>
 #include <linux/i2c/tsc2007.h>
+#include <linux/backlight.h>
 #include <plat/usb.h>
 #ifdef CONFIG_SERIAL_OMAP
 #include <plat/omap-serial.h>
@@ -141,6 +142,11 @@ static struct tsc2007_platform_data tsc2007_pdata = {
 	.irq_flags          = (IRQF_TRIGGER_FALLING | IRQF_SHARED),
 	.clear_penirq       = NULL,
 };
+static struct generic_bl_info tlc59108_bl_pdata = {
+       .name = "tlc59108-backlight",
+       .max_intensity = 100,
+       .default_intensity = 80,
+};
 
 #define ROW_VAL         0x01
 #define COL_VAL         0xFF
@@ -182,6 +188,10 @@ static struct i2c_board_info __initdata panda_i2c4_boardinfo[] = {
 	{
 		I2C_BOARD_INFO("tsc2007", 0x48),
 		.platform_data  = &tsc2007_pdata,
+	},
+	{
+		I2C_BOARD_INFO("tlc59108-backlight", 0x40),
+		.platform_data = &tlc59108_bl_pdata,
 	},
 	{
 		I2C_BOARD_INFO("tca8418-keys", 0x34 ),
