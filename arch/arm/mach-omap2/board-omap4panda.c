@@ -43,6 +43,7 @@
 #include <plat/timer-gp.h>
 #include <plat/display.h>
 #include <linux/delay.h>
+#include <linux/i2c/tsc2007.h>
 #include <plat/usb.h>
 #ifdef CONFIG_SERIAL_OMAP
 #include <plat/omap-serial.h>
@@ -53,6 +54,7 @@
 #include <plat/mmc.h>
 #include <plat/opp_twl_tps.h>
 #include <plat/hwspinlock.h>
+#include <linux/tca8418_keypad.h>
 #include "mux.h"
 #include "hsmmc.h"
 #include "smartreflex-class3.h"
@@ -100,6 +102,94 @@ static struct platform_device leds_gpio = {
 		.platform_data	= &gpio_led_info,
 	},
 };
+
+#if defined(CONFIG_KEYBOARD_TCA8418) || defined(CONFIG_TOUCHSCREEN_TSC2007)
+/*Touchscreen and keypad driver irq initialization*/
+#define KEYPAD_TSC2007_SHARED_IRQ       39
+static int keypad_tsc2007_shared_init_irq(void)
+{
+	int ret;
+
+	ret = gpio_request(KEYPAD_TSC2007_SHARED_IRQ, "keypad-tsc2007-shared-irq");
+	if (ret < 0) {
+			printk(KERN_WARNING "failed to request GPIO#%d: %d\n",
+                               KEYPAD_TSC2007_SHARED_IRQ, ret);
+			return ret;
+	}
+	ret = gpio_direction_input(KEYPAD_TSC2007_SHARED_IRQ);
+	if (ret < 0) {
+			printk(KERN_WARNING "GPIO#%d cannot be configured as "
+                                "input\n", KEYPAD_TSC2007_SHARED_IRQ);
+			gpio_free(KEYPAD_TSC2007_SHARED_IRQ);
+			return ret;
+	}
+	gpio_set_debounce(KEYPAD_TSC2007_SHARED_IRQ, 0xa);
+
+	return ret;
+}
+
+
+static int tsc2007_get_pendown_state(void)
+{
+	return gpio_get_value(KEYPAD_TSC2007_SHARED_IRQ) ? 0 : 1;
+}
+
+static struct tsc2007_platform_data tsc2007_pdata = {
+	.model              = 2007,
+	.x_plate_ohms       = 180,
+	.get_pendown_state  = tsc2007_get_pendown_state,
+	.irq_flags          = (IRQF_TRIGGER_FALLING | IRQF_SHARED),
+	.clear_penirq       = NULL,
+};
+
+#define ROW_VAL         0x01
+#define COL_VAL         0xFF
+
+#define KEYPAD_BUTTON(ev_type, ev_code, act_low) \
+{                                               \
+        .type           = ev_type,              \
+        .code           = ev_code,              \
+        .active_low     = act_low,              \
+}
+
+#define KEYPAD_BUTTON_LOW(event_code)   \
+        KEYPAD_BUTTON(EV_KEY, event_code, 1)
+
+
+static struct tca8418_button tca8418_key_code[] = {
+        KEYPAD_BUTTON_LOW(KEY_DOWN),
+        KEYPAD_BUTTON_LOW(KEY_UP),
+        KEYPAD_BUTTON_LOW(KEY_MENU),
+        KEYPAD_BUTTON_LOW(KEY_BACK),
+        KEYPAD_BUTTON_LOW(KEY_LEFT),
+        KEYPAD_BUTTON_LOW(KEY_RIGHT),
+        KEYPAD_BUTTON_LOW(KEY_VOLUMEUP),
+        KEYPAD_BUTTON_LOW(KEY_VOLUMEDOWN),
+};
+
+static struct tca8418_keys_platform_data tca8418_keys_info = {
+	.buttons        = tca8418_key_code,
+	.nbuttons       = ARRAY_SIZE(tca8418_key_code),
+	.rep            = 0,
+	.use_polling    = 0,
+	.irq_is_gpio    = 1,
+	.irq_flags      = (IRQF_TRIGGER_FALLING | IRQF_SHARED),
+	.row_val        = ROW_VAL,
+	.col_val        = COL_VAL,
+};
+
+static struct i2c_board_info __initdata panda_i2c4_boardinfo[] = {
+	{
+		I2C_BOARD_INFO("tsc2007", 0x48),
+		.platform_data  = &tsc2007_pdata,
+	},
+	{
+		I2C_BOARD_INFO("tca8418-keys", 0x34 ),
+		.platform_data = &tca8418_keys_info,
+		.irq = KEYPAD_TSC2007_SHARED_IRQ,
+	},
+};
+#endif
 
 #ifdef CONFIG_OMAP2_DSS_HDMI
 static struct platform_device sdp4430_hdmi_audio_device = {
@@ -522,6 +612,8 @@ static int __init omap4_i2c_init(void)
 	/* Phoenix Audio IC needs I2C1 to start with 400 KHz and less */
 	omap_register_i2c_bus(1, 400, &panda_i2c_bus_pdata,
 		panda_i2c_boardinfo, ARRAY_SIZE(panda_i2c_boardinfo));
+	/*I2C4 registration*/
+	omap_register_i2c_bus(4, 1000, NULL, NULL, 0);
 	return 0;
 }
 
@@ -920,6 +1012,16 @@ static void __init omap_panda_init(void)
 	omap4_audio_conf();
 	omap4_i2c_init();
 	omap4_display_init();
+
+	/* TSC 2007 and TCA8418 Keypad on LCD board */
+#if defined(CONFIG_KEYBOARD_TCA8418) || defined(CONFIG_TOUCHSCREEN_TSC2007)
+	omap_mux_init_gpio(KEYPAD_TSC2007_SHARED_IRQ, OMAP_PIN_INPUT_PULLUP);
+	panda_i2c4_boardinfo[0].irq = gpio_to_irq(KEYPAD_TSC2007_SHARED_IRQ);
+	i2c_register_board_info(4, panda_i2c4_boardinfo,
+		ARRAY_SIZE(panda_i2c4_boardinfo));
+	keypad_tsc2007_shared_init_irq();
+#endif
+
 	platform_add_devices(panda_devices, ARRAY_SIZE(panda_devices));
 	omap_serial_init(omap_serial_platform_data);
 	omap4_twl6030_hsmmc_init(mmc);
