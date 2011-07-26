@@ -216,7 +216,8 @@ static struct module_pinmux_config mcasp1_pin_mux[] = {
 	{"mii1_crs.mcasp1_aclkx", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mii1_rxerr.mcasp1_fsx", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mii1_col.mcasp1_axr2", OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT},
-	{"mii1_refclk.mcasp1_axr3", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"rmii1_refclk.mcasp1_axr3", OMAP_MUX_MODE4 |
+					AM335X_PIN_INPUT_PULLDOWN},
 	{0, 0},
 };
 
@@ -356,8 +357,8 @@ static struct module_pinmux_config mmc0_pin_mux[] = {
 	{"mmc0_dat0.mmc0_dat0",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
 	{"mmc0_clk.mmc0_clk",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
 	{"mmc0_cmd.mmc0_cmd",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
-	{"mmc0_sdwp.mmc0_sdwp",	OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
-	{"mmc0_sdcd.mmc0_sdcd",	OMAP_MUX_MODE5 | AM335X_PIN_INPUT_PULLUP},
+	{"mcasp0_aclkr.mmc0_sdwp", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"spi0_cs1.mmc0_sdcd",  OMAP_MUX_MODE5 | AM335X_PIN_INPUT_PULLUP},
 	{0, 0},
 };
 
