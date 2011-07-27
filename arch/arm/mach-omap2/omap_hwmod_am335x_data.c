@@ -565,8 +565,7 @@ static struct omap_gpio_dev_attr gpio_dev_attr = {
 
 /* gpio0 */
 static struct omap_hwmod_irq_info am335x_gpio0_irqs[] = {
-	{ .irq = AM335X_IRQ_GPIO_WKUP_1 },
-	{ .irq = AM335X_IRQ_GPIO_WKUP_2 },
+	{ .irq = AM335X_IRQ_GPIO0_1 },
 };
 
 /* gpio0 slave ports */
@@ -600,8 +599,7 @@ static struct omap_hwmod am335x_gpio0_hwmod = {
 
 /* gpio1 */
 static struct omap_hwmod_irq_info am335x_gpio1_irqs[] = {
-	{ .irq = AM335X_IRQ_GPIO1 },
-	{ .irq = AM335X_IRQ_GPIO2 },
+	{ .irq = AM335X_IRQ_GPIO1_1 },
 };
 
 /* gpio1 slave ports */
@@ -636,7 +634,6 @@ static struct omap_hwmod am335x_gpio1_hwmod = {
 /* gpio2 */
 static struct omap_hwmod_irq_info am335x_gpio2_irqs[] = {
 	{ .irq = AM335X_IRQ_GPIO2_1 },
-	{ .irq = AM335X_IRQ_GPIO2_2 },
 };
 
 /* gpio2 slave ports */
@@ -671,7 +668,6 @@ static struct omap_hwmod am335x_gpio2_hwmod = {
 /* gpio3 */
 static struct omap_hwmod_irq_info am335x_gpio3_irqs[] = {
 	{ .irq = AM335X_IRQ_GPIO3_1 },
-	{ .irq = AM335X_IRQ_GPIO3_2 },
 };
 
 /* gpio3 slave ports */
