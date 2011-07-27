@@ -183,7 +183,7 @@ static void omap2_init_processor_devices(void)
 		_init_omap_device("dsp", &dsp_dev);
 	} else if ((cpu_is_ti816x()) || (cpu_is_ti814x())) {
 		_init_omap_device("l3_slow", &l3_dev);
-	} else {
+	} else if (!cpu_is_am335x()) {
 		_init_omap_device("l3_main", &l3_dev);
 	}
 
