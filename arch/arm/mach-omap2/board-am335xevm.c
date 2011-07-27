@@ -159,6 +159,26 @@ static struct eeprom_config dghtr_brd_config, baseboard_config;
 #define AM335X_EEPROM_HEADER		0xEE3355AA
 #define EEPROM_BOARD_NAME_LENGTH		8
 
+#define EEPROM_MAC_ADDRESS_OFFSET	48 /* 4+8+4+32 */
+#define EEPROM_NO_OF_MAC_ADDR		3
+struct eeprom_mac {
+	char mac_addr[EEPROM_NO_OF_MAC_ADDR][ETH_ALEN];
+};
+
+static struct eeprom_mac am335x_mac_config;
+
+/*
+* @mac_id - MAC 0/1/2 Address
+*/
+char *am335x_get_mac_addr(unsigned int mac_id)
+{
+	/* EEPROM stores only 3 MAC Address */
+	if (mac_id > (EEPROM_NO_OF_MAC_ADDR - 1))
+		mac_id = 0;
+
+	return &am335x_mac_config.mac_addr[mac_id][0];
+}
+
 /* current profile if exists else PROFILE_0 on error */
 u32 am335x_get_profile_selection(void)
 {
@@ -1192,17 +1212,15 @@ static void am335x_setup_daughter_board_evm
 
 	if (!strncmp("A335GPBD", brd_name, EEPROM_BOARD_NAME_LENGTH)) {
 		am335x_evm_id = GEN_PURP_EVM;
-		setup_general_purpose_evm(&dghtr_brd_config);
 	} else if (!strncmp("A335IAMC", brd_name,
 						EEPROM_BOARD_NAME_LENGTH)) {
 		am335x_evm_id = IND_AUT_MTR_EVM;
-		setup_ind_auto_motor_ctrl_evm(&dghtr_brd_config);
 	} else if (!strncmp("A335IPPH", brd_name,
 						EEPROM_BOARD_NAME_LENGTH)) {
 		am335x_evm_id = IP_PHN_EVM;
-		setup_ip_phone_evm(&dghtr_brd_config);
 	} else {
-		pr_warning("AM335X: Invalid board name %s\n", brd_name);
+		pr_warning("AM335X: Invalid board name %s!!\n", brd_name);
+		pr_warning("Assuming Low Cost EVM Config\n");
 	}
 }
 
@@ -1211,6 +1229,14 @@ static void am335x_setup_baseboard
 {
 	int ret;
 	char brd_name[9], rev[5];
+
+	/* 1st get the MAC address from EEPROM */
+	ret = mem_acc->read(mem_acc, (char *)&am335x_mac_config,
+			EEPROM_MAC_ADDRESS_OFFSET, sizeof(struct eeprom_mac));
+	if (ret != sizeof(struct eeprom_mac)) {
+		pr_warning("AM335X: EVM Config read fail: %d\n", ret);
+		return;
+	}
 
 	/* If any daughter board is already detected, Baseboard devices are
 	*  already setup there. If no daughter board is detected, then setup
@@ -1245,8 +1271,13 @@ static void am335x_setup_baseboard
 			pr_warning("AM335X: Invalid board name found %s\n",
 								brd_name);
 		}
+	} else if (am335x_evm_id == GEN_PURP_EVM) {
+		setup_general_purpose_evm(&dghtr_brd_config);
+	} else if (am335x_evm_id == IND_AUT_MTR_EVM) {
+		setup_ind_auto_motor_ctrl_evm(&dghtr_brd_config);
+	} else if (am335x_evm_id == IP_PHN_EVM) {
+		setup_ip_phone_evm(&dghtr_brd_config);
 	}
-
 }
 
 static struct at24_platform_data am335x_daughter_board_eeprom_info = {

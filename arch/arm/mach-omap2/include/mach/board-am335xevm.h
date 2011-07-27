@@ -46,5 +46,8 @@ int am335x_configure_evm_devices(int evm_id, int profile);
 
 struct platform_device *am33xx_register_lcdc(
 		struct da8xx_lcdc_platform_data *pdata);
-
+/*
+* @mac_id - MAC 0/1/2 Address
+*/
+char *am335x_get_mac_addr(unsigned int mac_id);
 #endif
