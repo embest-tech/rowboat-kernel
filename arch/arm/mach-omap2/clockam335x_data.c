@@ -1135,16 +1135,16 @@ static struct clk cpsw_125mhz_ocp_ck = {
 	.name		= "cpsw_125mhz_ocp_ck",
 	.parent		= &dpll_core_m5_ck,
 	.ops		= &clkops_null,
-	.recalc		= &followparent_recalc,
 	.fixed_div	= 2,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
 static struct clk cpsw_50m_clkdiv_ck = {
 	.name           = "cpsw_50m_clkdiv_ck",
 	.parent         = &dpll_core_m5_ck,
 	.ops            = &clkops_null,
-	.recalc         = &followparent_recalc,
 	.fixed_div	= 5,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
 static struct clk cpgmac0_fck = {
@@ -1161,8 +1161,8 @@ static struct clk cpsw_5m_clkdiv_ck = {
 	.name		= "cpsw_5m_clkdiv_ck",
 	.parent		= &cpsw_50m_clkdiv_ck,
 	.ops		= &clkops_null,
-	.recalc		= &followparent_recalc,
 	.fixed_div	= 10,
+	.recalc		= &omap_fixed_divisor_recalc,
 };
 
 
