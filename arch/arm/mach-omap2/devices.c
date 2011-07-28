@@ -19,6 +19,7 @@
 #include <linux/davinci_emac.h>
 #include <linux/cpsw.h>
 #include <linux/ahci_platform.h>
+#include <linux/etherdevice.h>
 
 /* LCD controller similar DA8xx */
 #include <video/da8xx-fb.h>
@@ -2007,6 +2008,8 @@ static struct platform_device am335x_cpsw_device = {
 void am335x_cpsw_init(void)
 {
 	u32 mac_lo, mac_hi;
+	char *eeprom_macid;
+	u32 i;
 
 	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID0_LO);
 	mac_hi = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID0_HI);
@@ -2017,6 +2020,13 @@ void am335x_cpsw_init(void)
 	am335x_cpsw_slaves[0].mac_addr[4] = mac_lo & 0xFF;
 	am335x_cpsw_slaves[0].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
 
+	/* Read MACID0 from eeprom if eFuse MACID is invalid */
+	if (!is_valid_ether_addr(am335x_cpsw_slaves[0].mac_addr)) {
+		eeprom_macid = am335x_get_mac_addr(0);
+		for (i = 0; i < ETH_ALEN; i++)
+			am335x_cpsw_slaves[0].mac_addr[i] = eeprom_macid[i];
+	}
+
 	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID1_LO);
 	mac_hi = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID1_HI);
 	am335x_cpsw_slaves[1].mac_addr[0] = mac_hi & 0xFF;
@@ -2025,6 +2035,13 @@ void am335x_cpsw_init(void)
 	am335x_cpsw_slaves[1].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
 	am335x_cpsw_slaves[1].mac_addr[4] = mac_lo & 0xFF;
 	am335x_cpsw_slaves[1].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
+
+	/* Read MACID1 from eeprom if eFuse MACID is invalid */
+	if (!is_valid_ether_addr(am335x_cpsw_slaves[1].mac_addr)) {
+		eeprom_macid = am335x_get_mac_addr(1);
+		for (i = 0; i < ETH_ALEN; i++)
+			am335x_cpsw_slaves[1].mac_addr[i] = eeprom_macid[i];
+	}
 
 	if (am335x_get_am335x_evm_id() == IND_AUT_MTR_EVM) {
 		am335x_cpsw_slaves[0].phy_id = "0:01";
