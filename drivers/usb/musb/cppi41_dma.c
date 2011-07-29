@@ -184,7 +184,7 @@ static int __devinit cppi41_controller_start(struct dma_controller *controller)
 	cppi = container_of(controller, struct cppi41, controller);
 	cppi_info = cppi->cppi_info;
 
-	if (cpu_is_ti81xx()) {
+	if (cpu_is_ti81xx() || cpu_is_am335x()) {
 		cppi->automode_reg_offs = TI81XX_USB_AUTOREQ_REG;
 		cppi->teardown_reg_offs = TI81XX_USB_TEARDOWN_REG;
 	} else {
@@ -1418,14 +1418,14 @@ static void usb_process_rx_queue(struct cppi41 *cppi, unsigned index)
 		if (unlikely(rx_ch->channel.actual_len >= rx_ch->length ||
 			     length < orig_buf_len)) {
 
-#ifdef CONFIG_ARCH_TI81XX
+#if defined(CONFIG_ARCH_TI81XX) || defined(CONFIG_ARCH_AM335X)
 			struct musb_hw_ep *ep;
 			u8 isoc, next_seg = 0;
 
 			/* Workaround for early rx completion of
 			 * cppi41 dma in Generic RNDIS mode for ti81xx
 			 */
-			if (cpu_is_ti81xx() && is_host_enabled(cppi->musb)) {
+			if (is_host_enabled(cppi->musb)) {
 				u32 pkt_size = rx_ch->pkt_size;
 				ep = cppi->musb->endpoints + ep_num;
 				isoc = musb_readb(ep->regs, MUSB_RXTYPE);

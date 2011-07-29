@@ -1169,8 +1169,12 @@ static int __init ti81xx_probe(struct platform_device *pdev)
 
 	if (cpu_is_ti816x())
 		glue->clk = clk_get(&pdev->dev, "usbotg_ick");
-	else
+	else if (cpu_is_ti814x())
 		glue->clk = clk_get(&pdev->dev, "usb_ick");
+	else if (cpu_is_am335x() && pdev->id == 0)
+		glue->clk = clk_get(&pdev->dev, "usb0_ick");
+	else if (cpu_is_am335x() && pdev->id == 1)
+		glue->clk = clk_get(&pdev->dev, "usb1_ick");
 
 	if (IS_ERR(glue->clk)) {
 		dev_err(&pdev->dev, "unable to get clock\n");
@@ -1221,6 +1225,10 @@ static int __init ti81xx_probe(struct platform_device *pdev)
 		otg_fck = clk_get(NULL, "usb_phy0_rclk_ick");
 	else if (cpu_is_ti814x() && musb->id == 1)
 		otg_fck = clk_get(NULL, "usb_phy1_rclk_ick");
+	else if (cpu_is_am335x() && musb->id == 0)
+		otg_fck = clk_get(NULL, "usb0_fck");
+	else if (cpu_is_am335x() && musb->id == 1)
+		otg_fck = clk_get(NULL, "usb1_fck");
 
 	clk_enable(otg_fck);
 	DBG(2, "usbotg_phy_ck=%lud\n", clk_get_rate(otg_fck));
