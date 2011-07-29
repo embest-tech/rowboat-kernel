@@ -176,6 +176,10 @@ static unsigned long omap3_l3_get_rate(struct device *dev)
 static void omap2_init_processor_devices(void)
 {
 	_init_omap_device("mpu", &mpu_dev);
+
+	if (cpu_is_am335x())
+		return;
+
 	if (omap3_has_iva())
 		_init_omap_device("iva", &iva_dev);
 	if (cpu_is_omap44xx()) {
@@ -183,7 +187,7 @@ static void omap2_init_processor_devices(void)
 		_init_omap_device("dsp", &dsp_dev);
 	} else if ((cpu_is_ti816x()) || (cpu_is_ti814x())) {
 		_init_omap_device("l3_slow", &l3_dev);
-	} else if (!cpu_is_am335x()) {
+	} else {
 		_init_omap_device("l3_main", &l3_dev);
 	}
 
