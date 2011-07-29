@@ -45,6 +45,7 @@
 #include <plat/asp.h>
 #include <plat/mmc.h>
 #include <plat/lcdc.h>
+#include <plat/usb.h>
 
 #include "board-flash.h"
 #include "mux.h"
@@ -529,6 +530,18 @@ static struct module_pinmux_config nor_pin_mux[] = {
 	{0, 0},
 };
 
+/* pinmux for usb0 drvvbus */
+static struct module_pinmux_config usb0_pin_mux[] = {
+	{"usb0_drvvbus.usb0_drvvbus",    OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{0, 0},
+};
+
+/* pinmux for usb1 drvvbus */
+static struct module_pinmux_config usb1_pin_mux[] = {
+	{"usb1_drvvbus.usb1_drvvbus",    OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{0, 0},
+};
+
 /*
 * Module Platform data.
 * Place all Platform specific data below.
@@ -1000,6 +1013,8 @@ static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{mmc0_pin_mux, mmc0_init, PROFILE_NONE},
 	{nand_pin_mux, evm_nand_init, PROFILE_NONE},
 	{i2c0_pin_mux, NULL, PROFILE_NONE },
+	{usb0_pin_mux, NULL, PROFILE_NONE},
+	{usb1_pin_mux, NULL, PROFILE_NONE},
 	{0, 0, 0},
 };
 
@@ -1022,6 +1037,8 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{nor_pin_mux, evm_nor_init, PROFILE_3},
 	{i2c0_pin_mux, NULL, PROFILE_ALL },
 	{i2c1_pin_mux, NULL, (PROFILE_0 | PROFILE_3 | PROFILE_7)},
+	{usb0_pin_mux, NULL, PROFILE_ALL},
+	{usb1_pin_mux, NULL, PROFILE_ALL},
 	{0, 0, 0},
 };
 
@@ -1032,6 +1049,8 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 	{mii1_pin_mux, NULL, PROFILE_ALL},
 	{nand_pin_mux, evm_nand_init, PROFILE_ALL},
 	{i2c0_pin_mux, NULL, PROFILE_ALL },
+	{usb0_pin_mux, NULL, PROFILE_ALL},
+	{usb1_pin_mux, NULL, PROFILE_ALL},
 	{0, 0, 0},
 };
 
@@ -1046,6 +1065,8 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{nand_pin_mux, evm_nand_init, PROFILE_NONE},
 	{i2c0_pin_mux, NULL, PROFILE_NONE},
 	{i2c1_pin_mux, NULL, PROFILE_NONE},
+	{usb0_pin_mux, NULL, PROFILE_NONE},
+	{usb1_pin_mux, NULL, PROFILE_NONE},
 	{0, 0, 0},
 };
 
@@ -1339,6 +1360,19 @@ static struct i2c_board_info __initdata am335x_i2c_boardinfo1[] = {
 	}
 };
 
+static struct omap_musb_board_data musb_board_data = {
+	.interface_type		= MUSB_INTERFACE_ULPI,
+#ifdef CONFIG_USB_MUSB_OTG
+	.mode           = MUSB_OTG,
+#elif defined(CONFIG_USB_MUSB_HDRC_HCD)
+	.mode           = MUSB_HOST,
+#elif defined(CONFIG_USB_GADGET_MUSB_HDRC)
+	.mode           = MUSB_PERIPHERAL,
+#endif
+	.power		= 500,
+	.instances	= 0,
+};
+
 static int cpld_reg_probe(struct i2c_client *client,
 	    const struct i2c_device_id *id)
 {
@@ -1410,6 +1444,7 @@ static void __init am335x_evm_init(void)
 	am335x_mux_init(board_mux);
 	omap_serial_init();
 	am335x_evm_i2c_init();
+	usb_musb_init(&musb_board_data);
 }
 
 static void __init am335x_evm_map_io(void)
