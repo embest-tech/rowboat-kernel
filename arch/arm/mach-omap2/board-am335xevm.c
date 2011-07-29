@@ -312,7 +312,7 @@ static struct module_pinmux_config spi0_pin_mux[] = {
 
 /* Module pin mux for spi1 */
 static struct module_pinmux_config spi1_pin_mux[] = {
-	{"mcsap0_aclkx.spi1_sclk", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp0_aclkx.spi1_sclk", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mcasp0_fsx.spi1_d0", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mcasp0_axr0.spi1_d1", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mcasp0_ahclkr.spi1_cs0", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
