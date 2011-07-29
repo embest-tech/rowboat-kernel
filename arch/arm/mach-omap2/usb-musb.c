@@ -267,7 +267,7 @@ void __init usb_musb_init(struct omap_musb_board_data *board_data)
 		musb_resources[0].start = OMAP44XX_HSUSB_OTG_BASE;
 		musb_resources[1].start = OMAP44XX_IRQ_HS_USB_MC_N;
 		musb_resources[2].start = OMAP44XX_IRQ_HS_USB_DMA_N;
-	} else if (cpu_is_ti81xx()) {
+	} else if (cpu_is_ti81xx() || cpu_is_am335x()) {
 
 		musb_config.fifo_mode = 4;
 
@@ -281,12 +281,17 @@ void __init usb_musb_init(struct omap_musb_board_data *board_data)
 			musb_config.fifo_mode = 6;
 		}
 
+		/* memory base and irq numbers are same for ti81xx and am335x */
 		musb_resources[0].start = TI81XX_USB0_BASE;
 		musb_resources[1].start = TI81XX_IRQ_USB0;
 		musb_resources[0].end = musb_resources[0].start + SZ_2K - 1;
 
 		for (i = 0; i <= board_data->instances; i++) {
-			musb_device[i].name = "musb-ti81xx";
+			if (cpu_is_ti81xx())
+				musb_device[i].name = "musb-ti81xx";
+			else if (cpu_is_am335x())
+				musb_device[i].name = "musb-am335x";
+
 			musb_device[i].num_resources = 0;
 		}
 
@@ -295,7 +300,7 @@ void __init usb_musb_init(struct omap_musb_board_data *board_data)
 
 	if (cpu_is_omap3517() || cpu_is_omap3505())
 		musb_resources[0].end = musb_resources[0].start + SZ_32K - 1;
-	else if (!cpu_is_ti81xx())
+	else if (!cpu_is_ti81xx() && !cpu_is_am335x())
 		musb_resources[0].end = musb_resources[0].start + SZ_4K - 1;
 
 	/*
@@ -311,6 +316,8 @@ void __init usb_musb_init(struct omap_musb_board_data *board_data)
 			musb_plat[i].clock = "usbotg_ick";
 		else if (cpu_is_ti814x())
 			musb_plat[i].clock = "usb_ick";
+		else if (cpu_is_am335x() && i == 0)
+			musb_plat[i].clock = "usb0_ick";
 
 		musb_plat[i].board_data = board_data;
 		musb_plat[i].power = board_data->power >> 1;
