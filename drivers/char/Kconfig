@@ -1158,6 +1158,10 @@ config TI81XX_PCIE_BOOTDRV
 	  can then be controlled using ioctls provided by this driver to
 	  perform the boot operation. Use 'M' to build as module.
 
+config DCC_TTY
+	tristate "DCC tty driver"
+	depends on ARM
+
 source "drivers/s390/char/Kconfig"
 
 config RAMOOPS
