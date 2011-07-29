@@ -344,11 +344,17 @@ static struct clk lcdc_l4ick = {
 
 static struct clk adc_tsc_fck = {
 	.name		= "adc_tsc_fck",
+	.ops		= &clkops_null,
+	.parent		= &sys_clkin_ck,
+	.recalc		= &followparent_recalc,
+};
+
+static struct clk adc_tsc_ick = {
+	.name		= "adc_tsc_ick",
 	.ops		= &clkops_omap2_dflt,
 	.enable_reg	= AM335X_CM_WKUP_ADC_TSC_CLKCTRL,
 	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
-	.clkdm_name	= "l4_wkup_clkdm",
-	.parent		= &sys_clkin_ck,
+	.parent		= &div_l4_wkup_gclk_ck,
 	.recalc		= &followparent_recalc,
 };
 
@@ -1697,6 +1703,7 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"sys_clkin_ck",		&sys_clkin_ck,	CK_AM335X),
 	CLK(NULL,	"tclkin_ck",		&tclkin_ck,	CK_AM335X),
 	CLK(NULL,	"adc_tsc_fck",		&adc_tsc_fck,	CK_AM335X),
+	CLK(NULL,	"adc_tsc_ick",		&adc_tsc_ick,	CK_AM335X),
 	CLK(NULL,	"aes0_fck",		&aes0_fck,	CK_AM335X),
 	CLK(NULL,	"cefuse_fck",		&cefuse_fck,	CK_AM335X),
 	CLK(NULL,	"clkdiv32k_fck",	&clkdiv32k_fck,	CK_AM335X),

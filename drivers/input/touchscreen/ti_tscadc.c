@@ -261,6 +261,7 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
 	int				clock_rate, irqenable, ctrl;
 	struct	tsc_data		*pdata = pdev->dev.platform_data;
 	struct resource			*res;
+	struct clk			*tsc_ick;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res) {
@@ -303,14 +304,19 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
 		goto err_unmap_regs;
 	}
 
-	ts_dev->clk = clk_get(&pdev->dev, "tsc_clk");
+	tsc_ick = clk_get(&pdev->dev, "adc_tsc_ick");
+	if (IS_ERR(tsc_ick)) {
+		dev_err(&pdev->dev, "failed to get TSC ick\n");
+		goto err_free_irq;
+	}
+	clk_enable(tsc_ick);
+
+	ts_dev->clk = clk_get(&pdev->dev, "adc_tsc_fck");
 	if (IS_ERR(ts_dev->clk)) {
-		dev_err(&pdev->dev, "failed to get ts_clk\n");
+		dev_err(&pdev->dev, "failed to get TSC fck\n");
 		err = PTR_ERR(ts_dev->clk);
 		goto err_free_irq;
 	}
-	clk_enable(ts_dev->clk);
-
 	clock_rate = clk_get_rate(ts_dev->clk);
 	clk_value = clock_rate / ADC_CLK;
 	if (clk_value < 7) {
