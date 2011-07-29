@@ -1162,7 +1162,7 @@ void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config)
 
 void setup_ip_phone_evm(struct eeprom_config *evm_config)
 {
-	pr_info("AAM335x IP Phone EVM Config detected\n");
+	pr_info("AM335x IP Phone EVM Config detected\n");
 
 	/*
 	* TODO/REVIST -
