@@ -1327,6 +1327,9 @@ static struct i2c_board_info __initdata am335x_i2c_boardinfo[] = {
 	{
 		I2C_BOARD_INFO("cpld_reg", 0x35),
 	},
+	{
+		I2C_BOARD_INFO("tlc59108", 0x40),
+	},
 
 };
 
