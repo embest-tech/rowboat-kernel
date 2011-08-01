@@ -163,11 +163,8 @@ static struct eeprom_config dghtr_brd_config, baseboard_config;
 
 #define EEPROM_MAC_ADDRESS_OFFSET	48 /* 4+8+4+32 */
 #define EEPROM_NO_OF_MAC_ADDR		3
-struct eeprom_mac {
-	char mac_addr[EEPROM_NO_OF_MAC_ADDR][ETH_ALEN];
-};
 
-static struct eeprom_mac am335x_mac_config;
+static char am335x_mac_addr[EEPROM_NO_OF_MAC_ADDR][ETH_ALEN];
 
 /*
 * @mac_id - MAC 0/1/2 Address
@@ -178,7 +175,7 @@ char *am335x_get_mac_addr(unsigned int mac_id)
 	if (mac_id > (EEPROM_NO_OF_MAC_ADDR - 1))
 		mac_id = 0;
 
-	return &am335x_mac_config.mac_addr[mac_id][0];
+	return &am335x_mac_addr[mac_id][0];
 }
 
 /* current profile if exists else PROFILE_0 on error */
@@ -1256,16 +1253,16 @@ static void am335x_setup_baseboard
 	char brd_name[9], rev[5];
 
 	/* 1st get the MAC address from EEPROM */
-	ret = mem_acc->read(mem_acc, (char *)&am335x_mac_config,
-			EEPROM_MAC_ADDRESS_OFFSET, sizeof(struct eeprom_mac));
-	if (ret != sizeof(struct eeprom_mac)) {
+	ret = mem_acc->read(mem_acc, (char *)&am335x_mac_addr,
+			EEPROM_MAC_ADDRESS_OFFSET, sizeof(am335x_mac_addr));
+	if (ret != sizeof(am335x_mac_addr)) {
 		pr_warning("AM335X: EVM Config read fail: %d\n", ret);
 		return;
 	}
 
 	/* Fillup global mac id */
-	am335x_cpsw_macidfillup(&am335x_mac_config.mac_addr[0][0],
-				&am335x_mac_config.mac_addr[1][0]);
+	am335x_cpsw_macidfillup(&am335x_mac_addr[0][0],
+				&am335x_mac_addr[1][0]);
 
 	/* If any daughter board is already detected, Baseboard devices are
 	*  already setup there. If no daughter board is detected, then setup
