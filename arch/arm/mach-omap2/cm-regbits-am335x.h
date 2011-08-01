@@ -364,7 +364,9 @@
  * CM_CLKSEL_DPLL_MPU
  */
 #define AM335X_DPLL_DIV_SHIFT				0
-#define AM335X_DPLL_DIV_MASK				(0xff << 0)
+#define AM335X_DPLL_DIV_MASK				(0x7f << 0)
+
+#define AM335X_DPLL_PER_DIV_MASK			(0xff << 0)
 
 /* Renamed from DPLL_DIV Used by CM_CLKSEL_DPLL_PERIPH */
 #define AM335X_DPLL_DIV_0_7_SHIFT			0
@@ -396,11 +398,11 @@
  * CM_CLKSEL_DPLL_MPU
  */
 #define AM335X_DPLL_MULT_SHIFT				8
-#define AM335X_DPLL_MULT_MASK				(0xfff << 8)
+#define AM335X_DPLL_MULT_MASK				(0x7ff << 8)
 
 /* Renamed from DPLL_MULT Used by CM_CLKSEL_DPLL_PERIPH */
 #define AM335X_DPLL_MULT_PERIPH_SHIFT			8
-#define AM335X_DPLL_MULT_PERIPH_MASK			(8, 19)
+#define AM335X_DPLL_MULT_PERIPH_MASK			(0xfff << 8)
 
 /*
  * Used by CM_CLKMODE_DPLL_CORE, CM_CLKMODE_DPLL_DDR, CM_CLKMODE_DPLL_DISP,
