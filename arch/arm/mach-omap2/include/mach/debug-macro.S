@@ -77,6 +77,8 @@ omap_uart_lsr:	.word	0
 		beq	83f			@ configure UART3
 		cmp	\rp, #AM335XUART1	@ AM33X5UART1
 		beq	84f			@ configure AM335XUART1
+		cmp	\rp, #AM335XUART4	@ AM33X5UART4
+		beq	96f			@ configure AM335XUART4
 		cmp	\rp, #ZOOM_UART		@ only on zoom2/3
 		beq	95f			@ configure ZOOM_UART
 
@@ -117,6 +119,21 @@ omap_uart_lsr:	.word	0
 		add	\rv, \rv, #4		@ omap_uart_virt
 		str	\rp, [\rv, #0]
 		mov	\rp, #(UART_LSR << ZOOM_PORT_SHIFT)
+		add	\rv, \rv, #4		@ omap_uart_lsr
+		str	\rp, [\rv, #0]
+		b	10b
+
+		/* Store both phys and virt address for the uart */
+96:		ldr	\rp, =AM335X_UART4_BASE
+		mrc	p15, 0, \rv, c1, c0
+		tst	\rv, #1			@ MMU enabled?
+		ldreq	\rv, =__virt_to_phys(omap_uart_phys)	@ MMU not enabled
+		ldrne	\rv, =omap_uart_phys	@ MMU enabled
+		str	\rp, [\rv, #0]
+		add	\rp, \rp, #0xb2000000	@ virt base
+		add	\rv, \rv, #4		@ omap_uart_virt
+		str	\rp, [\rv, #0]
+		mov	\rp, #(UART_LSR << OMAP_PORT_SHIFT)
 		add	\rv, \rv, #4		@ omap_uart_lsr
 		str	\rp, [\rv, #0]
 		b	10b

@@ -183,6 +183,9 @@ static inline void __arch_decomp_setup(unsigned long arch_id)
 		/* AM335X  based boards using UART1 */
 		DEBUG_LL_AM335X(1, am335xevm);
 
+		/* AM335X IA boards using UART4 */
+		DEBUG_LL_AM335X(4, am335xiaevm);
+
 	} while (0);
 }
 

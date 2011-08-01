@@ -61,6 +61,7 @@
 
 /* AM335X serial ports */
 #define AM335X_UART1_BASE	0x44E09000
+#define AM335X_UART4_BASE	TI814X_UART4_BASE
 
 /* External port on Zoom2/3 */
 #define ZOOM_UART_BASE		0x10000000
@@ -99,6 +100,7 @@
 #define TI814XUART5		85
 #define TI814XUART6		86
 #define AM335XUART1		87
+#define AM335XUART4		88
 #define ZOOM_UART		95		/* Only on zoom2/3 */
 
 /* This is only used by 8250.c for omap1510 */
