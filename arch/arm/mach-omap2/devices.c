@@ -1908,7 +1908,7 @@ static inline void ti814x_cpsw_init(void) {}
 
 static u64 am335x_cpsw_dmamask = DMA_BIT_MASK(32);
 /* TODO : Verify the offsets */
-struct cpsw_slave_data am335x_cpsw_slaves[] = {
+static struct cpsw_slave_data am335x_cpsw_slaves[] = {
 	{
 		.slave_reg_ofs  = 0x208,
 		.sliver_reg_ofs = 0xd80,

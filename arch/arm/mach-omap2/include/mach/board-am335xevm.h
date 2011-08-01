@@ -37,18 +37,6 @@
 #define PROFILE_7		(0x1 << 7)
 #define PROFILE_ALL		0xFF
 
-u32 am335x_get_profile_selection(void);
-u32 am335x_get_am335x_evm_id(void);
-u32 am335x_get_daughter_board_rev(void);
-u32 am335x_get_baseboard_rev(void);
-
-int am335x_configure_evm_devices(int evm_id, int profile);
-
-/*
-* @mac_id - MAC 0/1/2 Address
-*/
-char *am335x_get_mac_addr(unsigned int mac_id);
-
 void am335x_evmid_fillup(unsigned int evmid);
 void am335x_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1);
 
