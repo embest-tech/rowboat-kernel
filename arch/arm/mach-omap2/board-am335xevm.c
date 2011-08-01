@@ -44,6 +44,7 @@
 #include <plat/common.h>
 #include <plat/asp.h>
 #include <plat/mmc.h>
+#include <plat/lcdc.h>
 
 #include "board-flash.h"
 #include "mux.h"

@@ -42,6 +42,7 @@
 #include <plat/omap_device.h>
 #include <plat/omap4-keypad.h>
 #include <plat/asp.h>
+#include <plat/lcdc.h>
 
 #include "mux.h"
 #include "control.h"
