@@ -184,7 +184,7 @@ static int __devinit cppi41_controller_start(struct dma_controller *controller)
 	cppi = container_of(controller, struct cppi41, controller);
 	cppi_info = cppi->cppi_info;
 
-	if (cpu_is_ti81xx() || cpu_is_am335x()) {
+	if (cpu_is_ti81xx()) {
 		cppi->automode_reg_offs = TI81XX_USB_AUTOREQ_REG;
 		cppi->teardown_reg_offs = TI81XX_USB_TEARDOWN_REG;
 	} else {

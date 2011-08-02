@@ -1286,7 +1286,7 @@ static int __exit ti81xx_remove(struct platform_device *pdev)
 static struct platform_driver ti81xx_musb_driver = {
 	.remove         = __exit_p(ti81xx_remove),
 	.driver         = {
-		.name   = "musb-ti81xx",
+		.name   = "musb-ti81xx-onward",
 	},
 };
 
