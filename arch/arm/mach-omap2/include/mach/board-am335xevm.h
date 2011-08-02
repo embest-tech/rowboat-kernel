@@ -50,4 +50,8 @@ struct platform_device *am33xx_register_lcdc(
 * @mac_id - MAC 0/1/2 Address
 */
 char *am335x_get_mac_addr(unsigned int mac_id);
+
+void am335x_evmid_fillup(unsigned int evmid);
+void am335x_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1);
+
 #endif

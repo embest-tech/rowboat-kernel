@@ -2005,10 +2005,52 @@ static struct platform_device am335x_cpsw_device = {
 				},
 };
 
-void am335x_cpsw_init(void)
+static unsigned char  am335x_macid0[ETH_ALEN];
+static unsigned char  am335x_macid1[ETH_ALEN];
+static unsigned int   am335x_evmid;
+
+/*
+* am335x_evmid_fillup - set up board evmid
+* @evmid - evm id which needs to be configured
+*
+* This function is called to configure board evm id.
+* IA Motor Control EVM needs special setting of MAC PHY Id.
+* This function is called when IA Motor Control EVM is detected
+* during boot-up.
+*/
+void am335x_evmid_fillup(unsigned int evmid)
+{
+	am335x_evmid = evmid;
+	return;
+}
+
+/*
+* am335x_cpsw_macidfillup - setup mac adrresses
+* @eeprommacid0 - mac id 0 which needs to be configured
+* @eeprommacid1 - mac id 1 which needs to be configured
+*
+* This function is called to configure mac addresses.
+* Mac addresses are read from eeprom and this function is called
+* to store those mac adresses in am335x_macid0 and am335x_macid1.
+* In case, mac address read from eFuse are invalid, mac addresses
+* stored in these variable are used.
+*/
+void am335x_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1)
+{
+	u32 i;
+
+	/* Fillup these mac addresses with the mac adresses from eeprom */
+	for (i = 0; i < ETH_ALEN; i++) {
+		am335x_macid0[i] = eeprommacid0[i];
+		am335x_macid1[i] = eeprommacid1[i];
+	}
+
+	return;
+}
+
+static void am335x_cpsw_init(void)
 {
 	u32 mac_lo, mac_hi;
-	char *eeprom_macid;
 	u32 i;
 
 	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID0_LO);
@@ -2022,9 +2064,8 @@ void am335x_cpsw_init(void)
 
 	/* Read MACID0 from eeprom if eFuse MACID is invalid */
 	if (!is_valid_ether_addr(am335x_cpsw_slaves[0].mac_addr)) {
-		eeprom_macid = am335x_get_mac_addr(0);
 		for (i = 0; i < ETH_ALEN; i++)
-			am335x_cpsw_slaves[0].mac_addr[i] = eeprom_macid[i];
+			am335x_cpsw_slaves[0].mac_addr[i] = am335x_macid0[i];
 	}
 
 	mac_lo = omap_ctrl_readl(TI81XX_CONTROL_MAC_ID1_LO);
@@ -2038,12 +2079,11 @@ void am335x_cpsw_init(void)
 
 	/* Read MACID1 from eeprom if eFuse MACID is invalid */
 	if (!is_valid_ether_addr(am335x_cpsw_slaves[1].mac_addr)) {
-		eeprom_macid = am335x_get_mac_addr(1);
 		for (i = 0; i < ETH_ALEN; i++)
-			am335x_cpsw_slaves[1].mac_addr[i] = eeprom_macid[i];
+			am335x_cpsw_slaves[1].mac_addr[i] = am335x_macid1[i];
 	}
 
-	if (am335x_get_am335x_evm_id() == IND_AUT_MTR_EVM) {
+	if (am335x_evmid == IND_AUT_MTR_EVM) {
 		am335x_cpsw_slaves[0].phy_id = "0:01";
 		am335x_cpsw_slaves[1].phy_id = "0:00";
 	}

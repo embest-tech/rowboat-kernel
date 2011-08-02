@@ -1156,6 +1156,9 @@ void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config)
 
 	am335x_configure_evm_devices(IND_AUT_MTR_EVM, PROFILE_0);
 
+	/* Fillup global evmid */
+	am335x_evmid_fillup(IND_AUT_MTR_EVM);
+
 	/* Initialize TLK110 PHY registers for phy version 1.0 */
 	am335x_tlk110_phy_init();
 }
@@ -1237,6 +1240,10 @@ static void am335x_setup_baseboard
 		pr_warning("AM335X: EVM Config read fail: %d\n", ret);
 		return;
 	}
+
+	/* Fillup global mac id */
+	am335x_cpsw_macidfillup(&am335x_mac_config.mac_addr[0][0],
+				&am335x_mac_config.mac_addr[1][0]);
 
 	/* If any daughter board is already detected, Baseboard devices are
 	*  already setup there. If no daughter board is detected, then setup
