@@ -1802,7 +1802,7 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"i2c_clk",		&i2c_clk,	CK_AM335X),
 	CLK(NULL,	"clk_div_24_ck",	&clk_div_24_ck,	CK_AM335X),
 	CLK(NULL,	"dpll_core_ck",		&dpll_core_ck,	CK_AM335X),
-	CLK(NULL,	"dpll_core_ck",		&dpll_core_x2_ck,	CK_AM335X),
+	CLK(NULL,	"dpll_core_x2_ck",	&dpll_core_x2_ck,	CK_AM335X),
 	CLK(NULL,	"dpll_core_m4_ck",	&dpll_core_m4_ck,	CK_AM335X),
 	CLK(NULL,	"sysclk_div_ck",	&sysclk_div_ck,	CK_AM335X),
 	CLK(NULL,	"core_100m_ck",		&core_100m_ck,	CK_AM335X),
