@@ -1418,7 +1418,7 @@ static void usb_process_rx_queue(struct cppi41 *cppi, unsigned index)
 		if (unlikely(rx_ch->channel.actual_len >= rx_ch->length ||
 			     length < orig_buf_len)) {
 
-#if defined(CONFIG_ARCH_TI81XX) || defined(CONFIG_ARCH_AM335X)
+#ifdef CONFIG_ARCH_TI81XX
 			struct musb_hw_ep *ep;
 			u8 isoc, next_seg = 0;
 
