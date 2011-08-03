@@ -142,13 +142,13 @@ static u32 am335x_get_profile_selection(void)
 	if (!cpld_client)
 		/* error checking is not done in func's calling this routine.
 		so return profile 0 on error */
-		return PROFILE_0;
+		return 0;
 
 	val = i2c_smbus_read_word_data(cpld_client, CPLD_CFG_REG);
 	if (val < 0)
-		return PROFILE_0;
+		return 0;	/* default to Profile 0 on Error */
 	else
-		return 1L << (val & 0x7);
+		return val & 0x7;
 }
 
 /*
@@ -1187,10 +1187,9 @@ static void setup_general_purpose_evm(struct eeprom_config *evm_config,
 	u32 prof_sel = am335x_get_profile_selection();
 
 	pr_info("AM335x General Purpose EVM Config detected\n");
-	/* profiles are 0-7, but am335x_get_profile_selection returns 1-8 */
-	pr_info("Selected profile : %d\n", prof_sel - 1);
+	pr_info("Selected profile : %d\n", prof_sel);
 
-	_configure_device(GEN_PURP_EVM, gen_purp_evm_dev_cfg, prof_sel,
+	_configure_device(GEN_PURP_EVM, gen_purp_evm_dev_cfg, (1L << prof_sel),
 								db_flag);
 }
 
@@ -1200,11 +1199,10 @@ static void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config,
 	u32 prof_sel = am335x_get_profile_selection();
 
 	pr_info("AM335x Ind. Auto. Motor Control EVM Config detected\n");
-	/* profiles are 0-7, but am335x_get_profile_selection returns 1-8 */
-	pr_info("Selected profile : %d\n", prof_sel - 1);
+	pr_info("Selected profile : %d\n", prof_sel);
 
 	/* Only Profile 0 is supported */
-	if (prof_sel != PROFILE_0) {
+	if ((1L << prof_sel) != PROFILE_0) {
 		pr_err("AM335X: Only Profile 0 is supported\n");
 		return;
 	}
