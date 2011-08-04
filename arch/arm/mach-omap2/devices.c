@@ -1511,6 +1511,23 @@ static const s8 ti814x_queue_priority_mapping[][2] = {
 	{-1, -1}
 };
 
+/* Three Transfer Controllers on AM335X */
+static const s8 am335x_queue_tc_mapping[][2] = {
+	/* {event queue no, TC no} */
+	{0, 0},
+	{1, 1},
+	{2, 2},
+	{-1, -1}
+};
+
+static const s8 am335x_queue_priority_mapping[][2] = {
+	/* {event queue no, Priority} */
+	{0, 0},
+	{1, 1},
+	{2, 2},
+	{-1, -1}
+};
+
 static struct event_to_channel_map ti814x_xbar_event_mapping[] = {
 	/* {xbar event no, Channel} */
 	{1, -1},
@@ -1646,8 +1663,8 @@ static struct edma_soc_info am335x_edma_info[] = {
 		.n_cc			= 1,
 		.rsv_chans		= ti814x_dma_rsv_chans,
 		.rsv_slots		= ti814x_dma_rsv_slots,
-		.queue_tc_mapping	= ti814x_queue_tc_mapping,
-		.queue_priority_mapping	= ti814x_queue_priority_mapping,
+		.queue_tc_mapping	= am335x_queue_tc_mapping,
+		.queue_priority_mapping	= am335x_queue_priority_mapping,
 		.is_xbar		= 1,
 		.n_events		= 95,
 		.xbar_event_mapping	= ti814x_xbar_event_mapping,
