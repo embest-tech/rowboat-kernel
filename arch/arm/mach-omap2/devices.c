@@ -2512,7 +2512,7 @@ static int __init omap_init_wdt(void)
 	char *oh_name;
 	char *dev_name = "omap_wdt";
 
-	if (cpu_is_ti814x())
+	if ((cpu_is_ti814x()) || (cpu_is_am335x()))
 		oh_name = "wd_timer1";
 	else
 		oh_name = "wd_timer2";
