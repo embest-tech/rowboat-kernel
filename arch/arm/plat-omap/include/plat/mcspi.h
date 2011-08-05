@@ -3,6 +3,7 @@
 
 struct omap2_mcspi_platform_config {
 	unsigned short	num_cs;
+	unsigned char   data_lines_reversed;
 };
 
 struct omap2_mcspi_device_config {

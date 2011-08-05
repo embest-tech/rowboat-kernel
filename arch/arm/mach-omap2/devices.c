@@ -456,8 +456,11 @@ static inline void ti81xx_mcspi_fixup(void)
 	omap2_mcspi1_resources[0].start	= TI81XX_MCSPI1_BASE;
 	omap2_mcspi1_resources[0].end	= TI81XX_MCSPI1_BASE + 0xff;
 #ifdef CONFIG_ARCH_AM335X
-	if (cpu_is_am335x())
-		omap2_mcspi1_config.num_cs = 2;
+	if (cpu_is_am335x()) {
+		omap2_mcspi1_config.num_cs              = 2;
+		omap2_mcspi1_config.data_lines_reversed = 1;
+		omap2_mcspi2_config.data_lines_reversed = 1;
+	}
 #endif
 
 #if defined(CONFIG_ARCH_TI814X) || defined(CONFIG_ARCH_AM335X)
