@@ -387,7 +387,7 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 
 	if ((cpu_is_ti816x()) || (cpu_is_ti814x()))
 		omap2_init_mmc(hsmmc_data, TI81XX_NR_MMC);
-	else if (!cpu_is_am335x())
+	else if (cpu_is_am335x())
 		omap2_init_mmc(am335x_hsmmc_data, AM35XX_NR_MMC);
 	else
 		omap2_init_mmc(hsmmc_data, OMAP34XX_NR_MMC);
