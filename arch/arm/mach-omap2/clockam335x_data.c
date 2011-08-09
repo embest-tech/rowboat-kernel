@@ -530,11 +530,11 @@ static struct clk gpmc_fck = {
 
 static struct clk i2c1_fck = {
 	.name		= "i2c1_fck",
-	.ops		= &clkops_omap2_dflt,
+	.ops		= &clkops_ti81xx_dflt_wait,
 	.enable_reg	= AM335X_CM_WKUP_I2C0_CLKCTRL,
 	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l4_wkup_clkdm",
-	.parent		= &i2c_clk,
+	.parent		= &dpll_per_m2_ck,
 	.recalc		= &followparent_recalc,
 };
 
