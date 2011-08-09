@@ -1211,7 +1211,7 @@ static int __init fb_probe(struct platform_device *device)
 	case 0x4C100102:
 		lcd_revision = LCD_VERSION_1;
 		break;
-	case 0x4F200800:
+	case 0x4F201000:
 		lcd_revision = LCD_VERSION_2;
 		break;
 	default:
