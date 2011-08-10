@@ -1742,6 +1742,66 @@ int __init ti81xx_register_edma(void)
 static inline void ti81xx_register_edma(void) {}
 #endif
 
+#if defined(CONFIG_ARCH_AM335X)
+
+#define AM335X_RTC_BASE		0x44e3e000
+static struct resource am335x_rtc_resources[] = {
+	{
+		.start		= AM335X_RTC_BASE,
+		.end		= AM335X_RTC_BASE + SZ_4K - 1,
+		.flags		= IORESOURCE_MEM,
+	},
+	{ /* timer irq */
+		.start		= AM335X_IRQ_RTC_TIMER,
+		.end		= AM335X_IRQ_RTC_TIMER,
+		.flags		= IORESOURCE_IRQ,
+	},
+	{ /* alarm irq */
+		.start		= AM335X_IRQ_RTC_ALARM,
+		.end		= AM335X_IRQ_RTC_ALARM,
+		.flags		= IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device am335x_rtc_device = {
+	.name           = "omap_rtc",
+	.id             = -1,
+	.num_resources	= ARRAY_SIZE(am335x_rtc_resources),
+	.resource	= am335x_rtc_resources,
+};
+
+int am335x_register_rtc(void)
+{
+	void __iomem *base;
+	struct clk *clk;
+
+	clk = clk_get(NULL, "rtc_fck");
+	if (IS_ERR(clk)) {
+		pr_err("rtc : Failed to get RTC clock\n");
+		return -1;
+	}
+
+	if (clk_enable(clk)) {
+		pr_err("rtc: Clock Enable Failed\n");
+		return -1;
+	}
+
+	base = ioremap(AM335X_RTC_BASE, SZ_4K);
+	if (WARN_ON(!base))
+		return -ENOMEM;
+
+	/* Unlock the rtc's registers */
+	__raw_writel(0x83e70b13, base + 0x6c);
+	__raw_writel(0x95a4f1e0, base + 0x70);
+
+	iounmap(base);
+
+	return  platform_device_register(&am335x_rtc_device);
+}
+#else
+int am335x_register_rtc(void) { }
+#endif
+
 /*-------------------------------------------------------------------------*/
 
 #ifdef CONFIG_ARCH_TI814X
@@ -2494,6 +2554,7 @@ static int __init omap2_init_devices(void)
 	ti81xx_init_ahci();
 #endif
 	ti816x_init_pcie();
+	am335x_register_rtc();
 	return 0;
 }
 arch_initcall(omap2_init_devices);

@@ -430,6 +430,8 @@ static int __init omap_rtc_probe(struct platform_device *pdev)
 	if (reg != new_ctrl)
 		rtc_write(new_ctrl, OMAP_RTC_CTRL_REG);
 
+	rtc_write(0x50, OMAP_RTC_OSC_REG);
+
 	return 0;
 
 fail2:
