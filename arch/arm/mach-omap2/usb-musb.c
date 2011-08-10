@@ -33,7 +33,7 @@
 #include "control.h"
 
 #if defined(CONFIG_USB_MUSB_OMAP2PLUS) || defined (CONFIG_USB_MUSB_AM35X) \
-	|| defined(CONFIG_USB_MUSB_TI81XX)
+	|| defined(CONFIG_USB_MUSB_TI81XX_ONWARD)
 
 static void ti81xx_musb_phy_power(u8 id, u8 on)
 {
@@ -67,6 +67,9 @@ static void ti81xx_musb_phy_power(u8 id, u8 on)
 					| TI81XX_USBPHY_DMINPUT);
 				usbphycfg |= TI81XX_USBPHY_DPOPBUFCTL
 					| TI81XX_USBPHY_DPOPBUFCTL;
+			} else if (cpu_is_am335x()) {
+				usbphycfg &= ~(AM335X_USBPHY_GPIO_SIG_INV
+					| AM335X_USBPHY_GPIO_SIG_CROSS);
 			}
 		}
 
