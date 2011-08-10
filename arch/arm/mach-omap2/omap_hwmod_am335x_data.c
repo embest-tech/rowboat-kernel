@@ -1950,8 +1950,6 @@ static __initdata struct omap_hwmod *am335x_hwmods[] = {
 	&am335x_uart4_hwmod,
 	&am335x_uart5_hwmod,
 	&am335x_uart6_hwmod,
-	/* usb0 class */
-	&am335x_usb0_hwmod,
 	/* wd_timer1 class */
 	&am335x_wd_timer1_hwmod,
 	/* wdt class */
