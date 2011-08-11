@@ -1556,15 +1556,37 @@ static const struct clksel sgx_clksel_sel[] = {
 static struct clk sgx_clksel_ck = {
 	.name		= "sgx_clksel_ck",
 	.parent		= &dpll_core_m4_ck,
+	.clksel		= sgx_clksel_sel,
 	.ops		= &clkops_null,
-	.recalc		= &followparent_recalc,
+	.clksel_reg	= AM335X_CLKSEL_GFX_FCLK,
+	.clksel_mask	= AM335X_CLKSEL_GFX_FCLK_MASK,
+	.recalc		= &omap2_clksel_recalc,
 };
 
-static struct clk pda2ca20fee8e2da91_ck = {
-	.name		= "pda2ca20fee8e2da91_ck",
+static const struct clksel_rate div_1_0_2_1_rates[] = {
+	{ .div = 1, .val = 0, .flags = RATE_IN_AM335X },
+	{ .div = 2, .val = 1, .flags = RATE_IN_AM335X },
+	{ .div = 0 },
+};
+
+static const struct clksel sgx_div_sel[] = {
+	{ .parent = &sgx_clksel_ck, .rates = div_1_0_2_1_rates },
+	{ .parent = NULL },
+};
+
+static struct clk sgx_ck = {
+	.name		= "sgx_ck",
 	.parent		= &sgx_clksel_ck,
-	.ops		= &clkops_null,
-	.recalc		= &followparent_recalc,
+	.clksel		= sgx_div_sel,
+	.ops		= &clkops_ti81xx_dflt_wait,
+	.enable_reg	= AM335X_CM_GFX_GFX_CLKCTRL,
+	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
+	.clksel_reg	= AM335X_CLKSEL_GFX_FCLK,
+	.clksel_mask	= TI81XX_CLKSEL_0_0_MASK,
+	.clkdm_name	= "gfx_l3_clkdm",
+	.recalc		= &omap2_clksel_recalc,
+	.round_rate     = &omap2_clksel_round_rate,
+	.set_rate       = &omap2_clksel_set_rate,
 };
 
 static const struct clksel sysclkout_pre_sel[] = {
@@ -1755,7 +1777,7 @@ static struct omap_clk am335x_clks[] = {
 	CLK("mmci-omap-hs.1",	"fck",	&mmc1_fck,	CK_AM335X),
 	CLK("mmci-omap-hs.2",	"fck",	&mmc2_fck,	CK_AM335X),
 	CLK(NULL,	"mmu_fck",		&mmu_fck,	CK_AM335X),
-	CLK(NULL,	"mpu_fck",		&mpu_fck,	CK_AM335X),
+	CLK(NULL,	"mpu_ck",		&mpu_fck,	CK_AM335X),
 	CLK(NULL,	"mstr_exps_fck",	&mstr_exps_fck,	CK_AM335X),
 	CLK(NULL,	"ocmcram_fck",		&ocmcram_fck,	CK_AM335X),
 	CLK(NULL,	"ocpwp_fck",		&ocpwp_fck,	CK_AM335X),
@@ -1839,7 +1861,7 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"lcd_clk_mux_ck",	&lcd_clk_mux_ck,	CK_AM335X),
 	CLK(NULL,	"mmc_clk",		&mmc_clk,	CK_AM335X),
 	CLK(NULL,	"sgx_clksel_ck",	&sgx_clksel_ck,	CK_AM335X),
-	CLK(NULL,	"pda2ca20fee8e2da91_ck", &pda2ca20fee8e2da91_ck,	CK_AM335X),
+	CLK(NULL,	"sgx_ck",		&sgx_ck,	CK_AM335X),
 	CLK(NULL,	"sysclkout_pre_ck",	&sysclkout_pre_ck,	CK_AM335X),
 	CLK(NULL,	"syclkoutdiv_ck",	&syclkoutdiv_ck,	CK_AM335X),
 	CLK(NULL,	"timer0_clkmux_ck",	&timer0_clkmux_ck,	CK_AM335X),
