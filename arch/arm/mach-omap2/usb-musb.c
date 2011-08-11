@@ -48,28 +48,13 @@ static void ti81xx_musb_phy_power(u8 id, u8 on)
 					| TI816X_USBPHY1_NORMAL_MODE);
 			usbphycfg &= ~(TI816X_USBPHY_REFCLK_OSC);
 		} else if (cpu_is_ti814x() || cpu_is_am335x()) {
-			usbphycfg &= ~(USBPHY_CM_PWRDN
-				| USBPHY_OTG_PWRDN
-				| USBPHY_DMPULLUP
-				| USBPHY_DPPULLUP
-				| USBPHY_DATA_POLARITY);
-			usbphycfg |= (USBPHY_SRCONDM
-				| USBPHY_SINKONDP
-				| USBPHY_CHGISINK_EN
-				| USBPHY_CHGVSRC_EN
-				| USBPHY_CDET_EXTCTL
-				| USBPHY_DPGPIO_PD
-				| USBPHY_DMGPIO_PD
-				| USBPHY_OTGVDET_EN
-				| USBPHY_OTGSESSEND_EN);
+			usbphycfg &= ~(USBPHY_CM_PWRDN | USBPHY_OTG_PWRDN);
+			usbphycfg |= (USBPHY_OTGVDET_EN | USBPHY_OTGSESSEND_EN);
 			if (cpu_is_ti814x()) {
 				usbphycfg &= ~(TI81XX_USBPHY_DPINPUT
 					| TI81XX_USBPHY_DMINPUT);
 				usbphycfg |= TI81XX_USBPHY_DPOPBUFCTL
 					| TI81XX_USBPHY_DPOPBUFCTL;
-			} else if (cpu_is_am335x()) {
-				usbphycfg &= ~(AM335X_USBPHY_GPIO_SIG_INV
-					| AM335X_USBPHY_GPIO_SIG_CROSS);
 			}
 		}
 
