@@ -925,7 +925,7 @@ static struct mtd_partition am335x_nand_partitions[] = {
 	{
 		.name           = "U-Boot-min",
 		.offset         = 0,    /* Offset = 0x0 */
-		.size           = SZ_128K,
+		.size           = 4 * SZ_128K,
 		.mask_flags     = MTD_WRITEABLE,        /* force read-only */
 	},
 	{
@@ -1439,6 +1439,7 @@ static void __init am335x_evm_init_irq(void)
 	omap2_init_common_infrastructure();
 	omap2_init_common_devices(NULL, NULL);
 	omap_init_irq();
+	gpmc_init();
 }
 
 static void __init am335x_evm_init(void)
