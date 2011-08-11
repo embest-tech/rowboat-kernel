@@ -427,24 +427,21 @@ static struct pinmux_config tsc_pin_mux[] = {
 
 /* Module pin mux for nand */
 static struct pinmux_config nand_pin_mux[] = {
-	{"gpmc_ad0.gpmc_ad0",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad1.gpmc_ad1",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad2.gpmc_ad2",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad3.gpmc_ad3",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad4.gpmc_ad4",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad5.gpmc_ad5",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad6.gpmc_ad6",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad7.gpmc_ad7",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad0.gpmc_ad0",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad1.gpmc_ad1",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad2.gpmc_ad2",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad3.gpmc_ad3",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad4.gpmc_ad4",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad5.gpmc_ad5",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad6.gpmc_ad6",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad7.gpmc_ad7",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
 	{"gpmc_wait0.gpmc_wait0", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
-	{"gpmc_wpn.gpmc_wpn",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
-	{"gpmc_csn0.gpmc_csn0",	OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
-	{"gpmc_advn_ale.gpmc_advn_ale",	OMAP_MUX_MODE0 |
-						AM335X_PIN_OUTPUT_PULLUP},
-	{"gpmc_oen_ren.gpmc_oen_ren",	OMAP_MUX_MODE0 |
-						AM335X_PIN_OUTPUT_PULLUP},
-	{"gpmc_wen.gpmc_wen", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
-	{"gpmc_ben0_cle.gpmc_ben0_cle",	OMAP_MUX_MODE0 |
-						AM335X_PIN_OUTPUT_PULLUP},
+	{"gpmc_wpn.gpmc_wpn",	OMAP_MUX_MODE7 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_csn0.gpmc_csn0",	OMAP_MUX_MODE0 | AM335X_PULL_DISA},
+	{"gpmc_advn_ale.gpmc_advn_ale",	OMAP_MUX_MODE0 | AM335X_PULL_DISA},
+	{"gpmc_oen_ren.gpmc_oen_ren",	OMAP_MUX_MODE0 | AM335X_PULL_DISA},
+	{"gpmc_wen.gpmc_wen", OMAP_MUX_MODE0 | AM335X_PULL_DISA},
+	{"gpmc_ben0_cle.gpmc_ben0_cle",	OMAP_MUX_MODE0 | AM335X_PULL_DISA},
 	{NULL, 0},
 };
 
