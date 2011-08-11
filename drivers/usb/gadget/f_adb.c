@@ -31,6 +31,7 @@
 #include <linux/miscdevice.h>
 
 #include <linux/usb/android_composite.h>
+#include <linux/sched.h>
 
 #define BULK_BUFFER_SIZE           4096
 
