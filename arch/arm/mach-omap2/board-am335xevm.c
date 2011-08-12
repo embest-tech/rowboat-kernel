@@ -656,7 +656,7 @@ static struct lcd_ctrl_config lcd_cfg = {
 	.ac_bias_intrpt		= 0,
 	.dma_burst_sz		= 16,
 	.bpp			= 32,
-	.fdd			= 255,
+	.fdd			= 0x80,
 	.tft_alt_mode		= 0,
 	.stn_565_mode		= 0,
 	.mono_8bit_mode		= 0,
@@ -664,7 +664,7 @@ static struct lcd_ctrl_config lcd_cfg = {
 	.invert_frm_clock	= 1,
 	.sync_edge		= 0,
 	.sync_ctrl		= 1,
-	.raster_order		= 0,
+	.raster_order		= 1,
 };
 
 static struct da8xx_lcdc_platform_data TFC_S9700RTWV35TR_01B_pdata = {
