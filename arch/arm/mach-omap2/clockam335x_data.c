@@ -535,7 +535,8 @@ static struct clk i2c1_fck = {
 	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
 	.clkdm_name	= "l4_wkup_clkdm",
 	.parent		= &dpll_per_m2_ck,
-	.recalc		= &followparent_recalc,
+	.fixed_div	= 4,
+	.recalc         = &omap_fixed_divisor_recalc,
 };
 
 static struct clk i2c2_fck = {
@@ -1751,9 +1752,9 @@ static struct omap_clk am335x_clks[] = {
 	CLK(NULL,	"gpio2_fck",		&gpio2_fck,	CK_AM335X),
 	CLK(NULL,	"gpio3_fck",		&gpio3_fck,	CK_AM335X),
 	CLK(NULL,	"gpmc_fck",		&gpmc_fck,	CK_AM335X),
-	CLK(NULL,	"i2c1_fck",		&i2c1_fck,	CK_AM335X),
-	CLK(NULL,	"i2c2_fck",		&i2c2_fck,	CK_AM335X),
-	CLK(NULL,	"i2c3_fck",		&i2c3_fck,	CK_AM335X),
+	CLK("omap_i2c.1",	"fck",		&i2c1_fck,	CK_AM335X),
+	CLK("omap_i2c.2",	"fck",		&i2c2_fck,	CK_AM335X),
+	CLK("omap_i2c.3",	"fck",		&i2c3_fck,	CK_AM335X),
 	CLK(NULL,	"icss_fck",		&icss_fck,	CK_AM335X),
 	CLK(NULL,	"ieee5000_fck",		&ieee5000_fck,	CK_AM335X),
 	CLK(NULL,	"l3_instr_fck",		&l3_instr_fck,	CK_AM335X),

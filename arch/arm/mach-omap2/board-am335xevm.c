@@ -435,15 +435,11 @@ static struct pinmux_config nand_pin_mux[] = {
 	{NULL, 0},
 };
 
-static struct pinmux_config i2c0_pin_mux[] = {
-	{"i2c0_sda.i2c0_sda",   OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{"i2c0_scl.i2c0_scl",   OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
-	{NULL, 0},
-};
-
 static struct pinmux_config i2c1_pin_mux[] = {
-	{"spi0_d1.i2c1_sda",    OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
-	{"spi0_cs0.i2c1_scl",   OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+	{"spi0_d1.i2c1_sda",    OMAP_MUX_MODE2 | AM335X_SLEWCTRL_SLOW |
+					AM335X_PULL_ENBL | AM335X_INPUT_EN},
+	{"spi0_cs0.i2c1_scl",   OMAP_MUX_MODE2 | AM335X_SLEWCTRL_SLOW |
+					AM335X_PULL_ENBL | AM335X_INPUT_EN},
 	{NULL, 0},
 };
 
@@ -876,15 +872,17 @@ static void mii1_init(int evm_id, int profile)
 	return;
 }
 
-static void i2c0_init(int evm_id, int profile)
-{
-	setup_pin_mux(i2c0_pin_mux);
-	return;
-}
+static struct i2c_board_info __initdata am335x_i2c_boardinfo1[] = {
+	{
+		I2C_BOARD_INFO("tlv320aic3x", 0x1b),
+	}
+};
 
 static void i2c1_init(int evm_id, int profile)
 {
 	setup_pin_mux(i2c1_pin_mux);
+	omap_register_i2c_bus(2, 100, am335x_i2c_boardinfo1,
+			ARRAY_SIZE(am335x_i2c_boardinfo1));
 	return;
 }
 
@@ -1108,7 +1106,6 @@ static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{evm_nand_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
-	{i2c0_init,	DEV_ON_BASEBOARD, PROFILE_NONE },
 	{usb0_init, 	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb1_init, 	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{NULL, 0, 0},
@@ -1132,7 +1129,6 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{evm_nand_init,	DEV_ON_DGHTR_BRD, (PROFILE_ALL
 						& ~PROFILE_2 & ~PROFILE_3)},
 	{evm_nor_init,	DEV_ON_DGHTR_BRD, PROFILE_3},
-	{i2c0_init,	DEV_ON_BASEBOARD, PROFILE_ALL },
 	{i2c1_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_3 | PROFILE_7)},
 	{usb0_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
 	{usb1_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
@@ -1145,7 +1141,6 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
 	{mii1_init,	DEV_ON_DGHTR_BRD, PROFILE_ALL},
 	{evm_nand_init, DEV_ON_BASEBOARD, PROFILE_ALL},
-	{i2c0_init,	DEV_ON_BASEBOARD, PROFILE_ALL },
 	{usb0_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
 	{usb1_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
 	{NULL, 0, 0},
@@ -1160,7 +1155,6 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{lcdc_init,	DEV_ON_DGHTR_BRD, PROFILE_NONE},
 	{am335x_tsc_init, DEV_ON_DGHTR_BRD, PROFILE_NONE},
 	{evm_nand_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
-	{i2c0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{i2c1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb0_init, 	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb1_init, 	DEV_ON_BASEBOARD, PROFILE_NONE},
@@ -1344,12 +1338,6 @@ static struct i2c_board_info __initdata am335x_i2c_boardinfo[] = {
 
 };
 
-static struct i2c_board_info __initdata am335x_i2c_boardinfo1[] = {
-	{
-		I2C_BOARD_INFO("tlv320aic3x", 0x1b),
-	}
-};
-
 static struct omap_musb_board_data musb_board_data = {
 	.interface_type		= MUSB_INTERFACE_ULPI,
 #ifdef CONFIG_USB_MUSB_OTG
@@ -1404,9 +1392,6 @@ static void __init am335x_evm_i2c_init(void)
 
 	omap_register_i2c_bus(1, 100, am335x_i2c_boardinfo,
 				ARRAY_SIZE(am335x_i2c_boardinfo));
-
-	omap_register_i2c_bus(2, 100, am335x_i2c_boardinfo1,
-				ARRAY_SIZE(am335x_i2c_boardinfo1));
 }
 
 #ifdef CONFIG_OMAP_MUX
@@ -1415,6 +1400,10 @@ static struct omap_board_mux board_mux[] __initdata = {
 	AM335X_MUX(UART0_RTSN, OMAP_MUX_MODE0 | AM335X_PIN_INPUT),
 	AM335X_MUX(UART0_RXD, OMAP_MUX_MODE0 | AM335X_PIN_INPUT),
 	AM335X_MUX(UART0_TXD, OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT),
+	AM335X_MUX(I2C0_SDA, OMAP_MUX_MODE0 | AM335X_SLEWCTRL_SLOW |
+			AM335X_INPUT_EN | AM335X_PIN_OUTPUT),
+	AM335X_MUX(I2C0_SCL, OMAP_MUX_MODE0 | AM335X_SLEWCTRL_SLOW |
+			AM335X_INPUT_EN | AM335X_PIN_OUTPUT),
 	{ .reg_offset = OMAP_MUX_TERMINATOR },
 };
 #else
