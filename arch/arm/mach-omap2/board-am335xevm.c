@@ -50,13 +50,6 @@
 #include "mux.h"
 #include "hsmmc.h"
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-#ifndef FALSE
-#define FALSE 0
-#endif
-
 /* module pin mux structure */
 struct pinmux_config {
 	const char *string_name; /* signal name format */
@@ -116,15 +109,16 @@ static u32 am335x_evm_id;
 *  Available		32720	Available space for other non-volatile
 *				data.
 */
-struct eeprom_config {
+struct am335x_evm_eeprom_config {
 	u32	header;
-	char board_name[8];
+	u8	name[8];
 	u32	version;
-	u8 serial_num[12];
-	u8 config_opt[32];
+	u8	serial[12];
+	u8	opt[32];
 };
 
-static struct eeprom_config dghtr_brd_config, baseboard_config;
+static struct am335x_evm_eeprom_config config;
+static bool daughter_brd_detected;
 
 #define AM335X_EEPROM_HEADER		0xEE3355AA
 #define BRD_NM_LEN		8
@@ -172,7 +166,7 @@ static void setup_pin_mux(struct pinmux_config *pin_mux)
 * @dghtr_brd_flg - Whether Daughter board is present or not
 */
 static void _configure_device(int evm_id, struct evm_dev_cfg *dev_cfg,
-				int profile, bool dghtr_brd_flg)
+	int profile)
 {
 	int i;
 
@@ -190,7 +184,7 @@ static void _configure_device(int evm_id, struct evm_dev_cfg *dev_cfg,
 		for (i = 0; dev_cfg->device_init != NULL; dev_cfg++) {
 			if (dev_cfg->device_on == DEV_ON_BASEBOARD)
 				dev_cfg->device_init(evm_id, profile);
-			else if (dghtr_brd_flg == TRUE)
+			else if (daughter_brd_detected == true)
 				dev_cfg->device_init(evm_id, profile);
 		}
 	} else {
@@ -198,7 +192,7 @@ static void _configure_device(int evm_id, struct evm_dev_cfg *dev_cfg,
 			if (dev_cfg->profile & profile) {
 				if (dev_cfg->device_on == DEV_ON_BASEBOARD)
 					dev_cfg->device_init(evm_id, profile);
-				else if (dghtr_brd_flg == TRUE)
+				else if (daughter_brd_detected == true)
 					dev_cfg->device_init(evm_id, profile);
 			}
 		}
@@ -1173,33 +1167,28 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{NULL, 0, 0},
 };
 
-static void setup_low_cost_evm(struct eeprom_config *evm_config, bool db_flag)
+static void setup_low_cost_evm(void)
 {
-	pr_info("AM335x Low Cost EVM Config detected\n");
+	pr_info("The board is a AM335x Low Cost EVM.\n");
 
-	_configure_device(LOW_COST_EVM, low_cost_evm_dev_cfg, PROFILE_NONE,
-								db_flag);
+	_configure_device(LOW_COST_EVM, low_cost_evm_dev_cfg, PROFILE_NONE);
 }
 
-static void setup_general_purpose_evm(struct eeprom_config *evm_config,
-								bool db_flag)
+static void setup_general_purpose_evm(void)
 {
 	u32 prof_sel = am335x_get_profile_selection();
 
-	pr_info("AM335x General Purpose EVM Config detected\n");
-	pr_info("Selected profile : %d\n", prof_sel);
+	pr_info("The board is general purpose EVM in profile %d\n", prof_sel);
 
-	_configure_device(GEN_PURP_EVM, gen_purp_evm_dev_cfg, (1L << prof_sel),
-								db_flag);
+	_configure_device(GEN_PURP_EVM, gen_purp_evm_dev_cfg, (1L << prof_sel));
 }
 
-static void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config,
-								bool db_flag)
+static void setup_ind_auto_motor_ctrl_evm(void)
 {
 	u32 prof_sel = am335x_get_profile_selection();
 
-	pr_info("AM335x Ind. Auto. Motor Control EVM Config detected\n");
-	pr_info("Selected profile : %d\n", prof_sel);
+	pr_info("The board is an industrial automation EVM in profile %d\n",
+		prof_sel);
 
 	/* Only Profile 0 is supported */
 	if ((1L << prof_sel) != PROFILE_0) {
@@ -1207,8 +1196,8 @@ static void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config,
 		return;
 	}
 
-	_configure_device(IND_AUT_MTR_EVM, ind_auto_mtrl_evm_dev_cfg, PROFILE_0,
-								db_flag);
+	_configure_device(IND_AUT_MTR_EVM, ind_auto_mtrl_evm_dev_cfg,
+		PROFILE_0);
 
 	/* Fillup global evmid */
 	am335x_evmid_fillup(IND_AUT_MTR_EVM);
@@ -1217,55 +1206,38 @@ static void setup_ind_auto_motor_ctrl_evm(struct eeprom_config *evm_config,
 	am335x_tlk110_phy_init();
 }
 
-static void setup_ip_phone_evm(struct eeprom_config *evm_config, bool db_flag)
+static void setup_ip_phone_evm(void)
 {
-	pr_info("AM335x IP Phone EVM Config detected\n");
+	pr_info("The board is an IP phone EVM\n");
 
-	_configure_device(IP_PHN_EVM, ip_phn_evm_dev_cfg, PROFILE_NONE,
-								db_flag);
+	_configure_device(IP_PHN_EVM, ip_phn_evm_dev_cfg, PROFILE_NONE);
 }
 
-static void am335x_setup_daughter_board_evm
-			(struct memory_accessor *mem_acc, void *context)
+static void am335x_setup_daughter_board(struct memory_accessor *m, void *c)
 {
+	u8 tmp;
 	int ret;
-	char brd_name[9];
 
-	/* read eeprom and get board specific data */
-	ret = mem_acc->read(mem_acc, (char *)&dghtr_brd_config, 0,
-					sizeof(struct eeprom_config));
-	if (ret != sizeof(struct eeprom_config)) {
-		pr_warning("AM335X: EVM Config Read Failed: %d\n", ret);
-		return;
-	}
-
-	if (dghtr_brd_config.header != AM335X_EEPROM_HEADER) {
-		pr_warning("AM335X: wrong header 0x%x, expected 0x%x\n",
-				dghtr_brd_config.header, AM335X_EEPROM_HEADER);
-		return;
-	}
-
-	memcpy(brd_name, dghtr_brd_config.board_name, BRD_NM_LEN);
-	brd_name[8] = '\0';
-
-	if (!strncmp("A335GPBD", brd_name, BRD_NM_LEN)) {
-		am335x_evm_id = GEN_PURP_EVM;
-	} else if (!strncmp("A335IAMC", brd_name, BRD_NM_LEN)) {
-		am335x_evm_id = IND_AUT_MTR_EVM;
-	} else if (!strncmp("A335IPPH", brd_name, BRD_NM_LEN)) {
-		am335x_evm_id = IP_PHN_EVM;
+	/*
+	 * try reading a byte from the EEPROM to see if it is
+	 * present. We could read a lot more, but that would
+	 * just slow the boot process and we have all the information
+	 * we need from the EEPROM on the base board anyway.
+	 */
+	ret = m->read(m, &tmp, 0, sizeof(u8));
+	if (ret == sizeof(u8)) {
+		pr_info("Detected a daughter card on AM335x EVM..");
+		daughter_brd_detected = true;
 	} else {
-		pr_warning("AM335X: Invalid board name %s!!\n", brd_name);
-		pr_warning("Assuming Low Cost EVM Config\n");
+		pr_info("No daughter card found\n");
+		daughter_brd_detected = false;
 	}
 }
 
-static void am335x_setup_baseboard
-			(struct memory_accessor *mem_acc, void *context)
+static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 {
 	int ret;
-	char brd_name[9], sku_config[7];
-	bool daughter_brd_detected = FALSE;
+	char tmp[10];
 
 	/* 1st get the MAC address from EEPROM */
 	ret = mem_acc->read(mem_acc, (char *)&am335x_mac_addr,
@@ -1280,64 +1252,58 @@ static void am335x_setup_baseboard
 				&am335x_mac_addr[1][0]);
 
 	/* get board specific data */
-	ret = mem_acc->read(mem_acc, (char *)&baseboard_config, 0,
-				sizeof(struct eeprom_config));
-	if (ret != sizeof(struct eeprom_config)) {
-		pr_warning("AM335X: EVM Config read fail: %d\n", ret);
+	ret = mem_acc->read(mem_acc, (char *)&config, 0, sizeof(config));
+	if (ret != sizeof(config)) {
+		pr_warning("AM335X EVM config read fail, read %d bytes\n", ret);
 		return;
 	}
 
-	if (baseboard_config.header != AM335X_EEPROM_HEADER) {
+	if (config.header != AM335X_EEPROM_HEADER) {
 		pr_warning("AM335X: wrong header 0x%x, expected 0x%x\n",
-			baseboard_config.header, AM335X_EEPROM_HEADER);
-		return;
+			config.header, AM335X_EEPROM_HEADER);
+		goto out;
 	}
 
-	memcpy(brd_name, baseboard_config.board_name, BRD_NM_LEN);
-	brd_name[8] = '\0';
+	if (strncmp("A335", config.name, 4)) {
+		pr_err("Board %s doesn't look like an AM335x board\n",
+			config.name);
+		goto out;
+	}
 
-	memcpy(sku_config, baseboard_config.config_opt, 6);
-	sku_config[6] = '\0';
+	snprintf(tmp, sizeof(config.name), "%s", config.name);
+	pr_info("Board name: %s\n", tmp);
+	/* only 6 characters of options string used for now */
+	snprintf(tmp, 7, "%s", config.opt);
+	pr_info("SKU: %s\n", tmp);
 
+	if (!strncmp("SKU#00", config.opt, 6))
+		setup_low_cost_evm();
+	else if (!strncmp("SKU#01", config.opt, 6))
+		setup_general_purpose_evm();
+	else if (!strncmp("SKU#02", config.opt, 6))
+		setup_ind_auto_motor_ctrl_evm();
+	else if (!strncmp("SKU#03", config.opt, 6))
+		setup_ip_phone_evm();
+	else
+		goto out;
+
+	return;
+out:
 	/*
-	* If any daughter board is already detected, daughter board detection
-	* logic	am335x_setup_daughter_board_evm() would have changed
-	* am335x_evm_id to appropriate evm id. If not set means no daughter
-	* board is detected.
-	*/
-	if (am335x_evm_id != LOW_COST_EVM)
-		daughter_brd_detected = TRUE;
-
-	/* Setup Devices iff baseboard is detected */
-	if (!strncmp("A33515BB", brd_name, BRD_NM_LEN)) {
-		if (!strncmp("SKU#00", sku_config, 6) &&
-				(am335x_evm_id == LOW_COST_EVM))
-			setup_low_cost_evm(&baseboard_config,
-							daughter_brd_detected);
-		else if (!strncmp("SKU#01", sku_config, 6) &&
-				(am335x_evm_id == GEN_PURP_EVM))
-			setup_general_purpose_evm(&dghtr_brd_config,
-							daughter_brd_detected);
-		else if (!strncmp("SKU#02", sku_config, 6) &&
-				(am335x_evm_id == IND_AUT_MTR_EVM))
-			setup_ind_auto_motor_ctrl_evm(&dghtr_brd_config,
-							daughter_brd_detected);
-		else if (!strncmp("SKU#03", sku_config, 6) &&
-				(am335x_evm_id == IP_PHN_EVM))
-			setup_ip_phone_evm(&dghtr_brd_config,
-							daughter_brd_detected);
-	} else {
-		pr_warning("AM335X: Invalid configuration. Board %s, sku %s, "
-				"evm Id %d\n", brd_name, sku_config,
-				am335x_evm_id);
-	}
+	 * for bring-up assume a full configuration, this should
+	 * eventually be changed to assume a minimal configuration
+	 */
+	pr_err("Could not detect any board, falling back to: "
+		"General purpose EVM in profile 0 with daughter card connected\n");
+	daughter_brd_detected = true;
+	setup_general_purpose_evm();
 }
 
 static struct at24_platform_data am335x_daughter_board_eeprom_info = {
 	.byte_len       = (256*1024) / 8,
 	.page_size      = 64,
 	.flags          = AT24_FLAG_ADDR16,
-	.setup          = am335x_setup_daughter_board_evm,
+	.setup          = am335x_setup_daughter_board,
 	.context        = (void *)NULL,
 };
 
@@ -1345,7 +1311,7 @@ static struct at24_platform_data am335x_baseboard_eeprom_info = {
 	.byte_len       = (256*1024) / 8,
 	.page_size      = 64,
 	.flags          = AT24_FLAG_ADDR16,
-	.setup          = am335x_setup_baseboard,
+	.setup          = am335x_evm_setup,
 	.context        = (void *)NULL,
 };
 
