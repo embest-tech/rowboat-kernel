@@ -288,19 +288,27 @@ static struct pinmux_config mii1_pin_mux[] = {
 };
 /* Module pin mux for spi0 */
 static struct pinmux_config spi0_pin_mux[] = {
-	{"spi0_sclk.spi0_sclk", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
-	{"spi0_d0.spi0_d0", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
-	{"spi0_d1.spi0_d1", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
-	{"spi0_cs0.spi0_cs0", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
+	{"spi0_sclk.spi0_sclk", OMAP_MUX_MODE0 | AM335X_PULL_ENBL
+							| AM335X_INPUT_EN},
+	{"spi0_d0.spi0_d0", OMAP_MUX_MODE0 | AM335X_PULL_ENBL | AM335X_PULL_UP
+							| AM335X_INPUT_EN},
+	{"spi0_d1.spi0_d1", OMAP_MUX_MODE0 | AM335X_PULL_ENBL
+							| AM335X_INPUT_EN},
+	{"spi0_cs0.spi0_cs0", OMAP_MUX_MODE0 | AM335X_PULL_ENBL | AM335X_PULL_UP
+							| AM335X_INPUT_EN},
 	{NULL, 0},
 };
 
 /* Module pin mux for spi1 */
 static struct pinmux_config spi1_pin_mux[] = {
-	{"mcasp0_aclkx.spi1_sclk", OMAP_MUX_MODE3 | AM335X_PIN_OUTPUT},
-	{"mcasp0_fsx.spi1_d0", OMAP_MUX_MODE3 | AM335X_PIN_OUTPUT},
-	{"mcasp0_axr0.spi1_d1", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
-	{"mcasp0_ahclkr.spi1_cs0", OMAP_MUX_MODE3 | AM335X_PIN_OUTPUT},
+	{"mcasp0_aclkx.spi1_sclk", OMAP_MUX_MODE3 | AM335X_PULL_ENBL
+		| AM335X_INPUT_EN},
+	{"mcasp0_fsx.spi1_d0", OMAP_MUX_MODE3 | AM335X_PULL_ENBL
+		| AM335X_PULL_UP | AM335X_INPUT_EN},
+	{"mcasp0_axr0.spi1_d1", OMAP_MUX_MODE3 | AM335X_PULL_ENBL
+		| AM335X_INPUT_EN},
+	{"mcasp0_ahclkr.spi1_cs0", OMAP_MUX_MODE3 | AM335X_PULL_ENBL
+		| AM335X_PULL_UP | AM335X_INPUT_EN},
 	{NULL, 0},
 };
 
@@ -608,12 +616,16 @@ static const struct flash_platform_data am335x_spi_flash = {
 	.nr_parts  = ARRAY_SIZE(am335x_spi_partitions),
 };
 
+/*
+ * SPI Flash works at 80Mhz however SPI Controller works at 48MHz.
+ * So setup Max speed to be less than that of Controller speed
+ */
 static struct spi_board_info am335x_spi0_slave_info[] = {
 	{
 		.modalias      = "m25p80",
 		.platform_data = &am335x_spi_flash,
 		.irq           = -1,
-		.max_speed_hz  = 80000000,
+		.max_speed_hz  = 12000000,
 		.bus_num       = 1,
 		.chip_select   = 0,
 	},
@@ -624,7 +636,7 @@ static struct spi_board_info am335x_spi1_slave_info[] = {
 		.modalias      = "m25p80",
 		.platform_data = &am335x_spi_flash,
 		.irq           = -1,
-		.max_speed_hz  = 80000000,
+		.max_speed_hz  = 12000000,
 		.bus_num       = 2,
 		.chip_select   = 0,
 	},

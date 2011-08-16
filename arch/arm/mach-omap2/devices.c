@@ -458,8 +458,8 @@ static inline void ti81xx_mcspi_fixup(void)
 #ifdef CONFIG_ARCH_AM335X
 	if (cpu_is_am335x()) {
 		omap2_mcspi1_config.num_cs              = 2;
-		omap2_mcspi1_config.data_lines_reversed = 1;
-		omap2_mcspi2_config.data_lines_reversed = 1;
+		omap2_mcspi1_config.data_lines_reversed = 0;
+		omap2_mcspi2_config.data_lines_reversed = 0;
 	}
 #endif
 
