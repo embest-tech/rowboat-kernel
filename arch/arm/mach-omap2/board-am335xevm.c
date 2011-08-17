@@ -358,6 +358,11 @@ static struct pinmux_config lcdc_pin_mux[] = {
 	{"lcd_hsync.lcd_hsync",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"lcd_pclk.lcd_pclk",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"lcd_ac_bias_en.lcd_ac_bias_en", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{NULL, 0},
+};
+
+/* Module pin mux for eCAP0 */
+static struct pinmux_config ecap0_pin_mux[] = {
 	{"ecap0_in_pwm0_out.gpio0_7", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT},
 	{NULL, 0},
 };
@@ -803,15 +808,8 @@ error0:
 static void lcdc_init(int evm_id, int profile)
 {
 	struct platform_device *lcdc_device;
-	int status;
 
 	setup_pin_mux(lcdc_pin_mux);
-
-	status = gpio_request(AM335X_LCD_BL_PIN, "lcd bl\n");
-	if (status < 0)
-		pr_warn("Failed to request gpio for LCD backlight\n");
-
-	gpio_direction_output(AM335X_LCD_BL_PIN, 1);
 
 	lcdc_device = am33xx_register_lcdc(&TFC_S9700RTWV35TR_01B_pdata);
 	if (lcdc_device != NULL)
@@ -819,6 +817,19 @@ static void lcdc_init(int evm_id, int profile)
 	else
 		pr_info("Failed to register LCDC device\n");
 	return;
+}
+
+static void ecap0_init(int evm_id, int profile)
+{
+	int status;
+
+	setup_pin_mux(ecap0_pin_mux);
+
+	status = gpio_request(AM335X_LCD_BL_PIN, "lcd bl\n");
+	if (status < 0)
+		pr_warn("Failed to request gpio for LCD backlight\n");
+
+	gpio_direction_output(AM335X_LCD_BL_PIN, 1);
 }
 
 static void mmc1_init(int evm_id, int profile)
@@ -1132,6 +1143,8 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{rgmii2_init,	DEV_ON_DGHTR_BRD, (PROFILE_1 | PROFILE_2 |
 						PROFILE_4 | PROFILE_6) },
 	{spi0_init,	DEV_ON_DGHTR_BRD, PROFILE_2},
+	{ecap0_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_1 |
+						PROFILE_2 | PROFILE_7) },
 	{lcdc_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_1 |
 						PROFILE_2 | PROFILE_7) },
 	{am335x_tsc_init, DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_1
@@ -1165,6 +1178,7 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{rgmii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{rgmii2_init,	DEV_ON_DGHTR_BRD, PROFILE_NONE},
+	{ecap0_init,	DEV_ON_DGHTR_BRD, PROFILE_NONE},
 	{lcdc_init,	DEV_ON_DGHTR_BRD, PROFILE_NONE},
 	{am335x_tsc_init, DEV_ON_DGHTR_BRD, PROFILE_NONE},
 	{evm_nand_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
