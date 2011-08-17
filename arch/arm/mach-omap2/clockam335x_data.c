@@ -1382,15 +1382,17 @@ static const struct clksel gpio_dbclk_mux_sel[] = {
 static struct clk usb0_ick = {
 	.name           = "usb0_ick",
 	.parent		= &l3_main_fck,
-	.ops		= &clkops_null,
+	.ops		= &clkops_omap2_dflt,
+	.enable_reg	= AM335X_CM_PER_USB0_CLKCTRL,
+	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
 	.recalc		= &followparent_recalc,
 };
 
 static struct clk usb0_fck = {
 	.name		= "usb0_fck",
 	.ops		= &clkops_omap2_dflt,
-	.enable_reg	= AM335X_CM_PER_USB0_CLKCTRL,
-	.enable_bit	= AM335X_MODULEMODE_SWCTRL,
+	.enable_reg	= AM335X_CM_CLKDCOLDO_DPLL_PER,
+	.enable_bit	= AM335X_ST_DPLL_CLKDCOLDO_SHIFT,
 	.parent		= &dpll_per_clkdcoldo_ck,
 	.recalc		= &followparent_recalc,
 };
