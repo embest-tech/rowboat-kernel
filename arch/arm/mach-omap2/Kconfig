@@ -343,6 +343,11 @@ config MACH_AM335XEVM
 	default y
 	depends on ARCH_AM335X
 
+config MACH_AM335XIAEVM
+	bool "AM335X IA Evaluation Module"
+	default y
+	depends on ARCH_AM335X
+
 config OMAP3_EMU
 	bool "OMAP3 debugging peripherals"
 	depends on ARCH_OMAP3

@@ -265,6 +265,9 @@ obj-$(CONFIG_MACH_TI8168EVM)		+= board-ti8168evm.o \
 obj-$(CONFIG_MACH_AM335XEVM)		+= board-am335xevm.o \
 					   hsmmc.o \
 					   board-flash.o
+obj-$(CONFIG_MACH_AM335XIAEVM)		+= board-am335xevm.o \
+					   hsmmc.o \
+					   board-flash.o
 
 # Platform specific device init code
 usbfs-$(CONFIG_ARCH_OMAP_OTG)		:= usb-fs.o
