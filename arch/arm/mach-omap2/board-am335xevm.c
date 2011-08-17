@@ -312,6 +312,14 @@ static struct pinmux_config spi1_pin_mux[] = {
 	{NULL, 0},
 };
 
+/* Module pin mux for uart3 */
+static struct pinmux_config uart3_pin_mux[] = {
+	{"spi0_cs1.uart3_rxd", OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"ecap0_in_pwm0_out.uart3_txd", OMAP_MUX_MODE1 | AM335X_PULL_ENBL},
+	{NULL, 0},
+};
+
+
 /* Module pin mux for LCDC */
 static struct pinmux_config lcdc_pin_mux[] = {
 	{"lcd_data0.lcd_data0",		OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT
@@ -761,6 +769,13 @@ static void spi1_init(int evm_id, int profile)
 	return;
 }
 
+/* setup uart3 */
+static void uart3_init(int evm_id, int profile)
+{
+	setup_pin_mux(uart3_pin_mux);
+	return;
+}
+
 /* setup lcd */
 
 static void __init conf_disp_pll(struct platform_device *lcdc_device)
@@ -1166,6 +1181,7 @@ static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 	{evm_nand_init, DEV_ON_BASEBOARD, PROFILE_ALL},
 	{usb0_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
 	{usb1_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
+	{uart3_init,	DEV_ON_DGHTR_BRD, PROFILE_ALL},
 	{NULL, 0, 0},
 };
 
