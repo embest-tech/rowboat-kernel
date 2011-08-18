@@ -154,7 +154,7 @@ struct da8xx_fb_par {
 	unsigned int		dma_end;
 	struct clk *lcdc_clk;
 	int irq;
-	unsigned short pseudo_palette[16];
+	unsigned short pseudo_palette[32];
 	unsigned int palette_sz;
 	unsigned int pxl_clk;
 	int blank;
