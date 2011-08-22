@@ -220,7 +220,7 @@ static struct pinmux_config mcasp0_pin_mux[] = {
 static struct pinmux_config mcasp1_pin_mux[] = {
 	{"mii1_crs.mcasp1_aclkx", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mii1_rxerr.mcasp1_fsx", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
-	{"mii1_col.mcasp1_axr2", OMAP_MUX_MODE4 | AM335X_PIN_OUTPUT},
+	{"mii1_col.mcasp1_axr2", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
 	{"rmii1_refclk.mcasp1_axr3", OMAP_MUX_MODE4 |
 					AM335X_PIN_INPUT_PULLDOWN},
 	{NULL, 0},
@@ -716,6 +716,7 @@ static void mcasp0_init(int evm_id, int profile)
 {
 	/* Configure McASP */
 	setup_pin_mux(mcasp0_pin_mux);
+	am335x_setup_macasp_snd_data_fixup();
 	am335x_register_mcasp0(&am335x_evm_snd_data0);
 	return;
 }

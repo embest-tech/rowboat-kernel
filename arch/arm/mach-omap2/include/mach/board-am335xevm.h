@@ -40,4 +40,6 @@
 void am335x_evmid_fillup(unsigned int evmid);
 void am335x_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1);
 
+extern void am335x_setup_macasp_snd_data_fixup(void);
+
 #endif
