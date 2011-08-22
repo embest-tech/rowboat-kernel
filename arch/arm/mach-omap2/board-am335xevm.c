@@ -423,13 +423,23 @@ static struct pinmux_config mmc2_pin_mux[] = {
 };
 
 /* Module pin mux for TSC */
-static struct pinmux_config tsc_pin_mux[] = {
+/*static struct pinmux_config tsc_pin_mux[] = {
 	{"ain0.ain0",           OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"ain1.ain1",           OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"ain2.ain2",           OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"ain3.ain3",           OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"vrefp.vrefp",         OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
 	{"vrefn.vrefn",         OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{NULL, 0},
+};*/
+
+static struct pinmux_config tsc_pin_mux[] = {
+	{"ain0.ain0",           OMAP_MUX_MODE0 | AM335X_INPUT_EN},
+	{"ain1.ain1",           OMAP_MUX_MODE0 | AM335X_INPUT_EN},
+	{"ain2.ain2",           OMAP_MUX_MODE0 | AM335X_INPUT_EN},
+	{"ain3.ain3",           OMAP_MUX_MODE0 | AM335X_INPUT_EN},
+	{"vrefp.vrefp",         OMAP_MUX_MODE0 | AM335X_INPUT_EN},
+	{"vrefn.vrefn",         OMAP_MUX_MODE0 | AM335X_INPUT_EN},
 	{NULL, 0},
 };
 

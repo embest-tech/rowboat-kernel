@@ -36,6 +36,7 @@
 #define TSCADC_REG_SE			0x054
 #define TSCADC_REG_IDLECONFIG		0x058
 #define TSCADC_REG_CHARGECONFIG		0x05C
+#define TSCADC_REG_CHARGEDELAY		0x060
 #define TSCADC_REG_STEPCONFIG1		0x064
 #define TSCADC_REG_STEPDELAY1		0x068
 #define TSCADC_REG_STEPCONFIG2		0x06C
@@ -49,7 +50,7 @@
 #define TSCADC_IRQENB_IRQEOS		BIT(1)
 #define TSCADC_IRQENB_FIFO_OVERFLOW	BIT(3)
 #define TSCADC_IRQENB_PENUP		BIT(9)
-#define TSCADC_STEPCONFIG_MODE_HWSYNC	0x3
+#define TSCADC_STEPCONFIG_MODE_HWSYNC	0x2
 #define TSCADC_STEPCONFIG_2SAMPLES_AVG	BIT(2)
 #define TSCADC_STEPCONFIG_XPP		BIT(5)
 #define TSCADC_STEPCONFIG_XNN		BIT(6)
@@ -109,17 +110,17 @@ static void tscadc_writel(struct tscadc *tsc, unsigned int reg,
 
 static void tsc_step_config(struct tscadc *ts_dev)
 {
-	int	stepconfig1, stepconfig2, delay;
+//	int	stepconfig1, stepconfig2, delay;
 
 	/* Configure the Step registers */
-	stepconfig1 = TSCADC_STEPCONFIG_MODE_HWSYNC |
+	/* stepconfig1 = TSCADC_STEPCONFIG_MODE_HWSYNC |
 			TSCADC_STEPCONFIG_2SAMPLES_AVG | TSCADC_STEPCONFIG_XPP |
-			TSCADC_STEPCONFIG_XNN | TSCADC_STEPCONFIG_INM |
+			TSCADC_STEPCONFIG_XNN |
 			TSCADC_STEPCONFIG_RFP_X;
 
 	stepconfig2 = TSCADC_STEPCONFIG_MODE_HWSYNC |
 			TSCADC_STEPCONFIG_2SAMPLES_AVG | TSCADC_STEPCONFIG_YNN |
-			TSCADC_STEPCONFIG_INM | TSCADC_STEPCONFIG_RFM_Y;
+			 TSCADC_STEPCONFIG_RFM_Y;
 	switch (ts_dev->wires) {
 	case 4:
 		stepconfig1 |= TSCADC_STEPCONFIG_INP_4 |
@@ -156,17 +157,34 @@ static void tsc_step_config(struct tscadc *ts_dev)
 	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG2, stepconfig2);
 	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY2, delay);
 
+	delay = TSCADC_STEPCONFIG_OPENDLY | TSCADC_STEPCONFIG_SAMPLEDLY;*/
+
+/*	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG1, 0x00881432);
+	         tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY1, 0x88000018);
+	         tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG2, 0x01044312);
+	        tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY2, 0x88000018);*/
+
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG1, 0x00080432);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY1, 0x88000018);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG2, 0x00040312);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY2, 0x88000018);
+
+
+	tscadc_writel(ts_dev, TSCADC_REG_CHARGECONFIG, 0x00911120);
+	tscadc_writel(ts_dev, TSCADC_REG_CHARGEDELAY, 0x00000001);
+
 	tscadc_writel(ts_dev, TSCADC_REG_SE, TSCADC_STPENB_STEPENB);
 }
 
 static void tsc_idle_config(struct tscadc *ts_config)
 {
 	/* Idle mode touch screen config */
-	unsigned int	 idleconfig;
+	/* unsigned int	 idleconfig;
 
 	idleconfig = TSCADC_STEPCONFIG_YNN |
 				TSCADC_STEPCONFIG_RFP_X |
-				TSCADC_STEPCONFIG_INM ;
+				TSCADC_STEPCONFIG_INM |
+				TSCADC_STEPCONFIG_XNP;
 
 	switch (ts_config->wires) {
 	case 4:
@@ -182,7 +200,8 @@ static void tsc_idle_config(struct tscadc *ts_config)
 			TSCADC_STEPCONFIG_RFM_8_X;
 		break;
 	}
-	tscadc_writel(ts_config, TSCADC_REG_IDLECONFIG, idleconfig);
+	tscadc_writel(ts_config, TSCADC_REG_IDLECONFIG, idleconfig);*/
+	tscadc_writel(ts_config, TSCADC_REG_IDLECONFIG,0x00440140);
 }
 
 static irqreturn_t tscadc_interrupt(int irq, void *dev)
@@ -197,27 +216,31 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
 	tscadc_writel(ts_dev, TSCADC_REG_SE, 0x0);
 
 	/* Pen touch event */
-	if (status & TSCADC_IRQENB_IRQHWPEN)
+	if (status & TSCADC_IRQENB_IRQHWPEN){
+		input_report_key(input_dev, BTN_TOUCH, 1);
 		irqclr = TSCADC_IRQENB_IRQHWPEN;
+		printk(" pen down event occured \n");
+	}
 
 	if (status & TSCADC_IRQENB_PENUP) {
 		/* Pen up event */
-		charge = TSCADC_STEPCHARGE_INM | TSCADC_STEPCHARGE_RFM;
-		tscadc_writel(ts_dev, TSCADC_REG_CHARGECONFIG, charge);
+	//	charge = TSCADC_STEPCHARGE_INM | TSCADC_STEPCHARGE_RFM;
+	//	tscadc_writel(ts_dev, TSCADC_REG_CHARGECONFIG, charge);
 		input_report_key(input_dev, BTN_TOUCH, 0);
 		input_sync(input_dev);
-		tsc_idle_config(ts_dev);
+	//	tsc_idle_config(ts_dev);
+		printk(" pen up event occured \n");
 		irqclr |= TSCADC_IRQENB_PENUP;
-
 	}
 	if (status & TSCADC_IRQENB_IRQEOS) {
 		/* ADC is done with sampling, ready to read the data */
 		absx = tscadc_readl(ts_dev, TSCADC_REG_FIFO0);
 		absy = tscadc_readl(ts_dev, TSCADC_REG_FIFO0);
-
+	//	printk("absx 0x%x,absy 0x%x\n", absx, absy);
+		printk(" EOC occured \n");
 		input_report_abs(input_dev, ABS_X, absx);
 		input_report_abs(input_dev, ABS_Y, absy);
-		input_report_key(input_dev, BTN_TOUCH, 1);
+//		input_report_key(input_dev, BTN_TOUCH, 0);
 		input_sync(input_dev);
 
 		irqclr |= TSCADC_IRQENB_IRQEOS;
@@ -230,9 +253,6 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
 		tscadc_writel(ts_dev, TSCADC_REG_CTRL, cntrlreg);
 
 		irqclr |= TSCADC_IRQENB_FIFO_OVERFLOW;
-	}
-
-	tscadc_writel(ts_dev, TSCADC_REG_IRQSTATUS, irqclr);
 	fsm = tscadc_readl(ts_dev, TSCADC_REG_ADCFSM);
 	if ((fsm & TSCADC_ADCFSM_FSM) &&
 			(fsm & TSCADC_ADCFSM_STEPID)) {
@@ -240,6 +260,8 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
 		store |= TSCADC_CNTRLREG_TSCSSENB;
 		tscadc_writel(ts_dev, TSCADC_REG_CTRL, store);
 	}
+	}
+	tscadc_writel(ts_dev, TSCADC_REG_IRQSTATUS, irqclr);
 
 	 /* check pending interrupts */
 	tscadc_writel(ts_dev, TSCADC_REG_IRQEOI, 0x0);
