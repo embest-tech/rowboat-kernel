@@ -132,7 +132,7 @@
 
 /* Used by RM_GFX_RSTCTRL, RM_GFX_RSTST */
 #define AM335X_GFX_RST_SHIFT				0
-#define AM335X_GFX_RST_MASK				BITFIELD(0, 0)
+#define AM335X_GFX_RST_MASK				(1 << 0)
 
 /* Used by PRM_RSTST */
 #define AM335X_GLOBAL_COLD_RST_SHIFT			0

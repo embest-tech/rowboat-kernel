@@ -22,7 +22,9 @@
 #include "clock81xx.h"
 #include "prm.h"
 #include "prm2xxx_3xxx.h"
+#include "prmam335x.h"
 #include "prm-regbits-81xx.h"
+#include "prm-regbits-am335x.h"
 #include "cm.h"
 #include "cm-regbits-81xx.h"
 
@@ -96,6 +98,30 @@ void ti81xx_usb_clk_disable(struct clk *clk)
 	omap2_dflt_clk_disable(clk);
 }
 
+int am335x_sgx_clk_enable(struct clk *clk)
+{
+	omap2_dflt_clk_enable(clk);
+
+	/* De-assert local reset after module enable */
+	omap2_prm_clear_mod_reg_bits(AM335X_GFX_RST_MASK,
+			AM335X_PRM_GFX_MOD,
+			AM335X_RM_GFX_RSTCTRL_OFFSET);
+
+	omap2_cm_wait_idlest(clk->enable_reg, TI81XX_IDLEST_MASK,
+			TI81XX_IDLEST_VAL, clk->name);
+
+	return 0;
+}
+
+void am335x_sgx_clk_disable(struct clk *clk)
+{
+	/* Assert local reset */
+	omap2_prm_set_mod_reg_bits(AM335X_GFX_RST_MASK,
+			AM335X_PRM_GFX_MOD,
+			AM335X_RM_GFX_RSTCTRL_OFFSET);
+
+	omap2_dflt_clk_disable(clk);
+}
 
 const struct clkops clkops_ti81xx_dflt_wait = {
 	.enable         = ti81xx_dflt_wait_clk_enable,
@@ -110,4 +136,9 @@ const struct clkops clkops_ti81xx_pcie = {
 const struct clkops clkops_ti81xx_usb = {
 	.enable         = ti81xx_usb_clk_enable,
 	.disable        = ti81xx_usb_clk_disable,
+};
+
+const struct clkops clkops_am335x_sgx = {
+	.enable         = am335x_sgx_clk_enable,
+	.disable        = am335x_sgx_clk_disable,
 };
