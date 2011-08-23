@@ -33,6 +33,7 @@
 #define TLC59108_MODE1   0x00
 #define TLC59108_PWM2    0x04
 #define TLC59108_LEDOUT0 0x0c
+#define TLC59108_LEDOUT1 0x0d
 #define TLC59108_MAX_BRIGHTNESS 0xFF
 
 struct tlc59108_bl {
@@ -88,6 +89,16 @@ static int tlc59108_probe(struct i2c_client *c, const struct i2c_device_id *id)
 
 	i2c_set_clientdata(c, data);
 	data->client = c;
+
+	/* FIXME: This is definitely how it should be done.
+	 * Someone more familiar with the framework needs to make it proper
+	 */
+	if (cpu_is_am335x()) {
+		/* Set LED4 to always on in LEDOUT1 Register*/
+		ret = i2c_smbus_write_byte_data(data->client, TLC59108_LEDOUT1, 0x01);
+		if(ret < 0)
+			pr_err("Could not set LED4 to fully on\n");
+	}
 
 	memset(&props, 0, sizeof(struct backlight_properties));
 	props.max_brightness = TLC59108_MAX_BRIGHTNESS;
