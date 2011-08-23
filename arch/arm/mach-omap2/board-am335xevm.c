@@ -388,6 +388,17 @@ static struct pinmux_config mmc0_pin_mux[] = {
 	{NULL, 0},
 };
 
+static struct pinmux_config mmc0_no_cd_pin_mux[] = {
+	{"mmc0_dat3.mmc0_dat3",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_dat2.mmc0_dat2",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_dat1.mmc0_dat1",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_dat0.mmc0_dat0",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_clk.mmc0_clk",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mmc0_cmd.mmc0_cmd",	OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"mcasp0_aclkr.mmc0_sdwp", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{NULL, 0},
+};
+
 /* Module pin mux for mmc1 */
 static struct pinmux_config mmc1_pin_mux[] = {
 	{"gpmc_ad7.mmc1_dat7",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
@@ -890,6 +901,14 @@ static void mmc0_init(int evm_id, int profile)
 	return;
 }
 
+static void mmc0_no_cd_init(int evm_id, int profile)
+{
+	setup_pin_mux(mmc0_no_cd_pin_mux);
+
+	omap2_hsmmc_init(mmc);
+	return;
+}
+
 static void am335x_tsc_init(int evm_id, int profile)
 {
 	int err;
@@ -1173,7 +1192,8 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 						| PROFILE_2 | PROFILE_7) },
 	{mmc1_init,	DEV_ON_DGHTR_BRD, PROFILE_2},
 	{mmc2_init,	DEV_ON_DGHTR_BRD, PROFILE_4},
-	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+	{mmc0_init,	DEV_ON_BASEBOARD, (PROFILE_ALL& ~PROFILE_5)},
+	{mmc0_no_cd_init,	DEV_ON_BASEBOARD, PROFILE_5},
 	{evm_nand_init,	DEV_ON_DGHTR_BRD, (PROFILE_ALL
 						& ~PROFILE_2 & ~PROFILE_3)},
 	{evm_nor_init,	DEV_ON_DGHTR_BRD, PROFILE_3},
@@ -1186,7 +1206,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 /* Industrial Auto Motor Control EVM */
 static struct evm_dev_cfg ind_auto_mtrl_evm_dev_cfg[] = {
 	{spi1_init,	DEV_ON_DGHTR_BRD, PROFILE_ALL},
-	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+	{mmc0_no_cd_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
 	{mii1_init,	DEV_ON_DGHTR_BRD, PROFILE_ALL},
 	{evm_nand_init, DEV_ON_BASEBOARD, PROFILE_ALL},
 	{usb0_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
