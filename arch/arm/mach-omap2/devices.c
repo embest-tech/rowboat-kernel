@@ -2165,7 +2165,7 @@ static void am335x_cpsw_init(void)
 	}
 
 	if (am335x_evmid == IND_AUT_MTR_EVM) {
-		am335x_cpsw_slaves[0].phy_id = "0:01";
+		am335x_cpsw_slaves[0].phy_id = "0:1e";
 		am335x_cpsw_slaves[1].phy_id = "0:00";
 	}
 
