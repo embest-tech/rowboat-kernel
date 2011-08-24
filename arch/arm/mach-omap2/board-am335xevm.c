@@ -1427,7 +1427,7 @@ static struct omap_musb_board_data musb_board_data = {
 	.mode           = MUSB_PERIPHERAL,
 #endif
 	.power		= 500,
-	.instances	= 0,
+	.instances	= 1,
 };
 
 static int cpld_reg_probe(struct i2c_client *client,

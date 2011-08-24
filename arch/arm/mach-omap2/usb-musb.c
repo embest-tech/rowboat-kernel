@@ -300,10 +300,8 @@ void __init usb_musb_init(struct omap_musb_board_data *board_data)
 	for (i = 0; i <= board_data->instances; i++) {
 		if (cpu_is_ti816x())
 			musb_plat[i].clock = "usbotg_ick";
-		else if (cpu_is_ti814x())
+		else if (cpu_is_ti814x() || cpu_is_am335x())
 			musb_plat[i].clock = "usb_ick";
-		else if (cpu_is_am335x() && i == 0)
-			musb_plat[i].clock = "usb0_ick";
 
 		musb_plat[i].board_data = board_data;
 		musb_plat[i].power = board_data->power >> 1;
