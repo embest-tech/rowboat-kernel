@@ -378,6 +378,8 @@ static void _cpsw_adjust_link(struct cpsw_slave *slave,
 
 	if (phy->link) {
 		mac_control = priv->data.mac_control;
+		if (phy->speed == 10)
+			mac_control |= BIT(18); /* In Band mode */
 		if (phy->speed == 1000)
 			mac_control |= BIT(7);	/* GIGABITEN	*/
 		if (phy->duplex)
