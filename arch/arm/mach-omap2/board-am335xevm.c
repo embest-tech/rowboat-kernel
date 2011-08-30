@@ -240,8 +240,6 @@ static struct pinmux_config rgmii1_pin_mux[] = {
 	{"mii1_rxd2.rgmii1_rd2", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mii1_rxd1.rgmii1_rd1", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mii1_rxd0.rgmii1_rd0", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
-	{"rmii1_refclk.rmii1_refclk", OMAP_MUX_MODE0 |
-						AM335X_PIN_INPUT_PULLDOWN},
 	{"mdio_data.mdio_data", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
 	{"mdio_clk.mdio_clk", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
 	{NULL, 0},
@@ -261,7 +259,6 @@ static struct pinmux_config rgmii2_pin_mux[] = {
 	{"gpmc_a9.rgmii2_rd2", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
 	{"gpmc_a10.rgmii2_rd1", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
 	{"gpmc_a11.rgmii2_rd0", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
-	{"mii1_col.rmii2_refclk", OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
 	{"mdio_data.mdio_data", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
 	{"mdio_clk.mdio_clk", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT_PULLUP},
 	{NULL, 0},
