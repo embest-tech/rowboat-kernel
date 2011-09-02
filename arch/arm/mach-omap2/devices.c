@@ -2129,7 +2129,7 @@ void am335x_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1)
 	return;
 }
 
-static void am335x_cpsw_init(void)
+void am335x_cpsw_init(void)
 {
 	u32 mac_lo, mac_hi;
 	u32 i;
@@ -2175,7 +2175,7 @@ static void am335x_cpsw_init(void)
 			NULL, &am335x_cpsw_device.dev);
 }
 #else
-static inline void am335x_cpsw_init(void) {}
+inline void am335x_cpsw_init(void) {}
 #endif
 
 #ifdef CONFIG_ARCH_TI81XX
@@ -2185,8 +2185,6 @@ static void ti81xx_ethernet_init(void)
 		ti816x_ethernet_init();
 	else if (cpu_is_ti814x())
 		ti814x_cpsw_init();
-	else
-		am335x_cpsw_init();
 }
 #endif
 

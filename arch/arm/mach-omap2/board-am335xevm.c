@@ -1348,6 +1348,12 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 	else
 		goto out;
 
+	/* Initialize cpsw after board detection is completed as board
+	 * information is required for configuring phy address and hence
+	 * should be call only after board detection
+	 */
+	am335x_cpsw_init();
+
 	return;
 out:
 	/*
@@ -1358,6 +1364,12 @@ out:
 		"General purpose EVM in profile 0 with daughter card connected\n");
 	daughter_brd_detected = true;
 	setup_general_purpose_evm();
+
+	/* Initialize cpsw after board detection is completed as board
+	 * information is required for configuring phy address and hence
+	 * should be call only after board detection
+	 */
+	am335x_cpsw_init();
 }
 
 static struct at24_platform_data am335x_daughter_board_eeprom_info = {
