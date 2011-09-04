@@ -44,10 +44,13 @@
 #define OMAP_WAKEUP_EVENT		(1 << 15)
 
 /* am335x specific mux bit defines */
+#define AM335X_SLEWCTRL_FAST		(0 << 6)
+#define AM335X_SLEWCTRL_SLOW		(1 << 6)
 #define AM335X_INPUT_EN			(1 << 5)
 #define AM335X_PULL_UP			(1 << 4)
 /* bit 3: 0 - enable, 1 - disable for pull enable */
 #define AM335X_PULL_DISA		(1 << 3)
+#define AM335X_PULL_ENBL		(0 << 3)
 
 /* Definition of output pin could have pull disabled, but
  * this has not been done due to two reasons
