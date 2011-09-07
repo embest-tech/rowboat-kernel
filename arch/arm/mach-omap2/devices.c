@@ -1567,6 +1567,42 @@ static struct event_to_channel_map ti814x_xbar_event_mapping[] = {
 	{-1, -1}
 };
 
+static struct event_to_channel_map am335x_xbar_event_mapping[] = {
+	/* {xbar event no, Channel} */
+	{1, 12},	/* SDTXEVT1 -> MMCHS2 */
+	{2, 13},	/* SDRXEVT1 -> MMCHS2 */
+	{3, -1},
+	{4, -1},
+	{5, -1},
+	{6, -1},
+	{7, -1},
+	{8, -1},
+	{9, -1},
+	{10, -1},
+	{11, -1},
+	{12, -1},
+	{13, -1},
+	{14, -1},
+	{15, -1},
+	{16, -1},
+	{17, -1},
+	{18, -1},
+	{19, -1},
+	{20, -1},
+	{21, -1},
+	{22, -1},
+	{23, -1},
+	{24, -1},
+	{25, -1},
+	{26, -1},
+	{27, -1},
+	{28, -1},
+	{29, -1},
+	{30, -1},
+	{31, -1},
+	{-1, -1}
+};
+
 /**
  * map_xbar_event_to_channel - maps a crossbar event to a DMA channel
  * according to the configuration provided
@@ -1670,7 +1706,7 @@ static struct edma_soc_info am335x_edma_info[] = {
 		.queue_priority_mapping	= am335x_queue_priority_mapping,
 		.is_xbar		= 1,
 		.n_events		= 95,
-		.xbar_event_mapping	= ti814x_xbar_event_mapping,
+		.xbar_event_mapping	= am335x_xbar_event_mapping,
 		.map_xbar_channel	= map_xbar_event_to_channel,
 	},
 };
