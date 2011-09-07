@@ -101,7 +101,7 @@ static struct qt602240_platform_data ts_platform_data = {
 	.blen		= 0x01,
 	.threshold	= 30,
 	.voltage	= 2800000,
-	.orient		= QT602240_DIAGONAL,
+	.orient		= QT602240_HORIZONTAL_FLIP,
 };
 
 static struct at24_platform_data eeprom_info = {
