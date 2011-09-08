@@ -474,6 +474,7 @@ void __init am335x_init_early(void)
 	am33xx_voltagedomains_init();
 	am33xx_powerdomains_init();
 	am33xx_clockdomains_init();
+	am33xx_hwmod_init();
 }
 
 void __init omap_sdrc_init(struct omap_sdrc_params *sdrc_cs0,
