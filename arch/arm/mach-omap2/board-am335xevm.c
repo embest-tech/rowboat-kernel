@@ -398,14 +398,14 @@ static struct pinmux_config mmc0_no_cd_pin_mux[] = {
 
 /* Module pin mux for mmc1 */
 static struct pinmux_config mmc1_pin_mux[] = {
-	{"gpmc_ad7.mmc1_dat7",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad6.mmc1_dat6",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad5.mmc1_dat5",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad4.mmc1_dat4",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad3.mmc1_dat3",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad2.mmc1_dat2",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad1.mmc1_dat1",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad0.mmc1_dat0",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad7.mmc1_dat7",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad6.mmc1_dat6",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad5.mmc1_dat5",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad4.mmc1_dat4",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad3.mmc1_dat3",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad2.mmc1_dat2",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad1.mmc1_dat1",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad0.mmc1_dat0",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
 	{"gpmc_csn1.mmc1_clk",	OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLUP},
 	{"gpmc_csn2.mmc1_cmd",	OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLUP},
 	{"uart1_rxd.mmc1_sdwp",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
@@ -415,18 +415,18 @@ static struct pinmux_config mmc1_pin_mux[] = {
 
 /* Module pin mux for mmc2 */
 static struct pinmux_config mmc2_pin_mux[] = {
-	{"gpmc_ad11.mmc2_dat7",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad10.mmc2_dat6",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad9.mmc2_dat5",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad8.mmc2_dat4",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad15.mmc2_dat3",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad14.mmc2_dat2",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad13.mmc2_dat1",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_ad12.mmc2_dat0",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
-	{"gpmc_clk.mmc2_clk",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLDOWN},
+	{"gpmc_ad11.mmc2_dat7",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad10.mmc2_dat6",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad9.mmc2_dat5",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad8.mmc2_dat4",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad15.mmc2_dat3",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad14.mmc2_dat2",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad13.mmc2_dat1",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ad12.mmc2_dat0",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_clk.mmc2_clk",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
 	{"gpmc_csn3.mmc2_cmd",	OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
-	{"spi0_cs0.mmc2_sdwp",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLUP},
-	{"mcasp0_axr0.mmc2_sdcd", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
+	{"spi0_cs0.mmc2_sdwp",	OMAP_MUX_MODE1 | AM335X_PIN_INPUT_PULLDOWN},
+	{"mcasp0_axr0.mmc2_sdcd", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLUP},
 	{NULL, 0},
 };
 
