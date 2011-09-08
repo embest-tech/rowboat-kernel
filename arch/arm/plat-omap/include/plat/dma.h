@@ -204,7 +204,7 @@
 #define AM335X_DMA_MMC2_RX		3
 #define AM335X_DMA_MMC2_TX		2
 #define AM335X_DMA_MMC3_RX		65	/* xBar */
-#define AM335X_DMA_MMC3_TX		66	/* xBar */
+#define AM335X_DMA_MMC3_TX		64	/* xBar */
 
 
 
