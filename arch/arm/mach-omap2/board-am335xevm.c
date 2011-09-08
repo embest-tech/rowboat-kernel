@@ -880,11 +880,11 @@ static void mmc2_init(int evm_id, int profile)
 {
 	setup_pin_mux(mmc2_pin_mux);
 
-	mmc[2].mmc = 3;
-	mmc[2].caps = MMC_CAP_8_BIT_DATA;
-	mmc[2].gpio_cd = -EINVAL;
-	mmc[2].gpio_wp = -EINVAL;
-	mmc[2].ocr_mask = MMC_VDD_33_34;
+	mmc[1].mmc = 3;
+	mmc[1].caps = MMC_CAP_8_BIT_DATA;
+	mmc[1].gpio_cd = -EINVAL;
+	mmc[1].gpio_wp = -EINVAL;
+	mmc[1].ocr_mask = MMC_VDD_33_34;
 
 	/* mmc will be initialized when mmc)_init is called */
 	return;
