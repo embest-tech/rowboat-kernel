@@ -403,7 +403,7 @@ static const u32 assigned_queues[] = {	0xffffffff, /* queue 0..31 */
 					0x0fffffff  /* queue 128..155 */
 					};
 
-int __devinit cppi41_init(struct musb *musb)
+int __devinit cppi41_init(struct musb *musb, int num_instances)
 {
 	struct usb_cppi41_info *cppi_info = &usb_cppi41_info[musb->id];
 	u16 numch, blknum, order;
@@ -454,11 +454,9 @@ int __devinit cppi41_init(struct musb *musb)
 	/* Initialize for Linking RAM region 0 alone */
 	cppi41_queue_mgr_init(cppi_info->q_mgr, 0, 0x3fff);
 
-#ifdef CONFIG_USB_GADGET_MUSB_HDRC
-	numch =  USB_CPPI41_NUM_CH * 2;
-#else
-	numch =  USB_CPPI41_NUM_CH * 2 * 2;
-#endif
+	numch =  USB_CPPI41_NUM_CH * 2 * num_instances;
+	cppi41_dma_block[0].num_max_ch = numch;
+
 	order = get_count_order(numch);
 
 	/* TODO: check two teardown desc per channel (5 or 7 ?)*/
@@ -498,11 +496,7 @@ void cppi41_free(void)
 	if (!cppi41_init_done)
 		return ;
 
-#ifdef CONFIG_USB_GADGET_MUSB_HDRC
-	numch =  USB_CPPI41_NUM_CH * 2;
-#else
-	numch =  USB_CPPI41_NUM_CH * 2 * 2;
-#endif
+	numch = cppi41_dma_block[0].num_max_ch;
 	order = get_count_order(numch);
 	blknum = cppi_info->dma_block;
 
@@ -1066,7 +1060,7 @@ int ti81xx_musb_init(struct musb *musb)
 	msleep(5);
 
 #ifdef CONFIG_USB_TI_CPPI41_DMA
-	cppi41_init(musb);
+	cppi41_init(musb, data->instances+1);
 #endif
 
 	musb->a_wait_bcon = A_WAIT_BCON_TIMEOUT;
