@@ -1632,26 +1632,26 @@ int map_xbar_event_to_channel(unsigned event, unsigned *channel,
 		*channel = event;
 	} else if (event < edma_info[ctrl]->num_events) {
 		*channel = xbar_event_mapping[xbar_evt_no].channel_no;
+		clear_bit(*channel, edma_info[ctrl]->edma_unused);
+		mask = (*channel)%4;
 		offset = (*channel)/4;
+		offset *= 4;
+		offset += mask;
 		if (!cpu_is_am335x()) {
 			val = (unsigned)__raw_readl(TI81XX_CTRL_REGADDR(
 						TI81XX_SCM_BASE_EDMA + offset));
-			mask = (*channel)%4;
-			val = val & (~((0xFF) << mask));
+			val = val & (~(0xFF));
 			val = val |
-				(xbar_event_mapping[xbar_evt_no].xbar_event_no
-								<< mask);
+				(xbar_event_mapping[xbar_evt_no].xbar_event_no);
 			__raw_writel(val,
 				TI81XX_CTRL_REGADDR(TI81XX_SCM_BASE_EDMA
 								+ offset));
 		} else {
 			val = (unsigned)__raw_readl(AM335X_CTRL_REGADDR(
 						TI81XX_SCM_BASE_EDMA + offset));
-			mask = (*channel)%4;
-			val = val & (~((0xFF) << mask));
+			val = val & (~(0xFF));
 			val = val |
-				(xbar_event_mapping[xbar_evt_no].xbar_event_no
-								<< mask);
+				(xbar_event_mapping[xbar_evt_no].xbar_event_no);
 			__raw_writel(val,
 				AM335X_CTRL_REGADDR(TI81XX_SCM_BASE_EDMA
 								+ offset));
