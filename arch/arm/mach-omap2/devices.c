@@ -1632,7 +1632,9 @@ int map_xbar_event_to_channel(unsigned event, unsigned *channel,
 		*channel = event;
 	} else if (event < edma_info[ctrl]->num_events) {
 		*channel = xbar_event_mapping[xbar_evt_no].channel_no;
-		clear_bit(*channel, edma_info[ctrl]->edma_unused);
+		/* confirm the range */
+		if (*channel < EDMA_MAX_DMACH)
+			clear_bit(*channel, edma_info[ctrl]->edma_unused);
 		mask = (*channel)%4;
 		offset = (*channel)/4;
 		offset *= 4;
