@@ -796,55 +796,37 @@ static void uart3_init(int evm_id, int profile)
 
 /* setup lcd */
 
-static void __init conf_disp_pll(struct platform_device *lcdc_device)
+static int __init conf_disp_pll(int rate)
 {
-	int ret;
-	struct clk *lcdc_clk;
-	struct clk *lcdc_parent;
 	struct clk *disp_pll;
-
-	lcdc_clk = clk_get(&lcdc_device->dev, NULL);
-	if (IS_ERR(lcdc_clk)) {
-		pr_err("Cannot request lcdc_fck\n");
-		goto error0;
-	}
-
-	lcdc_parent = clk_get(NULL, "disp_div2_ck");
-	if (IS_ERR(lcdc_parent)) {
-		pr_err("Cannot request lcdc_parent\n");
-		goto error1;
-	}
-	ret = clk_set_parent(lcdc_clk, lcdc_parent);
+	int ret = -EINVAL;
 
 	disp_pll = clk_get(NULL, "dpll_disp_ck");
 	if (IS_ERR(disp_pll)) {
-		pr_err("Cannot request disp_pll\n");
-		goto error2;
+		pr_err("Cannot clk_get disp_pll\n");
+		goto out;
 	}
 
-	clk_set_rate(disp_pll, 600000000);
-	return;
-error2:
-	clk_put(lcdc_parent);
-error1:
-	clk_put(lcdc_clk);
-error0:
-	pr_err("Failed to configure display PLL\n");
-	return;
+	ret = clk_set_rate(disp_pll, rate);
+	clk_put(disp_pll);
+out:
+	return ret;
 }
 
 #define AM335X_LCD_BL_PIN	GPIO_TO_PIN(0, 7)
 
 static void lcdc_init(int evm_id, int profile)
 {
-	struct platform_device *lcdc_device;
 
 	setup_pin_mux(lcdc_pin_mux);
 
-	lcdc_device = am33xx_register_lcdc(&TFC_S9700RTWV35TR_01B_pdata);
-	if (lcdc_device != NULL)
-		conf_disp_pll(lcdc_device);
-	else
+	if (conf_disp_pll(300000000)) {
+		pr_info("Failed configure display PLL, not attempting to"
+				"register LCDC\n");
+		return;
+	}
+
+	if (am33xx_register_lcdc(&TFC_S9700RTWV35TR_01B_pdata))
 		pr_info("Failed to register LCDC device\n");
 	return;
 }
