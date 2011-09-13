@@ -176,7 +176,7 @@ static struct fb_var_screeninfo da8xx_fb_var __devinitdata = {
 	.activate = 0,
 	.height = -1,
 	.width = -1,
-	.pixclock = 126667,	/* 126us - AUO display */
+	.pixclock = 33333,	/* 126us - AUO display */
 	.accel_flags = 0,
 	.left_margin = LEFT_MARGIN,
 	.right_margin = RIGHT_MARGIN,
@@ -254,7 +254,7 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.vfp = 13,
 		.vbp = 29,
 		.vsw = 2,
-		.pxl_clk = 23040000,
+		.pxl_clk = 30000000,
 		.invert_pxl_clk = 0,
 	},
 };
