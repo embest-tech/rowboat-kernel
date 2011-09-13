@@ -523,7 +523,7 @@ static int prepare_unused_channel_list(struct device *dev, void *data)
 			ctlr = EDMA_CTLR(pdev->resource[i].start);
 			/* confirm the range */
 			if (EDMA_CHAN_SLOT(pdev->resource[i].start <
-							EDMA_MAX_DMACH)
+							EDMA_MAX_DMACH))
 				clear_bit(
 					EDMA_CHAN_SLOT(pdev->resource[i].start),
 						edma_info[ctlr]->edma_unused);
