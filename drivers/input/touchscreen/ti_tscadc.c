@@ -25,6 +25,7 @@
 #include <linux/platform_device.h>
 #include <linux/io.h>
 #include <linux/input/ti_tscadc.h>
+#include <linux/delay.h>
 
 #define TSCADC_REG_IRQEOI		0x020
 #define TSCADC_REG_IRQSTATUS		0x028
@@ -41,16 +42,52 @@
 #define TSCADC_REG_STEPDELAY1		0x068
 #define TSCADC_REG_STEPCONFIG2		0x06C
 #define TSCADC_REG_STEPDELAY2		0x070
+#define TSCADC_REG_STEPCONFIG3          0x074
+#define TSCADC_REG_STEPDELAY3           0x078
+#define TSCADC_REG_STEPCONFIG4          0x07C
+#define TSCADC_REG_STEPDELAY4           0x080
+#define TSCADC_REG_STEPCONFIG5          0x084
+#define TSCADC_REG_STEPDELAY5           0x088
+#define TSCADC_REG_STEPCONFIG6		0x08C
+#define TSCADC_REG_STEPDELAY6		0x090
+#define TSCADC_REG_STEPCONFIG7		0x094
+#define TSCADC_REG_STEPDELAY7		0x098
+#define TSCADC_REG_STEPCONFIG8		0x09C
+#define TSCADC_REG_STEPDELAY8		0x0A0
+#define TSCADC_REG_STEPCONFIG9		0x0A4
+#define TSCADC_REG_STEPDELAY9		0x0A8
+#define TSCADC_REG_STEPCONFIG10		0x0AC
+#define TSCADC_REG_STEPDELAY10		0x0B0
+#define TSCADC_REG_STEPCONFIG11		0x0B4
+#define TSCADC_REG_STEPDELAY11		0x0B8
+#define TSCADC_REG_STEPCONFIG12		0x0BC
+#define TSCADC_REG_STEPDELAY12		0x0C0
+#define TSCADC_REG_STEPCONFIG13		0x0C4
+#define TSCADC_REG_STEPDELAY13		0x0C8
+#define TSCADC_REG_STEPCONFIG14		0x0CC
+#define TSCADC_REG_STEPDELAY14		0x0D0
+#define TSCADC_REG_STEPCONFIG15		0x0D4
+#define TSCADC_REG_STEPDELAY15		0x0D8
+#define TSCADC_REG_STEPCONFIG16		0x0DC
+#define TSCADC_REG_STEPDELAY16		0x0E0
+#define TSCADC_REG_FIFO0CNT		0xE4
+#define TSCADC_REG_FIFO0THR		0xE8
+#define TSCADC_REG_FIFO1CNT		0xF0
+#define TSCADC_REG_FIFO1THR		0xF4
 #define TSCADC_REG_FIFO0		0x100
+#define TSCADC_REG_FIFO1		0x200
+#define TSCADC_REG_RAWIRQSTATUS		0x24
 
 /*	Register Bitfields	*/
 #define TSCADC_IRQWKUP_ENB		BIT(0)
-#define TSCADC_STPENB_STEPENB		(7 << 0)
+#define TSCADC_STPENB_STEPENB		0x1fFF
 #define TSCADC_IRQENB_IRQHWPEN		BIT(10)
 #define TSCADC_IRQENB_IRQEOS		BIT(1)
+#define TSCADC_IRQENB_FIFO0THRES	BIT(2)
 #define TSCADC_IRQENB_FIFO_OVERFLOW	BIT(3)
+#define TSCADC_IRQENB_FIFO1THRES	BIT(5)
 #define TSCADC_IRQENB_PENUP		BIT(9)
-#define TSCADC_STEPCONFIG_MODE_HWSYNC	0x2
+#define TSCADC_STEPCONFIG_MODE_HWSYNC	0x3
 #define TSCADC_STEPCONFIG_2SAMPLES_AVG	BIT(2)
 #define TSCADC_STEPCONFIG_XPP		BIT(5)
 #define TSCADC_STEPCONFIG_XNN		BIT(6)
@@ -84,10 +121,15 @@
 #define TSCADC_CNTRLREG_8WIRE		(0x3 << 5)
 #define TSCADC_ADCFSM_STEPID		0x10
 #define TSCADC_ADCFSM_FSM		BIT(5)
+#define x_config			0x00080432
+#define y_config			0x04040312
 
 #define ADC_CLK				3000000
 
 #define MAX_12BIT                       ((1 << 12) - 1)
+
+int pen =1;
+unsigned int bckup_x=0, bckup_y=0;
 
 struct tscadc {
 	struct input_dev	*input;
@@ -164,11 +206,35 @@ static void tsc_step_config(struct tscadc *ts_dev)
 	         tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG2, 0x01044312);
 	        tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY2, 0x88000018);*/
 
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG1, 0x00080432);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG1, x_config);
 	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY1, 0x88000018);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG2, 0x00040312);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG2, y_config);
 	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY2, 0x88000018);
 
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG3, x_config);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY3, 0x88000018);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG4, y_config);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY4, 0x88000018);
+
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG5, x_config);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY5, 0x88000018);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG6, y_config);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY6, 0x88000018);
+
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG7, x_config);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY7, 0x88000018);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG8, y_config);
+	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY8, 0x88000018);
+
+	 tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG9, x_config);
+	 tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY9, 0x88000018);
+	 tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG10, y_config);
+	  tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY10, 0x88000018);
+
+	 tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG11, x_config);
+	 tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY11, 0x88000018);
+	 tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG12, y_config);
+	  tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY12, 0x88000018);
 
 	tscadc_writel(ts_dev, TSCADC_REG_CHARGECONFIG, 0x00911120);
 	tscadc_writel(ts_dev, TSCADC_REG_CHARGEDELAY, 0x00000001);
@@ -209,61 +275,94 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
 	struct tscadc		*ts_dev = (struct tscadc *)dev;
 	struct input_dev	*input_dev = ts_dev->input;
 	unsigned int		status, store, cntrlreg, irqclr = 0;
-	int			absx, absy;
-	int			charge, fsm;
+	int			absx, absy, readx3, ready3, meanx, meany, avgx, avgy;
+	int			charge, fsm = 0, fifo0count=0, fifo1count=0;
+	unsigned int			readx2, readx1 =0, ready2, ready1 =0, data=0, datay =0;
+	int i;
+	unsigned int prev_val_x = ~0,prev_val_y = ~0;
+	unsigned int prev_diff_x = ~0,prev_diff_y = ~0;
+	unsigned int cur_diff_x=0, cur_diff_y=0;
+	unsigned int val_x=0, val_y=0,diffx =0, diffy = 0;
 
 	status = tscadc_readl(ts_dev, TSCADC_REG_IRQSTATUS);
-	tscadc_writel(ts_dev, TSCADC_REG_SE, 0x0);
 
-	/* Pen touch event */
-	if (status & TSCADC_IRQENB_IRQHWPEN){
+	if (status & TSCADC_IRQENB_FIFO1THRES){
+		fifo0count = tscadc_readl(ts_dev,TSCADC_REG_FIFO0CNT);
+		fifo1count = tscadc_readl(ts_dev,TSCADC_REG_FIFO1CNT);
 		input_report_key(input_dev, BTN_TOUCH, 1);
-		irqclr = TSCADC_IRQENB_IRQHWPEN;
-		printk(" pen down event occured \n");
+		input_sync(input_dev);
+		irqclr |= TSCADC_IRQENB_FIFO1THRES;
+
+		for (i = 0; i < fifo0count; i++) {
+			readx1 = tscadc_readl(ts_dev, TSCADC_REG_FIFO0);
+			readx1 = readx1 & 0xfff;
+			if (readx1 > prev_val_x)
+				cur_diff_x = readx1 - prev_val_x;
+			else
+				cur_diff_x = prev_val_x - readx1;
+
+			if (cur_diff_x < prev_diff_x) {
+				prev_diff_x = cur_diff_x;
+				val_x = readx1;
+			}
+
+			prev_val_x = readx1;
+			ready1 = tscadc_readl(ts_dev, TSCADC_REG_FIFO1);
+			ready1 &= 0xfff;
+			if (ready1 > prev_val_y)
+				cur_diff_y = ready1 - prev_val_y;
+			else
+				cur_diff_y = prev_val_y - ready1;
+
+			if (cur_diff_y < prev_diff_y) {
+				prev_diff_y = cur_diff_y;
+				val_y = ready1;
+			}
+
+			prev_val_y = ready1;
+		}
+
+		if (val_x > bckup_x){
+			diffx = val_x - bckup_x;
+			diffy = val_y - bckup_y;
+		}
+		else {
+			diffx = bckup_x - val_x;
+			diffy = bckup_y - val_y;
+		}
+		bckup_x = val_x;
+		bckup_y = val_y;
+
+		if (pen == 0){
+			if (diffx < 10){
+				input_report_abs(input_dev, ABS_X, val_x);
+				input_report_abs(input_dev, ABS_Y, val_y);
+			}
+		}
 	}
 
+	udelay(425);
+
+	status = tscadc_readl(ts_dev,TSCADC_REG_RAWIRQSTATUS);
 	if (status & TSCADC_IRQENB_PENUP) {
 		/* Pen up event */
-	//	charge = TSCADC_STEPCHARGE_INM | TSCADC_STEPCHARGE_RFM;
-	//	tscadc_writel(ts_dev, TSCADC_REG_CHARGECONFIG, charge);
-		input_report_key(input_dev, BTN_TOUCH, 0);
-		input_sync(input_dev);
-	//	tsc_idle_config(ts_dev);
-		printk(" pen up event occured \n");
+		fsm = tscadc_readl(ts_dev, TSCADC_REG_ADCFSM);
+		if (fsm == 0x10){
+			input_report_key(input_dev, BTN_TOUCH, 0);
+			input_sync(input_dev);
+			pen = 1;
+			bckup_x = 0;
+			bckup_y = 0;
+		}
+		else {
+			pen = 0;
+		}
 		irqclr |= TSCADC_IRQENB_PENUP;
 	}
-	if (status & TSCADC_IRQENB_IRQEOS) {
-		/* ADC is done with sampling, ready to read the data */
-		absx = tscadc_readl(ts_dev, TSCADC_REG_FIFO0);
-		absy = tscadc_readl(ts_dev, TSCADC_REG_FIFO0);
-	//	printk("absx 0x%x,absy 0x%x\n", absx, absy);
-		printk(" EOC occured \n");
-		input_report_abs(input_dev, ABS_X, absx);
-		input_report_abs(input_dev, ABS_Y, absy);
-//		input_report_key(input_dev, BTN_TOUCH, 0);
-		input_sync(input_dev);
 
-		irqclr |= TSCADC_IRQENB_IRQEOS;
-
-	}
-	if (status & TSCADC_IRQENB_FIFO_OVERFLOW) {
-		/* FIFO overflow condition */
-		cntrlreg = tscadc_readl(ts_dev, TSCADC_REG_CTRL);
-		cntrlreg &= ~TSCADC_CNTRLREG_TSCSSENB;
-		tscadc_writel(ts_dev, TSCADC_REG_CTRL, cntrlreg);
-
-		irqclr |= TSCADC_IRQENB_FIFO_OVERFLOW;
-	fsm = tscadc_readl(ts_dev, TSCADC_REG_ADCFSM);
-	if ((fsm & TSCADC_ADCFSM_FSM) &&
-			(fsm & TSCADC_ADCFSM_STEPID)) {
-		store = tscadc_readl(ts_dev, TSCADC_REG_CTRL);
-		store |= TSCADC_CNTRLREG_TSCSSENB;
-		tscadc_writel(ts_dev, TSCADC_REG_CTRL, store);
-	}
-	}
 	tscadc_writel(ts_dev, TSCADC_REG_IRQSTATUS, irqclr);
 
-	 /* check pending interrupts */
+	/* check pending interrupts */
 	tscadc_writel(ts_dev, TSCADC_REG_IRQEOI, 0x0);
 
 	tscadc_writel(ts_dev, TSCADC_REG_SE, TSCADC_STPENB_STEPENB);
@@ -319,7 +418,7 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
 		goto err_release_mem;
 	}
 
-	err = request_irq(ts_dev->irq, tscadc_interrupt, IRQF_DISABLED,
+	err = request_irq(ts_dev->irq, tscadc_interrupt,IRQF_DISABLED,
 				pdev->dev.driver->name, ts_dev);
 	if (err) {
 		dev_err(&pdev->dev, "failed to allocate irq.\n");
@@ -375,12 +474,12 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
 	tsc_idle_config(ts_dev);
 
 	/* IRQ Enable */
-	irqenable = TSCADC_IRQENB_IRQHWPEN |
-			TSCADC_IRQENB_IRQEOS |
-			TSCADC_IRQENB_PENUP | TSCADC_IRQENB_FIFO_OVERFLOW;
+	irqenable = TSCADC_IRQENB_FIFO1THRES;
 	tscadc_writel(ts_dev, TSCADC_REG_IRQENABLE, irqenable);
 
 	tsc_step_config(ts_dev);
+
+	tscadc_writel(ts_dev, TSCADC_REG_FIFO1THR, 5);
 
 	ctrl |= TSCADC_CNTRLREG_TSCSSENB;
 	tscadc_writel(ts_dev, TSCADC_REG_CTRL, ctrl);
