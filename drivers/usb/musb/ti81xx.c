@@ -50,7 +50,7 @@ static void *usbss_virt_base;
 static u8 usbss_init_done;
 struct musb *gmusb[2];
 
-u8 usbid_sw_ctrl = 0;
+u8 usbid_sw_ctrl;
 #undef USB_TI81XX_DEBUG
 
 #ifdef USB_TI81XX_DEBUG
@@ -1066,15 +1066,23 @@ int ti81xx_musb_init(struct musb *musb)
 	musb->a_wait_bcon = A_WAIT_BCON_TIMEOUT;
 	musb->isr = ti81xx_interrupt;
 
+#ifdef USB_TI816X_USBID_CTRL_SW
+	usbid_sw_ctrl = 1;
+#endif
 	if (is_otg_enabled(musb)) {
+		mode = MUSB_OTG;
 		/* if usb-id contolled through software for ti816x then
 		 * configure the usb0 in peripheral mode and usb1 in
 		 * host mode
 		 */
-		if (usbid_sw_ctrl && cpu_is_ti816x())
-			mode = musb->id ? MUSB_HOST : MUSB_PERIPHERAL;
-		else
-			mode = MUSB_OTG;
+		if (usbid_sw_ctrl && cpu_is_ti816x()) {
+#if defined(CONFIG_USB_MUSB0_DEVICE) || defined(CONFIG_USB_MUSB1_DEVICE)
+			mode = MUSB_PERIPHERAL;
+#endif
+#if defined(CONFIG_USB_MUSB0_HOST) || defined(CONFIG_USB_MUSB1_HOST)
+			mode = MUSB_HOST;
+#endif
+		}
 	} else
 		/* set musb controller to host mode */
 		mode = is_host_enabled(musb) ? MUSB_HOST : MUSB_PERIPHERAL;
