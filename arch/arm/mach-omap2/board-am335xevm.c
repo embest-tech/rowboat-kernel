@@ -50,6 +50,55 @@
 #include "mux.h"
 #include "hsmmc.h"
 
+#ifdef CONFIG_USB_ANDROID
+#include <linux/usb/android_composite.h>
+
+#define GOOGLE_VENDOR_ID		0x18d1
+#define GOOGLE_PRODUCT_ID		0x9018
+#define GOOGLE_ADB_PRODUCT_ID		0x9015
+
+static char *usb_functions_adb[] = {
+	"adb",
+};
+
+static char *usb_functions_all[] = {
+	"adb",
+};
+
+static struct android_usb_product usb_products[] = {
+	{
+		.product_id	= GOOGLE_PRODUCT_ID,
+		.num_functions	= ARRAY_SIZE(usb_functions_adb),
+		.functions	= usb_functions_adb,
+	},
+};
+
+static struct android_usb_platform_data android_usb_pdata = {
+	.vendor_id		= GOOGLE_VENDOR_ID,
+	.product_id		= GOOGLE_PRODUCT_ID,
+	.functions		= usb_functions_all,
+	.products		= usb_products,
+	.version		= 0x0100,
+	.product_name		= "arowboat gadget",
+	.manufacturer_name	= "am335xevm",
+	.serial_number		= "335X",
+	.num_functions		= ARRAY_SIZE(usb_functions_all),
+};
+
+static struct platform_device androidusb_device = {
+	.name	= "android_usb",
+	.id	= -1,
+	.dev	= {
+		.platform_data = &android_usb_pdata,
+	},
+};
+
+static void am335x_android_gadget_init(void)
+{
+	platform_device_register(&androidusb_device);
+}
+#endif
+
 /* module pin mux structure */
 struct pinmux_config {
 	const char *string_name; /* signal name format */
@@ -1486,6 +1535,10 @@ static void __init am335x_evm_init(void)
 	omap_serial_init();
 	am335x_evm_i2c_init();
 	usb_musb_init(&musb_board_data);
+
+#ifdef CONFIG_USB_ANDROID
+	am335x_android_gadget_init();
+#endif
 }
 
 static void __init am335x_evm_map_io(void)
