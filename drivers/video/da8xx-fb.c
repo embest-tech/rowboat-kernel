@@ -129,6 +129,9 @@
 #define UPPER_MARGIN	32
 #define LOWER_MARGIN	32
 
+static unsigned int previous = 0;
+static unsigned int go_next  = 0;
+
 static resource_size_t da8xx_fb_reg_base;
 static struct resource *lcdc_regs;
 static unsigned int lcd_revision;
@@ -775,10 +778,16 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
 				   LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
 			lcdc_write(par->dma_end,
 				   LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-			par->vsync_flag = 1;
-			wake_up_interruptible(&par->vsync_wait);
-			if (vsync_cb_handler)
-				vsync_cb_handler(vsync_cb_arg);
+			if ((previous == par->dma_start) || (go_next == 1)) {
+				par->vsync_flag = 1;
+				go_next = 0;
+				previous = par->dma_start;
+				wake_up_interruptible(&par->vsync_wait);
+				if (vsync_cb_handler)
+					vsync_cb_handler(vsync_cb_arg);
+			} else {
+				go_next = 1;
+			}
 		}
 
 		if (stat & LCD_END_OF_FRAME1) {
@@ -786,10 +795,16 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
 				   LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
 			lcdc_write(par->dma_end,
 				   LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
-			par->vsync_flag = 1;
-			wake_up_interruptible(&par->vsync_wait);
-			if (vsync_cb_handler)
-				vsync_cb_handler(vsync_cb_arg);
+			if ((previous == par->dma_start) || (go_next == 1)) {
+				par->vsync_flag = 1;
+				go_next = 0;
+				previous = par->dma_start;
+				wake_up_interruptible(&par->vsync_wait);
+				if (vsync_cb_handler)
+					vsync_cb_handler(vsync_cb_arg);
+			} else {
+				go_next = 1;
+			}
 		}
 	}
 
@@ -1110,6 +1125,7 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
 			ret = -EINVAL;
 		else {
 			memcpy(&fbi->var, &new_var, sizeof(new_var));
+			previous = start;
 
 			start	= fix->smem_start +
 				new_var.yoffset * fix->line_length +
