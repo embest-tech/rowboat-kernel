@@ -92,6 +92,9 @@ config ARCH_AM335X
 	bool "AM335X support"
 	depends on ARCH_TI81XX
 	default y
+	select WL12XX_PLATFORM_DATA
+	select AVERAGE
+	select WIRELESS_EXT
 
 config OMAP_PACKAGE_ZAF
        bool
