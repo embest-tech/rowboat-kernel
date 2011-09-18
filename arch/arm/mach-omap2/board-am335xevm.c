@@ -27,6 +27,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/input/ti_tscadc.h>
+#include <linux/wl12xx.h>
 
 /* LCD controller is similar to DA850 */
 #include <video/da8xx-fb.h>
@@ -606,6 +607,35 @@ static struct pinmux_config usb1_pin_mux[] = {
 	{NULL, 0},
 };
 
+/* Module pin mux for wlan and bluetooth */
+static struct pinmux_config mmc2_wl12xx_pin_mux[] = {
+	{"gpmc_a1.mmc2_dat0", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_a2.mmc2_dat1", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_a3.mmc2_dat2", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_ben1.mmc2_dat3", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_csn3.mmc2_cmd", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_clk.mmc2_clk", OMAP_MUX_MODE3 | AM335X_PIN_INPUT_PULLUP},
+	{"gpmc_csn1.wlan_en", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT},
+	{"mcasp0_ahclkr.wlan_irq", OMAP_MUX_MODE7 | AM335X_PIN_INPUT},
+	{"gpmc_csn2.bt_en", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT},
+	{NULL, 0},
+};
+
+static struct pinmux_config uart1_wl12xx_pin_mux[] = {
+	{"uart1_ctsn.uart1_ctsn", OMAP_MUX_MODE0 | AM335X_PIN_OUTPUT},
+	{"uart1_rtsn.uart1_rtsn", OMAP_MUX_MODE0 | AM335X_PIN_INPUT},
+	{"uart1_rxd.uart1_rxd", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+	{"uart1_txd.uart1_txd", OMAP_MUX_MODE0 | AM335X_PULL_ENBL},
+	{NULL, 0},
+};
+
+static struct pinmux_config wl12xx_pin_mux[] = {
+	{"gpmc_csn1.wlan_en", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT},
+	{"mcasp0_ahclkr.wlan_irq", OMAP_MUX_MODE7 | AM335X_PIN_INPUT},
+	{"gpmc_csn2.bt_en", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT},
+	{NULL, 0},
+ };
+
 /*
 * Module Platform data.
 * Place all Platform specific data below.
@@ -795,6 +825,18 @@ static struct platform_device tsc_device = {
 	.resource       = tsc_resources,
 };
 
+#ifdef CONFIG_WL12XX_PLATFORM_DATA
+
+#define AM335XEVM_WLAN_PMENA_GPIO  GPIO_TO_PIN(1, 30)
+#define AM335XEVM_WLAN_IRQ_GPIO    GPIO_TO_PIN(3, 17)
+#define AM335XEVM_BT_ENABLE_GPIO   GPIO_TO_PIN(1, 31)
+
+struct wl12xx_platform_data am335xevm_wlan_data __initdata = {
+	.irq = OMAP_GPIO_IRQ(AM335XEVM_WLAN_IRQ_GPIO),
+	.board_ref_clock = WL12XX_REFCLOCK_26, /* 26 MHz */
+};
+#endif
+
 /*
 * Module Initialization/setup function.
 * Place all module init/setup function call below.
@@ -836,6 +878,12 @@ static void spi1_init(int evm_id, int profile)
 			ARRAY_SIZE(am335x_spi1_slave_info));
 	return;
 }
+
+static void uart1_wl12xx_init(int evm_id, int profile)
+{
+	setup_pin_mux(uart1_wl12xx_pin_mux);
+}
+
 
 /* setup uart3 */
 static void uart3_init(int evm_id, int profile)
@@ -908,6 +956,12 @@ static void mmc1_init(int evm_id, int profile)
 	return;
 }
 
+#define SET_MMC_DEFAULT_VALUES(mmc_index, mmc_controller)      \
+	mmc[mmc_index].mmc = mmc_controller;        \
+	mmc[mmc_index].gpio_cd = -EINVAL;           \
+	mmc[mmc_index].gpio_wp = -EINVAL;           \
+	mmc[mmc_index].ocr_mask = MMC_VDD_33_34;
+
 static void mmc2_init(int evm_id, int profile)
 {
 	setup_pin_mux(mmc2_pin_mux);
@@ -920,6 +974,15 @@ static void mmc2_init(int evm_id, int profile)
 
 	/* mmc will be initialized when mmc)_init is called */
 	return;
+}
+
+static void mmc2_wl12xx_init(int evm_id, int profile)
+{
+	setup_pin_mux(mmc2_wl12xx_pin_mux);
+	SET_MMC_DEFAULT_VALUES(1, 3);
+	mmc[1].caps =  MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD;
+	mmc[1].nonremovable = true;
+	mmc[1].name = "wl1271";
 }
 
 static void mmc0_init(int evm_id, int profile)
@@ -990,6 +1053,63 @@ static void usb1_init(int evm_id, int profile)
 {
 	setup_pin_mux(usb1_pin_mux);
 	return;
+}
+
+static void enable_bt(void)
+{
+	int status = gpio_request(AM335XEVM_BT_ENABLE_GPIO, "bt_en\n");
+	if (status < 0)
+		pr_err("Failed to request gpio for bt_enable");
+
+	pr_info("Enable bluetooth....\n");
+	gpio_direction_output(AM335XEVM_BT_ENABLE_GPIO, 0);
+	msleep(100);
+	gpio_direction_output(AM335XEVM_BT_ENABLE_GPIO, 1);
+	msleep(500);
+}
+
+static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
+{
+	if (on)
+		gpio_set_value(AM335XEVM_WLAN_PMENA_GPIO, 1);
+	else
+		gpio_set_value(AM335XEVM_WLAN_PMENA_GPIO, 0);
+
+	return 0;
+}
+
+static void wl12xx_init(int evm_id, int profile)
+{
+	struct device *dev;
+	struct omap_mmc_platform_data *pdata;
+	int ret;
+
+	enable_bt();
+
+	setup_pin_mux(wl12xx_pin_mux);
+	if (wl12xx_set_platform_data(&am335xevm_wlan_data))
+		pr_err("error setting wl12xx data\n");
+
+	ret = gpio_request_one(AM335XEVM_WLAN_PMENA_GPIO, GPIOF_OUT_INIT_LOW,
+			       "wlan_en");
+	if (ret) {
+		pr_err("Error requesting wlan enable gpio: %d\n", ret);
+		return;
+	}
+
+	dev = mmc[1].dev;
+	if (!dev) {
+		pr_err("wl12xx mmc device initialization failed\n");
+		return;
+	}
+
+	pdata = dev->platform_data;
+	if (!pdata) {
+		pr_err("Platfrom data of wl12xx device not set\n");
+		return;
+	}
+
+	pdata->slots[0].set_power = wl12xx_set_power;
 }
 
 /* NAND partition information */
@@ -1198,10 +1318,13 @@ static int am335x_tlk110_phy_fixup(struct phy_device *phydev)
 /* Low-Cost EVM */
 static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
 	{rgmii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{mmc2_wl12xx_init,DEV_ON_BASEBOARD, PROFILE_NONE},
 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{evm_nand_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb0_init, 	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb1_init, 	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{uart1_wl12xx_init, DEV_ON_BASEBOARD, PROFILE_NONE},
+	{wl12xx_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{NULL, 0, 0},
 };
 
@@ -1219,6 +1342,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 						PROFILE_2 | PROFILE_7) },
 	{am335x_tsc_init, DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_1
 						| PROFILE_2 | PROFILE_7) },
+	{mmc2_wl12xx_init,DEV_ON_BASEBOARD, PROFILE_ALL},
 	{mmc1_init,	DEV_ON_DGHTR_BRD, PROFILE_2},
 	{mmc2_init,	DEV_ON_DGHTR_BRD, PROFILE_4},
 	{mmc0_init,	DEV_ON_BASEBOARD, (PROFILE_ALL& ~PROFILE_5)},
@@ -1229,6 +1353,8 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{i2c1_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_3 | PROFILE_7)},
 	{usb0_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
 	{usb1_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
+	{uart1_wl12xx_init, DEV_ON_BASEBOARD, PROFILE_ALL},
+	{wl12xx_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
 	{NULL, 0, 0},
 };
 
