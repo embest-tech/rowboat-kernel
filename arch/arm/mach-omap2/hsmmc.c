@@ -324,10 +324,12 @@ void __init omap2_hsmmc_init(struct omap2_hsmmc_info *controllers)
 		 */
 		mmc->slots[0].ocr_mask = c->ocr_mask;
 
-		if (cpu_is_omap3517() || cpu_is_omap3505() || cpu_is_ti81xx())
-			mmc->slots[0].set_power = nop_mmc_set_power;
-		else
+		if (cpu_is_omap3517() || cpu_is_omap3505() || cpu_is_ti81xx()) {
+			if (!mmc->slots[0].set_power)
+				mmc->slots[0].set_power = nop_mmc_set_power;
+		} else {
 			mmc->slots[0].features |= HSMMC_HAS_PBIAS;
+		}
 
 		if ((cpu_is_omap44xx() && (omap_rev() > OMAP4430_REV_ES1_0)) ||
 				cpu_is_ti814x() || cpu_is_am335x())
