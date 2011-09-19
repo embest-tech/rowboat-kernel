@@ -54,7 +54,9 @@ static void __activate_col(const struct matrix_keypad_platform_data *pdata,
 		gpio_direction_output(pdata->col_gpios[col], level_on);
 	} else {
 		gpio_set_value_cansleep(pdata->col_gpios[col], !level_on);
+#ifndef CONFIG_MACH_AM335XEVM
 		gpio_direction_input(pdata->col_gpios[col]);
+#endif
 	}
 }
 
