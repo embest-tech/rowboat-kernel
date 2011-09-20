@@ -965,6 +965,7 @@ static struct platform_device tsc_device = {
 struct wl12xx_platform_data am335xevm_wlan_data __initdata = {
 	.irq = OMAP_GPIO_IRQ(AM335XEVM_WLAN_IRQ_GPIO),
 	.board_ref_clock = WL12XX_REFCLOCK_26, /* 26 MHz */
+	.board_tcxo_clock = WL12XX_REFCLOCK_26, /* 26 MHz */
 };
 #endif
 

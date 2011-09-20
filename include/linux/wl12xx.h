@@ -38,6 +38,8 @@ struct wl12xx_platform_data {
 	int irq;
 	bool use_eeprom;
 	int board_ref_clock;
+	int board_tcxo_clock;
+	unsigned long platform_quirks;
 };
 
 #ifdef CONFIG_WL12XX_PLATFORM_DATA
