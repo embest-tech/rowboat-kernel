@@ -1494,14 +1494,17 @@ extern int usb_composite_probe(struct usb_composite_driver *driver,
 	composite[id] = driver;
 	composite_gadget_bind[id] = bind;
 
-	retval = usb_gadget_probe_driver(&composite_driver[id], composite_bind);
-	if (retval < 0)
-		put_gadget_drv_id();
-
-	driver->class = class_create(THIS_MODULE, "usb_composite");
+	if (id)
+		driver->class = class_create(THIS_MODULE, "usb_composite.1");
+	else
+		driver->class = class_create(THIS_MODULE, "usb_composite.0");
 	if (IS_ERR(driver->class))
 		return PTR_ERR(driver->class);
 	driver->class->dev_uevent = composite_uevent;
+
+	retval = usb_gadget_probe_driver(&composite_driver[id], composite_bind);
+	if (retval < 0)
+		put_gadget_drv_id();
 
 	return retval;
 }
