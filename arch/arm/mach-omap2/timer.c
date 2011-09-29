@@ -470,7 +470,6 @@ static int __init omap_timer_init(struct omap_hwmod *oh, void *unused)
 #endif
 	pdev = omap_device_build(name, id, oh, pdata, sizeof(*pdata),
 				 NULL, 0, 0);
-
 	if (IS_ERR(pdev)) {
 		pr_err("%s: Can't build omap_device for %s: %s.\n",
 			__func__, name, oh->name);
