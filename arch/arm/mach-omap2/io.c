@@ -292,7 +292,6 @@ void __init omapti816x_map_common_io(void)
 void __init omapam33xx_map_common_io(void)
 {
 	iotable_init(omapam33xx_io_desc, ARRAY_SIZE(omapam33xx_io_desc));
-	_omap2_map_common_io();
 }
 #endif
 
