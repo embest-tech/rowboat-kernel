@@ -28,6 +28,7 @@
 #include <linux/delay.h>
 
 #define TSCADC_REG_IRQEOI		0x020
+#define TSCADC_REG_RAWIRQSTATUS		0x024
 #define TSCADC_REG_IRQSTATUS		0x028
 #define TSCADC_REG_IRQENABLE		0x02C
 #define TSCADC_REG_IRQWAKEUP		0x034
@@ -38,80 +39,41 @@
 #define TSCADC_REG_IDLECONFIG		0x058
 #define TSCADC_REG_CHARGECONFIG		0x05C
 #define TSCADC_REG_CHARGEDELAY		0x060
-#define TSCADC_REG_STEPCONFIG1		0x064
-#define TSCADC_REG_STEPDELAY1		0x068
-#define TSCADC_REG_STEPCONFIG2		0x06C
-#define TSCADC_REG_STEPDELAY2		0x070
-#define TSCADC_REG_STEPCONFIG3          0x074
-#define TSCADC_REG_STEPDELAY3           0x078
-#define TSCADC_REG_STEPCONFIG4          0x07C
-#define TSCADC_REG_STEPDELAY4           0x080
-#define TSCADC_REG_STEPCONFIG5          0x084
-#define TSCADC_REG_STEPDELAY5           0x088
-#define TSCADC_REG_STEPCONFIG6		0x08C
-#define TSCADC_REG_STEPDELAY6		0x090
-#define TSCADC_REG_STEPCONFIG7		0x094
-#define TSCADC_REG_STEPDELAY7		0x098
-#define TSCADC_REG_STEPCONFIG8		0x09C
-#define TSCADC_REG_STEPDELAY8		0x0A0
-#define TSCADC_REG_STEPCONFIG9		0x0A4
-#define TSCADC_REG_STEPDELAY9		0x0A8
-#define TSCADC_REG_STEPCONFIG10		0x0AC
-#define TSCADC_REG_STEPDELAY10		0x0B0
-#define TSCADC_REG_STEPCONFIG11		0x0B4
-#define TSCADC_REG_STEPDELAY11		0x0B8
-#define TSCADC_REG_STEPCONFIG12		0x0BC
-#define TSCADC_REG_STEPDELAY12		0x0C0
-#define TSCADC_REG_STEPCONFIG13		0x0C4
-#define TSCADC_REG_STEPDELAY13		0x0C8
-#define TSCADC_REG_STEPCONFIG14		0x0CC
-#define TSCADC_REG_STEPDELAY14		0x0D0
-#define TSCADC_REG_STEPCONFIG15		0x0D4
-#define TSCADC_REG_STEPDELAY15		0x0D8
-#define TSCADC_REG_STEPCONFIG16		0x0DC
-#define TSCADC_REG_STEPDELAY16		0x0E0
+#define TSCADC_REG_STEPCONFIG(n)	(0x64 + ((n-1) * 8))
+#define TSCADC_REG_STEPDELAY(n)		(0x68 + ((n-1) * 8))
 #define TSCADC_REG_FIFO0CNT		0xE4
 #define TSCADC_REG_FIFO0THR		0xE8
 #define TSCADC_REG_FIFO1CNT		0xF0
 #define TSCADC_REG_FIFO1THR		0xF4
 #define TSCADC_REG_FIFO0		0x100
 #define TSCADC_REG_FIFO1		0x200
-#define TSCADC_REG_RAWIRQSTATUS		0x24
 
 /*	Register Bitfields	*/
 #define TSCADC_IRQWKUP_ENB		BIT(0)
 #define TSCADC_STPENB_STEPENB		0x1fFF
-#define TSCADC_IRQENB_IRQHWPEN		BIT(10)
-#define TSCADC_IRQENB_IRQEOS		BIT(1)
 #define TSCADC_IRQENB_FIFO0THRES	BIT(2)
-#define TSCADC_IRQENB_FIFO_OVERFLOW	BIT(3)
 #define TSCADC_IRQENB_FIFO1THRES	BIT(5)
 #define TSCADC_IRQENB_PENUP		BIT(9)
-#define TSCADC_STEPCONFIG_MODE_HWSYNC	0x3
-#define TSCADC_STEPCONFIG_2SAMPLES_AVG	BIT(2)
+#define TSCADC_STEPCONFIG_MODE_HWSYNC	0x2
+#define TSCADC_STEPCONFIG_2SAMPLES_AVG	(1 << 4)
 #define TSCADC_STEPCONFIG_XPP		BIT(5)
 #define TSCADC_STEPCONFIG_XNN		BIT(6)
 #define TSCADC_STEPCONFIG_YPP		BIT(7)
 #define TSCADC_STEPCONFIG_YNN		BIT(8)
 #define TSCADC_STEPCONFIG_XNP		BIT(9)
 #define TSCADC_STEPCONFIG_YPN		BIT(10)
-#define TSCADC_STEPCONFIG_RFP_X		(1 << 12)
-#define TSCADC_STEPCONFIG_RFP_4_Y	(1 << 13)
-#define TSCADC_STEPCONFIG_RFP_5_Y	(1 << 12)
-#define TSCADC_STEPCONFIG_RFP_8_Y	(1 << 13)
+#define TSCADC_STEPCONFIG_RFP		(1 << 12)
 #define TSCADC_STEPCONFIG_INM		(1 << 18)
-#define TSCADC_STEPCONFIG_INP_4		(1 << 20)
+#define TSCADC_STEPCONFIG_INP_4		(1 << 19)
 #define TSCADC_STEPCONFIG_INP_5		(1 << 21)
-#define TSCADC_STEPCONFIG_INP_8_X	(3 << 20)
-#define TSCADC_STEPCONFIG_INP_8_Y	(1 << 21)
-#define TSCADC_STEPCONFIG_RFM_4_X	(1 << 23)
-#define TSCADC_STEPCONFIG_RFM_5_X	(1 << 24)
-#define TSCADC_STEPCONFIG_RFM_8_X	(1 << 23)
-#define TSCADC_STEPCONFIG_RFM_Y		(1 << 24)
-#define TSCADC_STEPCONFIG_OPENDLY	(0xf << 0)
-#define TSCADC_STEPCONFIG_SAMPLEDLY	BIT(25)
-#define TSCADC_STEPCHARGE_INM		BIT(18)
-#define TSCADC_STEPCHARGE_RFM		(3 << 23)
+#define TSCADC_STEPCONFIG_FIFO1		(1 << 26)
+#define TSCADC_STEPCONFIG_IDLE_INP	(1 << 22)
+#define TSCADC_STEPCONFIG_OPENDLY	0x018
+#define TSCADC_STEPCONFIG_SAMPLEDLY	0x88
+#define TSCADC_STEPCHARGE_INM		BIT(16)
+#define TSCADC_STEPCHARGE_INP		BIT(20)
+#define TSCADC_STEPCHARGE_RFM		(1 << 23)
+#define TSCADC_STEPCHARGE_DELAY		0x1
 #define TSCADC_CNTRLREG_TSCSSENB	BIT(0)
 #define TSCADC_CNTRLREG_STEPID		BIT(1)
 #define TSCADC_CNTRLREG_STEPCONFIGWRT	BIT(2)
@@ -162,92 +124,63 @@ static void tscadc_writel(struct tscadc *tsc, unsigned int reg,
 
 static void tsc_step_config(struct tscadc *ts_dev)
 {
-//	int	stepconfig1, stepconfig2, delay;
+	unsigned int	stepconfigx = 0, stepconfigy = 0, delay, chargeconfig = 0;
+	int i;
 
 	/* Configure the Step registers */
-	/* stepconfig1 = TSCADC_STEPCONFIG_MODE_HWSYNC |
-			TSCADC_STEPCONFIG_2SAMPLES_AVG | TSCADC_STEPCONFIG_XPP |
-			TSCADC_STEPCONFIG_XNN |
-			TSCADC_STEPCONFIG_RFP_X;
 
-	stepconfig2 = TSCADC_STEPCONFIG_MODE_HWSYNC |
-			TSCADC_STEPCONFIG_2SAMPLES_AVG | TSCADC_STEPCONFIG_YNN |
-			 TSCADC_STEPCONFIG_RFM_Y;
+	delay = TSCADC_STEPCONFIG_SAMPLEDLY | TSCADC_STEPCONFIG_OPENDLY;
+
+	stepconfigx = TSCADC_STEPCONFIG_MODE_HWSYNC |
+			TSCADC_STEPCONFIG_2SAMPLES_AVG | TSCADC_STEPCONFIG_XPP |
+			TSCADC_STEPCONFIG_YPN;
 	switch (ts_dev->wires) {
 	case 4:
-		stepconfig1 |= TSCADC_STEPCONFIG_INP_4 |
-				TSCADC_STEPCONFIG_RFM_4_X;
-
-		stepconfig2 |= TSCADC_STEPCONFIG_YPP |
-				TSCADC_STEPCONFIG_RFP_4_Y;
+		stepconfigx |= TSCADC_STEPCONFIG_INP_4;
 		break;
 	case 5:
-		stepconfig1 |= TSCADC_STEPCONFIG_YPP |
+		stepconfigx |= TSCADC_STEPCONFIG_YPP |
 				TSCADC_STEPCONFIG_YNN |
-				TSCADC_STEPCONFIG_INP_5 |
-				TSCADC_STEPCONFIG_RFM_5_X;
-
-		stepconfig2 |= TSCADC_STEPCONFIG_XPP |
-				TSCADC_STEPCONFIG_XNP |
-				TSCADC_STEPCONFIG_YPN |
-				TSCADC_STEPCONFIG_RFP_5_Y |
 				TSCADC_STEPCONFIG_INP_5;
 		break;
 	case 8:
-		stepconfig1 |= TSCADC_STEPCONFIG_INP_8_X |
-				TSCADC_STEPCONFIG_RFM_8_X;
-
-		stepconfig2 |= TSCADC_STEPCONFIG_YPP |
-				TSCADC_STEPCONFIG_RFP_8_Y |
-				TSCADC_STEPCONFIG_INP_8_Y;
+		stepconfigx |= TSCADC_STEPCONFIG_INP_4;
 		break;
 	}
-	delay = TSCADC_STEPCONFIG_OPENDLY | TSCADC_STEPCONFIG_SAMPLEDLY;
+	for (i = 1; i < 7; i++) {
+		tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG(i), stepconfigx);
+		tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY(i), delay);
+	}
 
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG1, stepconfig1);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY1, delay);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG2, stepconfig2);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY2, delay);
+	stepconfigy = TSCADC_STEPCONFIG_MODE_HWSYNC |
+			TSCADC_STEPCONFIG_2SAMPLES_AVG | TSCADC_STEPCONFIG_YNN |
+			TSCADC_STEPCONFIG_INM | TSCADC_STEPCONFIG_FIFO1;
+	switch (ts_dev->wires) {
+	case 4:
+		stepconfigy |= TSCADC_STEPCONFIG_XNP;
+		break;
+	case 5:
+		stepconfigy |= TSCADC_STEPCONFIG_XPP |
+				TSCADC_STEPCONFIG_XNP |
+				TSCADC_STEPCONFIG_YPN |
+				TSCADC_STEPCONFIG_INP_5;
+		break;
+	case 8:
+		stepconfigy |= TSCADC_STEPCONFIG_XNP;
+		break;
+	}
+	for (i = 7; i < 13; i++) {
+		tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG(i), stepconfigy);
+		tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY(i), delay);
+	}
 
-	delay = TSCADC_STEPCONFIG_OPENDLY | TSCADC_STEPCONFIG_SAMPLEDLY;*/
-
-/*	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG1, 0x00881432);
-	         tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY1, 0x88000018);
-	         tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG2, 0x01044312);
-	        tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY2, 0x88000018);*/
-
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG1, x_config);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY1, 0x88000018);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG2, y_config);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY2, 0x88000018);
-
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG3, x_config);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY3, 0x88000018);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG4, y_config);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY4, 0x88000018);
-
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG5, x_config);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY5, 0x88000018);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG6, y_config);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY6, 0x88000018);
-
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG7, x_config);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY7, 0x88000018);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG8, y_config);
-	tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY8, 0x88000018);
-
-	 tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG9, x_config);
-	 tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY9, 0x88000018);
-	 tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG10, y_config);
-	  tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY10, 0x88000018);
-
-	 tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG11, x_config);
-	 tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY11, 0x88000018);
-	 tscadc_writel(ts_dev, TSCADC_REG_STEPCONFIG12, y_config);
-	  tscadc_writel(ts_dev, TSCADC_REG_STEPDELAY12, 0x88000018);
-
-	tscadc_writel(ts_dev, TSCADC_REG_CHARGECONFIG, 0x00911120);
-	tscadc_writel(ts_dev, TSCADC_REG_CHARGEDELAY, 0x00000001);
+	chargeconfig = TSCADC_STEPCONFIG_XPP |
+			TSCADC_STEPCONFIG_YNN |
+			TSCADC_STEPCONFIG_RFP |
+			TSCADC_STEPCHARGE_INM | TSCADC_STEPCHARGE_INP |
+			TSCADC_STEPCHARGE_RFM;
+	tscadc_writel(ts_dev, TSCADC_REG_CHARGECONFIG, chargeconfig);
+	tscadc_writel(ts_dev, TSCADC_REG_CHARGEDELAY, TSCADC_STEPCHARGE_DELAY);
 
 	tscadc_writel(ts_dev, TSCADC_REG_SE, TSCADC_STPENB_STEPENB);
 }
@@ -255,52 +188,44 @@ static void tsc_step_config(struct tscadc *ts_dev)
 static void tsc_idle_config(struct tscadc *ts_config)
 {
 	/* Idle mode touch screen config */
-	/* unsigned int	 idleconfig;
+	unsigned int	 idleconfig;
 
 	idleconfig = TSCADC_STEPCONFIG_YNN |
-				TSCADC_STEPCONFIG_RFP_X |
-				TSCADC_STEPCONFIG_INM |
-				TSCADC_STEPCONFIG_XNP;
+				TSCADC_STEPCONFIG_XNN |
+				TSCADC_STEPCONFIG_INM;
 
 	switch (ts_config->wires) {
 	case 4:
-		idleconfig |= TSCADC_STEPCONFIG_INP_4 |
-			TSCADC_STEPCONFIG_RFM_4_X;
+		idleconfig |= TSCADC_STEPCONFIG_IDLE_INP;
 		break;
 	case 5:
-		idleconfig |= TSCADC_STEPCONFIG_INP_5 |
-			TSCADC_STEPCONFIG_RFM_5_X;
+		idleconfig |= TSCADC_STEPCONFIG_INP_5;
 		break;
 	case 8:
-		idleconfig |= TSCADC_STEPCONFIG_INP_4 |
-			TSCADC_STEPCONFIG_RFM_8_X;
+		idleconfig |= TSCADC_STEPCONFIG_INP_4;
 		break;
 	}
-	tscadc_writel(ts_config, TSCADC_REG_IDLECONFIG, idleconfig);*/
-	tscadc_writel(ts_config, TSCADC_REG_IDLECONFIG,0x00440140);
+	tscadc_writel(ts_config, TSCADC_REG_IDLECONFIG, idleconfig);
 }
 
 static irqreturn_t tscadc_interrupt(int irq, void *dev)
 {
 	struct tscadc		*ts_dev = (struct tscadc *)dev;
 	struct input_dev	*input_dev = ts_dev->input;
-	unsigned int		status, store, cntrlreg, irqclr = 0;
-	int			absx, absy, readx3, ready3, meanx, meany, avgx, avgy;
-	int			charge, fsm = 0, fifo0count=0, fifo1count=0;
-	unsigned int			readx2, readx1 =0, ready2, ready1 =0, data=0, datay =0;
-	int i;
-	unsigned int prev_val_x = ~0,prev_val_y = ~0;
-	unsigned int prev_diff_x = ~0,prev_diff_y = ~0;
-	unsigned int cur_diff_x=0, cur_diff_y=0;
-	unsigned int val_x=0, val_y=0,diffx =0, diffy = 0;
+	unsigned int            status, irqclr = 0;
+	int                     i;
+	int                     fsm = 0, fifo0count = 0, fifo1count = 0;
+	unsigned int            readx1 = 0, ready1 = 0;
+	unsigned int            prev_val_x = ~0, prev_val_y = ~0;
+	unsigned int            prev_diff_x = ~0, prev_diff_y = ~0;
+	unsigned int            cur_diff_x = 0, cur_diff_y = 0;
+	unsigned int            val_x = 0, val_y = 0, diffx = 0, diffy = 0;
 
 	status = tscadc_readl(ts_dev, TSCADC_REG_IRQSTATUS);
 
 	if (status & TSCADC_IRQENB_FIFO1THRES){
 		fifo0count = tscadc_readl(ts_dev,TSCADC_REG_FIFO0CNT);
 		fifo1count = tscadc_readl(ts_dev,TSCADC_REG_FIFO1CNT);
-		input_report_key(input_dev, BTN_TOUCH, 1);
-		irqclr |= TSCADC_IRQENB_FIFO1THRES;
 
 		for (i = 0; i < fifo0count; i++) {
 			readx1 = tscadc_readl(ts_dev, TSCADC_REG_FIFO0);
@@ -317,7 +242,7 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
 
 			prev_val_x = readx1;
 			ready1 = tscadc_readl(ts_dev, TSCADC_REG_FIFO1);
-			ready1 &= 0xfff;
+				ready1 &= 0xfff;
 			if (ready1 > prev_val_y)
 				cur_diff_y = ready1 - prev_val_y;
 			else
@@ -351,26 +276,28 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
 		bckup_y = val_y;
 
 		if (pen == 0){
-			if (diffx < 10){
+			if (diffx < 30){
 				input_report_abs(input_dev, ABS_X, val_x);
 				input_report_abs(input_dev, ABS_Y, val_y);
+				input_report_key(input_dev, BTN_TOUCH, 1);
 				input_sync(input_dev);
 			}
 		}
+		irqclr |= TSCADC_IRQENB_FIFO1THRES;
 	}
 
-	udelay(425);
+	udelay(300);
 
 	status = tscadc_readl(ts_dev,TSCADC_REG_RAWIRQSTATUS);
 	if (status & TSCADC_IRQENB_PENUP) {
 		/* Pen up event */
 		fsm = tscadc_readl(ts_dev, TSCADC_REG_ADCFSM);
 		if (fsm == 0x10){
-			input_report_key(input_dev, BTN_TOUCH, 0);
-			input_sync(input_dev);
 			pen = 1;
 			bckup_x = 0;
 			bckup_y = 0;
+			input_report_key(input_dev, BTN_TOUCH, 0);
+			input_sync(input_dev);
 		}
 		else {
 			pen = 0;
