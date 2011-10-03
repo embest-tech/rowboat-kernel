@@ -1998,6 +1998,8 @@ void ti814x_cpsw_init(void)
 	ti814x_cpsw_slaves[1].mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
 	ti814x_cpsw_slaves[1].mac_addr[4] = mac_lo & 0xFF;
 	ti814x_cpsw_slaves[1].mac_addr[5] = (mac_lo & 0xFF00) >> 8;
+	memcpy(ti814x_cpsw_pdata.mac_addr, ti814x_cpsw_slaves[0].mac_addr,
+		ETH_ALEN);
 #if 0
 	ti814x_cpsw_mux();
 #endif
@@ -2207,6 +2209,8 @@ void am335x_cpsw_init(void)
 		am335x_cpsw_slaves[1].phy_id = "0:00";
 	}
 
+	memcpy(am335x_cpsw_pdata.mac_addr, am335x_cpsw_slaves[0].mac_addr,
+		ETH_ALEN);
 	platform_device_register(&am335x_cpsw_mdiodevice);
 	platform_device_register(&am335x_cpsw_device);
 	clk_add_alias(NULL, dev_name(&am335x_cpsw_mdiodevice.dev),
