@@ -1296,11 +1296,17 @@ static int composite_bind(struct usb_gadget *gadget)
 	if (status < 0)
 		goto fail;
 
-	cdev->sw_connected.name = "usb_connected";
+	if (id)
+		cdev->sw_connected.name = "usb1_connected";
+	else
+		cdev->sw_connected.name = "usb0_connected";
 	status = switch_dev_register(&cdev->sw_connected);
 	if (status < 0)
 		goto fail;
-	cdev->sw_config.name = "usb_configuration";
+	if (id)
+		cdev->sw_config.name = "usb1_configuration";
+	else
+		cdev->sw_config.name = "usb0_configuration";
 	status = switch_dev_register(&cdev->sw_config);
 	if (status < 0)
 		goto fail;
