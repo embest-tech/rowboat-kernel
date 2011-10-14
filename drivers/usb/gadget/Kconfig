@@ -899,6 +899,12 @@ config USB_G_ANDROID
 	  The functions can be configured via a board file and may be
 	  enabled and disabled dynamically.
 
+config USB_ANDROID_ZERO
+	tristate "Android gadget Zero (DUMMY)"
+	depends on USB_G_ANDROID && MACH_AM335XEVM
+	help
+	  Equivalent to Gadget Zero.
+
 config USB_CDC_COMPOSITE
 	tristate "CDC Composite Device (Ethernet and ACM)"
 	depends on NET
