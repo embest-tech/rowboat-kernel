@@ -35,7 +35,6 @@
  */
 
 #define OMAP16XX_TIMER_32K_SYNCHRONIZED		0xfffbc410
-
 #include <linux/clocksource.h>
 
 /*
@@ -126,7 +125,7 @@ static inline unsigned long long notrace _omap_32k_sched_clock(void)
 	return cyc_to_fixed_sched_clock(&cd, cyc, (u32)~0, SC_MULT, SC_SHIFT);
 }
 
-#ifndef CONFIG_OMAP_MPU_TIMER
+#if defined(CONFIG_OMAP_32K_TIMER) && !defined(CONFIG_OMAP_MPU_TIMER)
 unsigned long long notrace sched_clock(void)
 {
 	return _omap_32k_sched_clock();

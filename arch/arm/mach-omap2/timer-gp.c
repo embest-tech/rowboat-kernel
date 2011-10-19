@@ -215,6 +215,15 @@ static void notrace dmtimer_update_sched_clock(void)
 	update_sched_clock(&cd, cyc, (u32)~0);
 }
 
+unsigned long long notrace sched_clock(void)
+{
+    u32 cyc;
+
+	if (gpt_clocksource)
+		cyc = omap_dm_timer_read_counter(gpt_clocksource);
+	return cyc_to_sched_clock(&cd, cyc, (u32)~0);
+}
+
 /* Setup free-running counter for clocksource */
 static void __init omap2_gp_clocksource_init(void)
 {
