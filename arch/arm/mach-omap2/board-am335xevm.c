@@ -1304,6 +1304,7 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 
 /* Beaglebone */
 static struct evm_dev_cfg beaglebone_dev_cfg[] = {
+	{lcdc_init, DEV_ON_BASEBOARD, PROFILE_NONE},
 	{rmii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
@@ -1399,6 +1400,13 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 	int ret;
 	char tmp[10];
 
+#ifdef CONFIG_MACH_BEAGLEBONE
+
+	daughter_brd_detected = false;
+	setup_beaglebone();
+
+#else
+
 	/* 1st get the MAC address from EEPROM */
 	ret = mem_acc->read(mem_acc, (char *)&am335x_mac_addr,
 		EEPROM_MAC_ADDRESS_OFFSET, sizeof(am335x_mac_addr));
@@ -1452,6 +1460,7 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 		else
 			goto out;
 	}
+#endif
 	/* Initialize cpsw after board detection is completed as board
 	 * information is required for configuring phy address and hence
 	 * should be call only after board detection
