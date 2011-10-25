@@ -135,9 +135,9 @@ void __init omap2_set_globals_ti816x(void)
 static struct omap_globals am33xx_globals = {
 	.class  = AM335X_CLASS,
 	.tap    = AM33XX_L4_WK_IO_ADDRESS(AM33XX_TAP_BASE),
-	.ctrl   = AM33XX_CTRL_BASE,
-	.prm    = AM33XX_PRCM_BASE,
-	.cm     = AM33XX_PRCM_BASE,
+	.ctrl   = AM33XX_L4_WK_IO_ADDRESS(AM33XX_CTRL_BASE),
+	.prm    = AM33XX_L4_WK_IO_ADDRESS(AM33XX_PRCM_BASE),
+	.cm     = AM33XX_L4_WK_IO_ADDRESS(AM33XX_PRCM_BASE),
 };
 
 void __init omap2_set_globals_am33xx(void)

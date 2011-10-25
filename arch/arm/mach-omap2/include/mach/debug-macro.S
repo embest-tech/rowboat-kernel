@@ -119,18 +119,12 @@ omap_uart_lsr:	.word	0
 
 		/* Store both phys and virt address for the uart */
 97:		add	\rp, \rp, #0x44000000	@ phys base
-		mrc	p15, 0, \rv, c1, c0
-		tst	\rv, #1			@ MMU enabled?
-		ldreq	\rv, =omap_uart_v2p(omap_uart_phys)	@ MMU disabled
-		ldrne	\rv, =omap_uart_phys	@ MMU enabled
-		str	\rp, [\rv, #0]
+		str	\rp, [\tmp, #0]		@ omap_uart_phys
 		sub	\rp, \rp, #0x44000000	@ phys base
 		add	\rp, \rp, #0xf9000000	@ virt base
-		add	\rv, \rv, #4		@ omap_uart_virt
-		str	\rp, [\rv, #0]
+		str	\rp, [\tmp, #4]		@ omap_uart_virt
 		mov	\rp, #(UART_LSR << OMAP_PORT_SHIFT)
-		add	\rv, \rv, #4		@ omap_uart_lsr
-		str	\rp, [\rv, #0]
+		str	\rp, [\tmp, #8]		@ omap_uart_lsr
 
 		b	10b
 
