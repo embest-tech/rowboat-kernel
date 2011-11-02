@@ -305,7 +305,7 @@ static struct omap_board_config_kernel am335x_evm_config[] __initdata = {
 struct am335x_evm_eeprom_config {
 	u32	header;
 	u8	name[8];
-	u32	version;
+	char    version[4];
 	u8	serial[12];
 	u8	opt[32];
 };
@@ -1376,14 +1376,24 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
 	{NULL, 0, 0},
 };
 
-/* Beaglebone */
-static struct evm_dev_cfg beaglebone_dev_cfg[] = {
+/* Beaglebone < Rev A3 */
+static struct evm_dev_cfg beaglebone_old_dev_cfg[] = {
 	{lcdc_init, DEV_ON_BASEBOARD, PROFILE_NONE},
 	{rmii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{NULL, 0, 0},
+};
+
+/* Beaglebone Rev A3 and after */
+static struct evm_dev_cfg beaglebone_dev_cfg[] = {
+		{lcdc_init,		DEV_ON_BASEBOARD, PROFILE_NONE},
+		{mii1_init,		DEV_ON_BASEBOARD, PROFILE_NONE},
+		{usb0_init,		DEV_ON_BASEBOARD, PROFILE_NONE},
+		{usb1_init,		DEV_ON_BASEBOARD, PROFILE_NONE},
+		{mmc0_init,		DEV_ON_BASEBOARD, PROFILE_NONE},
+		{NULL, 0, 0},
 };
 
 static void setup_low_cost_evm(void)
@@ -1435,17 +1445,29 @@ static void setup_ip_phone_evm(void)
 	_configure_device(IP_PHN_EVM, ip_phn_evm_dev_cfg, PROFILE_NONE);
 }
 
+/* BeagleBone < Rev A3 */
+static void setup_beaglebone_old(void)
+{
+	pr_info("The board is a AM335x Beaglebone < Rev A3.\n");
+
+	/* Beagle Bone has Micro-SD slot which doesn't have Write Protect pin */
+	am335x_mmc[0].gpio_wp = -EINVAL;
+
+	_configure_device(LOW_COST_EVM, beaglebone_old_dev_cfg, PROFILE_NONE);
+
+	phy_register_fixup_for_uid(BBB_PHY_ID, BBB_PHY_MASK,
+					beaglebone_phy_fixup);
+}
+
+/* BeagleBone after Rev A3 */
 static void setup_beaglebone(void)
 {
 	pr_info("The board is a AM335x Beaglebone.\n");
 
-	/*Beagle Bone has Micro-SD slot which doesn't have Write Protect pin */
+	/* Beagle Bone has Micro-SD slot which doesn't have Write Protect pin */
 	am335x_mmc[0].gpio_wp = -EINVAL;
 
 	_configure_device(LOW_COST_EVM, beaglebone_dev_cfg, PROFILE_NONE);
-
-	phy_register_fixup_for_uid(BBB_PHY_ID, BBB_PHY_MASK,
-					beaglebone_phy_fixup);
 }
 
 static void am335x_setup_daughter_board(struct memory_accessor *m, void *c)
@@ -1513,11 +1535,18 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 		goto out;
 	}
 
-	snprintf(tmp, sizeof(config.name), "%s", config.name);
+	snprintf(tmp, sizeof(config.name) + 1, "%s", config.name);
 	pr_info("Board name: %s\n", tmp);
+	snprintf(tmp, sizeof(config.version) + 1, "%s", config.version);
+	pr_info("Board version: %s\n", tmp);
+
 	if (!strncmp("A335BONE", config.name, 8)) {
 		daughter_brd_detected = false;
-		setup_beaglebone();
+		if(!strncmp("00A1", config.version, 4) ||
+			!strncmp("00A2", config.version, 4))
+			setup_beaglebone_old();
+		else
+			setup_beaglebone();
 	} else {
 		/* only 6 characters of options string used for now */
 		snprintf(tmp, 7, "%s", config.opt);
