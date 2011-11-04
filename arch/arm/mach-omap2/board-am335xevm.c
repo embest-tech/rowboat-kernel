@@ -144,19 +144,11 @@ static struct lcd_ctrl_config lcd_cfg = {
 	.raster_order		= 0,
 };
 
-#ifdef CONFIG_MACH_BEAGLEBONE
-struct da8xx_lcdc_platform_data Sharp_LCD035Q3DG01_pdata = {
-	.manu_name		= "Sharp",
-	.controller_data	= &lcd_cfg,
-	.type			= "Sharp_LCD035Q3DG01",
-};
-#else
 struct da8xx_lcdc_platform_data TFC_S9700RTWV35TR_01B_pdata = {
 	.manu_name		= "ThreeFive",
 	.controller_data	= &lcd_cfg,
 	.type			= "TFC_S9700RTWV35TR_01B",
 };
-#endif
 
 /* TSc controller */
 #include <linux/input/ti_tscadc.h>
@@ -883,15 +875,9 @@ static void lcdc_init(int evm_id, int profile)
 		return;
 	}
 
-#ifdef CONFIG_MACH_BEAGLEBONE
-	if (am33xx_register_lcdc(&Sharp_LCD035Q3DG01_pdata))
-		pr_info("Failed to register LCDC device\n");
-	return;
-#else
 	if (am33xx_register_lcdc(&TFC_S9700RTWV35TR_01B_pdata))
 		pr_info("Failed to register LCDC device\n");
 	return;
-#endif
 }
 
 static void tsc_init(int evm_id, int profile)
