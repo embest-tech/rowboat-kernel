@@ -1402,6 +1402,7 @@ static struct evm_dev_cfg beaglebone_old_dev_cfg[] = {
 
 /* Beaglebone Rev A3 and after */
 static struct evm_dev_cfg beaglebone_dev_cfg[] = {
+	{lcdc_init, DEV_ON_BASEBOARD, PROFILE_NONE},
 	{mii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
