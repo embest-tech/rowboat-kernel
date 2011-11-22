@@ -1524,13 +1524,6 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 	int ret;
 	char tmp[10];
 
-#ifdef CONFIG_MACH_BEAGLEBONE
-
-	daughter_brd_detected = false;
-	setup_beaglebone();
-
-#else
-
 
 	/* 1st get the MAC address from EEPROM */
 	ret = mem_acc->read(mem_acc, (char *)&am335x_mac_addr,
@@ -1593,7 +1586,6 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 			goto out;
 	}
 
-#endif
 	/* Initialize cpsw after board detection is completed as board
 	 * information is required for configuring phy address and hence
 	 * should be call only after board detection
@@ -1605,12 +1597,21 @@ out:
 	/*
 	 * If the EEPROM hasn't been programed or an incorrect header
 	 * or board name are read, assume this is an am335xevm board
+	 * if CONFIG_MACH_BEAGLEBONE is set, assume this is an old
+	 * beaglebone board (< Rev A3)
 	 */
+
+#ifdef CONFIG_MACH_BEAGLEBONE
+	pr_err("Could not detect any board, falling back to: "
+			"Beaglebone (< Rev A3) with no daughter card connected\n");
+	daughter_brd_detected = false;
+	setup_beaglebone();
+#else
 	pr_err("Could not detect any board, falling back to: "
 		"GP EVM in profile 0 with no daughter card connected\n");
 	daughter_brd_detected = true;
 	setup_general_purpose_evm();
-
+#endif
 
 	/* Initialize cpsw after board detection is completed as board
 	 * information is required for configuring phy address and hence
