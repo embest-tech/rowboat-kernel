@@ -1593,13 +1593,13 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 out:
 	/*
 	 * If the EEPROM hasn't been programed or an incorrect header
-	 * or board name are read, assume this is an old beaglebone board
-	 * (< Rev A3)
+	 * or board name are read, assume this is an am335xevm board
 	 */
 	pr_err("Could not detect any board, falling back to: "
-		"Beaglebone (< Rev A3) with no daughter card connected\n");
-	daughter_brd_detected = false;
-	setup_beaglebone_old();
+		"GP EVM in profile 0 with no daughter card connected\n");
+	daughter_brd_detected = true;
+	setup_general_purpose_evm();
+
 
 	/* Initialize cpsw after board detection is completed as board
 	 * information is required for configuring phy address and hence
