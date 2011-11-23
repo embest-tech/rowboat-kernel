@@ -335,6 +335,11 @@ config MACH_AM335XEVM
 	depends on SOC_OMAPAM33XX
 	default y
 
+config AM335XEVM_BT_RFKILL
+	bool "Use rfkill to power On/Off AM335xevm BT module"
+	depends on MACH_AM335XEVM
+	default y
+
 config MACH_AM335XIAEVM
 	bool "AM335X IA Evaluation Module"
 	depends on SOC_OMAPAM33XX

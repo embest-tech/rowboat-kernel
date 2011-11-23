@@ -1217,6 +1217,21 @@ static void d_can_init(int evm_id, int profile)
 		break;
 	}
 }
+#ifdef CONFIG_AM335XEVM_BT_RFKILL
+static struct platform_device am335xevm_device_bluetooth = {
+	.name             = "am335xevm-bt",
+	.id               = -1,
+};
+
+static void bt_pwr_init(void)
+{
+	int err;
+
+	err = platform_device_register(&am335xevm_device_bluetooth);
+	if (err)
+		pr_err("failed to register BT rfkill driver\n");
+};
+#endif
 
 static void mmc0_init(int evm_id, int profile)
 {
@@ -1815,6 +1830,9 @@ static void __init am335x_evm_init(void)
 	usb_musb_init(&musb_board_data);
 	omap_board_config = am335x_evm_config;
 	omap_board_config_size = ARRAY_SIZE(am335x_evm_config);
+#ifdef CONFIG_AM335XEVM_BT_RFKILL
+	bt_pwr_init();
+#endif
 }
 
 static void __init am335x_evm_map_io(void)
