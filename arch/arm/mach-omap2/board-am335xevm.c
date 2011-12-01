@@ -602,7 +602,6 @@ static void setup_pin_mux(struct pinmux_config *pin_mux)
 }
 
 /* Matrix GPIO Keypad Support for profile-0 only: TODO */
-#ifdef CONFIG_KEYBOARD_MATRIX
 
 /* pinmux for keypad device */
 static struct pinmux_config matrix_keypad_pin_mux[] = {
@@ -667,10 +666,7 @@ static void matrix_keypad_init(int evm_id, int profile)
 		pr_err("failed to register matrix keypad (2x3) device\n");
 	}
 }
-#endif
 
-
-#ifdef CONFIG_KEYBOARD_GPIO
 /* pinmux for keypad device */
 static struct pinmux_config volume_keys_pin_mux[] = {
 	{"spi0_sclk.gpio0_2",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
@@ -720,7 +716,6 @@ static void volume_keys_init(int evm_id, int profile)
 	if (err)
 		pr_err("failed to register matrix keypad (2x3) device\n");
 }
-#endif
 
 /*
 * @evm_id - evm id which needs to be configured
@@ -1410,12 +1405,8 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 								PROFILE_5)},
 	{wl12xx_init,	DEV_ON_BASEBOARD, (PROFILE_0 | PROFILE_3 | PROFILE_5)},
 	{d_can_init,	DEV_ON_DGHTR_BRD, PROFILE_1},
-#ifdef CONFIG_KEYBOARD_MATRIX
 	{matrix_keypad_init, DEV_ON_DGHTR_BRD, PROFILE_0},
-#endif
-#ifdef CONFIG_KEYBOARD_GPIO
 	{volume_keys_init,  DEV_ON_DGHTR_BRD, PROFILE_0},
-#endif
 	{NULL, 0, 0},
 };
 
