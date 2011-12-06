@@ -94,6 +94,7 @@ static int is_sram_locked(void)
 }
 
 struct gen_pool *omap_gen_pool;
+EXPORT_SYMBOL_GPL(omap_gen_pool);
 
 /*
  * The amount of SRAM depends on the core type.

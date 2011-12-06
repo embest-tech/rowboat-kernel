@@ -178,7 +178,8 @@ void __init am33xx_register_lcdc(struct da8xx_lcdc_platform_data *pdata)
 
 }
 
-#if defined (CONFIG_SND_AM335X_SOC_EVM)
+#if defined(CONFIG_SND_AM335X_SOC_EVM) || \
+				defined(CONFIG_SND_AM335X_SOC_EVM_MODULE)
 static struct resource am335x_mcasp1_resource[] = {
 	{
 		.name = "mcasp1",
@@ -217,7 +218,7 @@ void __init am335x_register_mcasp1(struct snd_platform_data *pdata)
 void __init am335x_register_mcasp1(struct snd_platform_data *pdata) {}
 #endif
 
-#if defined(CONFIG_SND_AM33XX_SOC)
+#if (defined(CONFIG_SND_AM33XX_SOC) || (defined(CONFIG_SND_AM33XX_SOC_MODULE)))
 struct platform_device am33xx_pcm_device = {
 	.name		= "davinci-pcm-audio",
 	.id		= -1,

@@ -135,7 +135,8 @@ enum dm365_clk_input_pin {
 #define DAVINCI_MCASP_IIS_MODE	0
 #define DAVINCI_MCASP_DIT_MODE	1
 
-#if (defined(CONFIG_SOC_OMAPAM33XX) && defined(CONFIG_SND_AM33XX_SOC))
+#if (defined(CONFIG_SOC_OMAPAM33XX) && (defined(CONFIG_SND_AM33XX_SOC) \
+				|| (defined(CONFIG_SND_AM33XX_SOC_MODULE))))
 #define davinci_gen_pool omap_gen_pool
 #endif
 
