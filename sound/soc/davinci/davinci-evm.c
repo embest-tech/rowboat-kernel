@@ -67,6 +67,8 @@ static int evm_hw_params(struct snd_pcm_substream *substream,
 #endif
 			sysclk = 12000000;
 
+	else if (machine_is_sbc8600())
+		sysclk = 25000000;
 	else
 		return -EINVAL;
 
@@ -271,6 +273,16 @@ static struct snd_soc_dai_link am335x_evm_sk_dai = {
 	.ops = &evm_ops,
 };
 
+static struct snd_soc_dai_link sbc8600_dai = {
+        .name = "SGTL5000",
+        .stream_name = "SGTL5000",
+        .cpu_dai_name = "davinci-mcasp.0",
+        .codec_dai_name = "sgtl5000",
+        .codec_name = "sgtl5000.1-000a",
+        .platform_name = "davinci-pcm-audio",
+        .ops = &evm_ops,
+};
+
 /* davinci dm6446 evm audio machine driver */
 static struct snd_soc_card dm6446_snd_soc_card_evm = {
 	.name = "DaVinci DM6446 EVM",
@@ -323,6 +335,12 @@ static struct snd_soc_card am335x_evm_sk_snd_soc_card = {
 	.num_links = 1,
 };
 
+static struct snd_soc_card sbc8600_snd_soc_card = {
+        .name = "SBC8600",
+        .dai_link = &sbc8600_dai,
+        .num_links = 1,
+};
+
 static struct platform_device *evm_snd_device;
 
 static int __init evm_init(void)
@@ -355,6 +373,9 @@ static int __init evm_init(void)
 		if (am335x_evm_get_id() == EVM_SK)
 			evm_snd_dev_data = &am335x_evm_sk_snd_soc_card;
 #endif
+		index = 0;
+	} else if (machine_is_sbc8600()) { 
+		evm_snd_dev_data = &sbc8600_snd_soc_card;
 		index = 0;
 	} else
 		return -EINVAL;

@@ -1258,10 +1258,12 @@ static int d_can_open(struct net_device *ndev)
 	}
 
 	/* start the d_can controller */
-	d_can_start(ndev);
+//	d_can_start(ndev);
 
 	napi_enable(&priv->napi);
 	netif_start_queue(ndev);
+
+	d_can_start(ndev);      //embest
 
 	priv->opened = true;
 	return 0;
