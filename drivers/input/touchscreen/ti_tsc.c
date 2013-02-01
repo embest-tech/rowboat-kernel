@@ -34,14 +34,61 @@ int pen = 1;
 unsigned int bckup_x = 0, bckup_y = 0;
 
 struct tscadc {
-	struct input_dev	*input;
-	struct ti_tscadc_dev	*mfd_tscadc;
-	int			wires;
-	struct tsc_axis		x;
-	struct tsc_axis		y;
-	int			x_plate_resistance;
-	int			irq;
-	int			steps_to_config;
+        struct input_dev        *input;
+        struct ti_tscadc_dev    *mfd_tscadc;
+        int                     wires;
+        struct tsc_axis         x;
+        struct tsc_axis         y;
+        int                     x_plate_resistance;
+        int                     irq;
+        int                     steps_to_config;
+};
+
+static int ads_cal[9];
+
+static ssize_t calibration_show(struct device *dev,
+                                     struct device_attribute *attr, char *buf)
+{
+
+
+        return sprintf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+                ads_cal[0], ads_cal[1], ads_cal[2], ads_cal[3], ads_cal[4],
+                        ads_cal[5], ads_cal[6], ads_cal[7], ads_cal[8]);
+}
+
+static ssize_t calibration_store(struct device *dev,
+                                     struct device_attribute *attr,
+                                     const char *buf, size_t count)
+{
+	struct platform_device *pdev = container_of(dev, struct platform_device, dev);
+	struct tscadc	*ts_dev = platform_get_drvdata(pdev);
+        struct input_dev        *input_dev = ts_dev->input;
+
+        sscanf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+                &ads_cal[0], &ads_cal[1], &ads_cal[2], &ads_cal[3], &ads_cal[4],
+                        &ads_cal[5], &ads_cal[6], &ads_cal[7], &ads_cal[8]);
+
+        input_set_abs_params(input_dev, ABS_X,
+                        ts_dev->x.min ? : 0,
+                        ads_cal[7] ? : MAX_12BIT,
+                        0, 0);
+        input_set_abs_params(input_dev, ABS_Y,
+                        ts_dev->y.min ? : 0,
+                        ads_cal[8] ? : MAX_12BIT,
+                        0, 0);
+
+        return count;
+}
+
+static DEVICE_ATTR(calibration, 0664, calibration_show, calibration_store);
+
+static struct attribute *ti_tsc_attributes[] = {
+        &dev_attr_calibration.attr,
+        NULL,
+};
+
+static struct attribute_group ti_tsc_attr_group = {
+        .attrs = ti_tsc_attributes,
 };
 
 static unsigned int tscadc_readl(struct tscadc *ts, unsigned int reg)
@@ -151,6 +198,7 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
 	unsigned int		val_x = 0, val_y = 0, diffx = 0, diffy = 0;
 	unsigned int		z1 = 0, z2 = 0, z = 0;
 	unsigned int		channel;
+	int 			x_abs, y_abs;
 
 	status = tscadc_readl(ts_dev, TSCADC_REG_IRQSTATUS);
 
@@ -244,10 +292,22 @@ static irqreturn_t tscadc_interrupt(int irq, void *dev)
 			if (pen == 0) {
 				if ((diffx < 15) && (diffy < 15)
 						&& (z <= MAX_12BIT)) {
+					if (ads_cal[6] == 0) {
+						x_abs = val_x;
+						y_abs = val_y;
+					} else {
+                        			x_abs = (ads_cal[0]*(int)val_x + ads_cal[1]*(int)val_y + ads_cal[2])/ads_cal[6];
+                        			if(x_abs < 0)
+                                			x_abs = 0;
+                        			y_abs = (ads_cal[3]*(int)val_x + ads_cal[4]*(int)val_y + ads_cal[5])/ads_cal[6];
+                        			if(y_abs < 0)
+                                			y_abs = 0;
+					}		
+
 					input_report_abs(input_dev, ABS_X,
-							val_x);
+							x_abs);
 					input_report_abs(input_dev, ABS_Y,
-							val_y);
+							y_abs);
 					input_report_abs(input_dev, ABS_PRESSURE,
 							z);
 					input_report_key(input_dev, BTN_TOUCH,
@@ -363,6 +423,10 @@ static	int __devinit tscadc_probe(struct platform_device *pdev)
 			ts_dev->y.max ? : MAX_12BIT,
 			0, 0);
 	input_set_abs_params(input_dev, ABS_PRESSURE, 0, MAX_12BIT, 0, 0);
+
+        err = sysfs_create_group(&pdev->dev.kobj, &ti_tsc_attr_group);
+        if (err)
+                goto err_free_irq;
 
 	/* register to the input system */
 	err = input_register_device(input_dev);
