@@ -476,6 +476,18 @@ static void option_instat_callback(struct urb *urb);
 #define VIETTEL_VENDOR_ID			0x2262
 #define VIETTEL_PRODUCT_VT1000			0x0002
 
+/* ETCOM products */
+#define ETCOM_VENDOR_ID				0x19F5
+#define ETCOM_PRODUCT_E300			0x9909
+#define ETCOM_PRODUCT_W388			0x9013
+#define ETCOM_VENDOR_ID_1			0x05C6
+#define ETCOM_PRODUCT_W338			0x0015
+
+/* HSPA-500HU */
+#define HSPA_VENDOR_ID				0x1C9E
+#define HSPA_PRODUCT_500HU			0x9000
+
+
 /* some devices interfaces need special handling due to a number of reasons */
 enum option_blacklist_reason {
 		OPTION_BLACKLIST_NONE = 0,
@@ -1178,6 +1190,11 @@ static const struct usb_device_id option_ids[] = {
 	{ USB_DEVICE(YUGA_VENDOR_ID, YUGA_PRODUCT_CLU528) },
 	{ USB_DEVICE(YUGA_VENDOR_ID, YUGA_PRODUCT_CLU526) },
 	{ USB_DEVICE_AND_INTERFACE_INFO(VIETTEL_VENDOR_ID, VIETTEL_PRODUCT_VT1000, 0xff, 0xff, 0xff) },
+
+	{ USB_DEVICE(ETCOM_VENDOR_ID,   ETCOM_PRODUCT_E300) },
+	{ USB_DEVICE(ETCOM_VENDOR_ID,   ETCOM_PRODUCT_W388) },
+	{ USB_DEVICE(ETCOM_VENDOR_ID_1, ETCOM_PRODUCT_W338) },
+	{ USB_DEVICE(HSPA_VENDOR_ID,    HSPA_PRODUCT_500HU) },	
 	{ } /* Terminating entry */
 };
 MODULE_DEVICE_TABLE(usb, option_ids);
@@ -1340,6 +1357,7 @@ static int option_probe(struct usb_serial *serial,
 		serial->interface->cur_altsetting->desc.bInterfaceNumber,
 		OPTION_BLACKLIST_RESERVED_IF,
 		(const struct option_blacklist_info *) id->driver_info))
+		return -ENODEV;
 
 	/* Don't bind network interface on Samsung GT-B3730, it is handled by a separate module */
 	if (serial->dev->descriptor.idVendor == SAMSUNG_VENDOR_ID &&
