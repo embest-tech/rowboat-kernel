@@ -356,7 +356,7 @@ static struct da8xx_panel known_lcd_panels[] = {
                 .invert_pxl_clk = 0,
         },
         [9] = {
-                .name = "LVDS",
+                .name = "LVDS_800x600",
                 .width = 800,
                 .height = 600,
                 .hfp = 39,
@@ -366,6 +366,19 @@ static struct da8xx_panel known_lcd_panels[] = {
                 .vbp = 23,
                 .vsw = 3,
                 .pxl_clk = 36000000,
+                .invert_pxl_clk = 0,
+        },
+        [10] = {
+                .name = "LVDS_1024x768",
+                .width = 1024,
+                .height = 768,
+                .hfp = 100,
+                .hbp = 220,
+                .hsw = 63,
+                .vfp = 8,
+                .vbp = 30,
+                .vsw = 3,
+                .pxl_clk = 65000000,
                 .invert_pxl_clk = 0,
         },
 };
