@@ -806,7 +806,8 @@ static int sgtl5000_power_up(struct snd_soc_codec *codec)
         tmp |= SGTL5000_VAG_POWERUP;
         snd_soc_write(codec, SGTL5000_CHIP_ANA_POWER, tmp);
 
-	snd_soc_write(codec, SGTL5000_CHIP_MIC_CTRL, 0x231);
+	snd_soc_write(codec, SGTL5000_CHIP_MIC_CTRL, 0x233);
+	snd_soc_write(codec, SGTL5000_CHIP_ANA_HP_CTRL, 0x0000);
 
         tmp = snd_soc_read(codec, SGTL5000_CHIP_ANA_CTRL);
         tmp &= ~SGTL5000_ADC_MUTE;
