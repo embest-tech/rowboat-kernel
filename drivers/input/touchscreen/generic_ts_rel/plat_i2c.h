@@ -15,7 +15,12 @@
 /* I2C config */
 #define PLATFORM_I2C_BUS			1	// I2C Bus
 #define PLATFORM_I2C_ADDR			0x01
+#if defined (CONFIG_MACH_SBC8600)
+#define PLATFORM_I2C_SPEED			300000
+#else
 #define PLATFORM_I2C_SPEED			400000
+#endif
+
 
 /* Convert GPIO signal to GPIO pin number */
 #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))

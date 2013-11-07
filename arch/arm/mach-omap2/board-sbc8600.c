@@ -1689,11 +1689,11 @@ static struct i2c_board_info __initdata am335x_i2c0_boardinfo[] = {
 	{
 		I2C_BOARD_INFO("tlc59108", 0x40),
 	},
-#endif
 	{
 		I2C_BOARD_INFO("tps65910", TPS65910_I2C_ID1),
 		.platform_data  = &am335x_tps65910_info,
 	},
+#endif
 	{
 		I2C_BOARD_INFO("sgtl5000", 0x0A),
 	},
@@ -1750,7 +1750,7 @@ static void __init sbc8600_i2c_init(void)
 //	evm_init_cpld();
 
 	setup_pin_mux(i2c0_pin_mux);
-	omap_register_i2c_bus(1, 400, am335x_i2c0_boardinfo,
+	omap_register_i2c_bus(1, 300, am335x_i2c0_boardinfo,
 				ARRAY_SIZE(am335x_i2c0_boardinfo));
 }
 
