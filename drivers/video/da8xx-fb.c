@@ -718,6 +718,7 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
 	return 0;
 }
 
+#define CMAP_TOHW(_val, _width) ((((_val) << (_width)) + 0x7FFF - (_val)) >> 16)
 static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			      unsigned blue, unsigned transp,
 			      struct fb_info *info)
@@ -764,6 +765,18 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
 		}
 	} else if (((info->var.bits_per_pixel == 32) && regno < 32) ||
 		    ((info->var.bits_per_pixel == 24) && regno < 24)) {
+#if defined(CONFIG_MACH_SBC8600)
+                red = CMAP_TOHW(red, info->var.red.offset);
+                blue = red << info->var.blue.offset;
+
+                green = CMAP_TOHW(green, info->var.green.length);
+                green <<= info->var.green.offset;
+
+                blue = CMAP_TOHW(blue, info->var.blue.length);
+                red = blue << info->var.red.offset;
+
+                par->pseudo_palette[regno] = red | green | blue;
+#else
 		red >>= (24 - info->var.red.length);
 		red <<= info->var.red.offset;
 
@@ -774,7 +787,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
 		blue <<= info->var.blue.offset;
 
 		par->pseudo_palette[regno] = red | green | blue;
-
+#endif
 		if (palette[0] != 0x4000) {
 			update_hw = 1;
 			palette[0] = 0x4000;
