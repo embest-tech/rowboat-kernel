@@ -1547,6 +1547,13 @@ CONFIG_I2C_OMAP=y
 # Other I2C/SMBus bus drivers
 #
 # CONFIG_I2C_STUB is not set
+
+#
+# Miscellaneous I2C Chip support
+#
+# CONFIG_VGA_CH7026 is not set
+CONFIG_VGA_CH7033=y
+# CONFIG_SENSORS_PCA963X is not set
 # CONFIG_I2C_DEBUG_CORE is not set
 # CONFIG_I2C_DEBUG_ALGO is not set
 # CONFIG_I2C_DEBUG_BUS is not set
