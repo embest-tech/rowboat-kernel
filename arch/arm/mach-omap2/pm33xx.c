@@ -86,6 +86,7 @@ static int am33xx_pm_prepare_late(void)
 
 static void am33xx_pm_finish(void)
 {
+	am33xx_standby_release(suspend_state);
 	am335x_restore_padconf();
 }
 
@@ -100,17 +101,34 @@ static int am33xx_pm_suspend(void)
 {
 	int state, ret = 0;
 
-	struct omap_hwmod *gpmc_oh, *usb_oh, *gpio1_oh;
+	struct omap_hwmod *gpmc_oh, *usb_oh, *gpio1_oh, *rtc_oh;
 
 	usb_oh		= omap_hwmod_lookup("usb_otg_hs");
 	gpmc_oh		= omap_hwmod_lookup("gpmc");
 	gpio1_oh	= omap_hwmod_lookup("gpio1");	/* WKUP domain GPIO */
+	rtc_oh		= omap_hwmod_lookup("rtc");
 
 	omap_hwmod_enable(usb_oh);
 	omap_hwmod_enable(gpmc_oh);
 
-	omap_hwmod_idle(usb_oh);
+	/*
+	 * Keep USB module enabled during standby
+	 * to enable USB remote wakeup
+	 * Note: This will result in hard-coding USB state
+	 * during standby
+	 */
+	if (suspend_state != PM_SUSPEND_STANDBY)
+		omap_hwmod_idle(usb_oh);
+
 	omap_hwmod_idle(gpmc_oh);
+
+	/*
+	 * Keep RTC module enabled during standby
+	 * for PG2.x to enable wakeup from RTC.
+	 */
+	if ((omap_rev() >= AM335X_REV_ES2_0) &&
+		(suspend_state == PM_SUSPEND_STANDBY))
+		omap_hwmod_enable(rtc_oh);
 
 	/*
 	 * Disable the GPIO module. This ensure that
@@ -122,8 +140,28 @@ static int am33xx_pm_suspend(void)
 	 * might have issues. Refer to commit 672639b for the
 	 * details
 	 */
-	if (suspend_cfg_param_list[EVM_ID] != EVM_SK)
+	/*
+	 * Keep GPIO0 module enabled during standby to
+	 * support wakeup via GPIO0 keys.
+	 */
+	if ((suspend_cfg_param_list[EVM_ID] != EVM_SK) &&
+			(suspend_state != PM_SUSPEND_STANDBY))
 		omap_hwmod_idle(gpio1_oh);
+	/*
+	 * Update Suspend_State value to be used in sleep33xx.S to keep
+	 * GPIO0 module enabled during standby for EVM-SK
+	 */
+	if (suspend_state == PM_SUSPEND_STANDBY)
+		suspend_cfg_param_list[SUSPEND_STATE] = PM_STANDBY;
+	else
+		suspend_cfg_param_list[SUSPEND_STATE] = PM_DS0;
+
+	/*
+	 * Keep Touchscreen module enabled during standby
+	 * to enable wakeup from standby.
+	 */
+	if (suspend_state == PM_SUSPEND_STANDBY)
+		writel(0x2, AM33XX_CM_WKUP_ADC_TSC_CLKCTRL);
 
 	if (gfx_l3_clkdm && gfx_l4ls_clkdm) {
 		clkdm_sleep(gfx_l3_clkdm);
@@ -137,6 +175,8 @@ static int am33xx_pm_suspend(void)
 		pr_err("Could not program GFX to low power state\n");
 
 	omap3_intc_suspend();
+
+	am33xx_standby_setup(suspend_state);
 
 	writel(0x0, AM33XX_CM_MPU_MPU_CLKCTRL);
 
@@ -158,13 +198,39 @@ static int am33xx_pm_suspend(void)
 		clkdm_wakeup(gfx_l4ls_clkdm);
 	}
 
+	/*
+	 * Touchscreen module was enabled during standby
+	 * Disable it here.
+	 */
+	if (suspend_state == PM_SUSPEND_STANDBY)
+		writel(0x0, AM33XX_CM_WKUP_ADC_TSC_CLKCTRL);
+
+	/*
+	 * Put USB module to idle on resume from standby
+	 */
+	if (suspend_state == PM_SUSPEND_STANDBY)
+		omap_hwmod_idle(usb_oh);
+
+	/*
+	 * Put RTC module to idle on resume from standby
+	 * for PG2.x.
+	 */
+	if ((omap_rev() >= AM335X_REV_ES2_0) &&
+		(suspend_state == PM_SUSPEND_STANDBY))
+		omap_hwmod_idle(rtc_oh);
+
 	ret = am33xx_verify_lp_state(ret);
 
 	/*
 	 * Enable the GPIO module. Once the driver is
 	 * fully adapted to runtime PM this will go away
 	 */
-	if (suspend_cfg_param_list[EVM_ID] != EVM_SK)
+	/*
+	 * During standby, GPIO was not disabled. Hence no
+	 * need to enable it here.
+	 */
+	if ((suspend_cfg_param_list[EVM_ID] != EVM_SK) &&
+			(suspend_state != PM_SUSPEND_STANDBY))
 		omap_hwmod_enable(gpio1_oh);
 
 	return ret;
@@ -189,8 +255,18 @@ static int am33xx_pm_enter(suspend_state_t unused)
 static int am33xx_pm_begin(suspend_state_t state)
 {
 	int ret = 0;
+	int state_id = 0;
 
 	disable_hlt();
+
+	switch (state) {
+	case PM_SUSPEND_STANDBY:
+		state_id = 0xb;
+		break;
+	case PM_SUSPEND_MEM:
+		state_id = 0x3;
+		break;
+	}
 
 	/*
 	 * Populate the resume address as part of IPC data
@@ -199,7 +275,7 @@ static int am33xx_pm_begin(suspend_state_t state)
 	 * the word *after* the word which holds the resume offset
 	 */
 	am33xx_lp_ipc.resume_addr = (DS_RESUME_BASE + am33xx_resume_offset + 4);
-	am33xx_lp_ipc.sleep_mode  = DS_MODE;
+	am33xx_lp_ipc.sleep_mode  = state_id;
 	am33xx_lp_ipc.ipc_data1	  = DS_IPC_DEFAULT;
 	am33xx_lp_ipc.ipc_data2   = DS_IPC_DEFAULT;
 
@@ -267,11 +343,22 @@ static void am33xx_pm_end(void)
 	return;
 }
 
+static int am33xx_pm_valid(suspend_state_t state)
+{
+	switch (state) {
+	case PM_SUSPEND_STANDBY:
+	case PM_SUSPEND_MEM:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 static const struct platform_suspend_ops am33xx_pm_ops = {
 	.begin		= am33xx_pm_begin,
 	.end		= am33xx_pm_end,
 	.enter		= am33xx_pm_enter,
-	.valid		= suspend_valid_only_mem,
+	.valid		= am33xx_pm_valid,
 	.prepare	= am33xx_pm_prepare_late,
 	.finish		= am33xx_pm_finish,
 };
@@ -553,7 +640,7 @@ static int __init am33xx_pm_init(void)
 
 	/* CPU Revision */
 	reg = omap_rev();
-	if (reg == AM335X_REV_ES2_0)
+	if (reg >= AM335X_REV_ES2_0)
 		suspend_cfg_param_list[CPU_REV] = CPU_REV_2;
 	else
 		suspend_cfg_param_list[CPU_REV] = CPU_REV_1;

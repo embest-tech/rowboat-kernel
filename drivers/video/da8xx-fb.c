@@ -184,6 +184,7 @@ struct da8xx_fb_par {
 	wait_queue_head_t	vsync_wait;
 	int			vsync_flag;
 	int			vsync_timeout;
+	int			context_loss_cnt;
 	spinlock_t		lock_for_chan_update;
 
 	/*
@@ -233,91 +234,8 @@ static vsync_callback_t vsync_cb_handler;
 static void *vsync_cb_arg;
 
 static struct da8xx_panel known_lcd_panels[] = {
-	/* Sharp LCD035Q3DG01 */
 	[0] = {
-		.name = "Sharp_LCD035Q3DG01",
-		.width = 320,
-		.height = 240,
-		.hfp = 8,
-		.hbp = 6,
-		.hsw = 0,
-		.vfp = 2,
-		.vbp = 2,
-		.vsw = 0,
-		.pxl_clk = 4608000,
-		.invert_pxl_clk = 1,
-	},
-	/* Sharp LK043T1DG01 */
-	[1] = {
-		.name = "Sharp_LK043T1DG01",
-		.width = 480,
-		.height = 272,
-		.hfp = 2,
-		.hbp = 2,
-		.hsw = 41,
-		.vfp = 3,
-		.vbp = 3,
-		.vsw = 10,
-		.pxl_clk = 7833600,
-		.invert_pxl_clk = 0,
-	},
-	/* ThreeFive S9700RTWV35TR */
-	[2] = {
-		.name = "TFC_S9700RTWV35TR_01B",
-		.width = 800,
-		.height = 480,
-		.hfp = 39,
-		.hbp = 39,
-		.hsw = 47,
-		.vfp = 13,
-		.vbp = 29,
-		.vsw = 2,
-		.pxl_clk = 30000000,
-		.invert_pxl_clk = 0,
-	},
-	[3] = {
-		/* 1024 x 768 @ 60 Hz  Reduced blanking VESA CVT 0.79M3-R */
-		.name = "1024x768@60",
-		.width = 1024,
-		.height = 768,
-		.hfp = 48,
-		.hbp = 80,
-		.hsw = 32,
-		.vfp = 3,
-		.vbp = 15,
-		.vsw = 4,
-		.pxl_clk = 56000000,
-	},
-	/* Newhaven Display */
-	[4] = {
-		.name = "NHD-4.3-ATXI#-T-1",
-		.width = 480,
-		.height = 272,
-		.hfp = 8,
-		.hbp = 43,
-		.hsw = 4,
-		.vfp = 4,
-		.vbp = 12,
-		.vsw = 10,
-		.pxl_clk = 9000000,
-		.invert_pxl_clk = 0,
-	},
-	[5] = {
-		 /* CDTech S035Q01 */
-		.name = "CDTech_S035Q01",
-		.width = 320,
-		.height = 240,
-		.hfp = 58,
-		.hbp = 21,
-		.hsw = 47,
-		.vfp = 23,
-		.vbp = 11,
-		.vsw = 2,
-		.pxl_clk = 8000000,
-		.invert_pxl_clk = 0,
-	},
-        [6] = {
-                .name = "4.3inch_LCD",
+	.name = "4.3inch_LCD",
                 .width = 480,
                 .height = 272,
                 .hfp = 2,
@@ -329,7 +247,7 @@ static struct da8xx_panel known_lcd_panels[] = {
                 .pxl_clk = 9600000,
                 .invert_pxl_clk = 0,
         },
-        [7] = {
+        [1] = {
                 .name = "7inch_LCD",
                 .width = 800,
                 .height = 480,
@@ -339,10 +257,10 @@ static struct da8xx_panel known_lcd_panels[] = {
                 .vfp = 12,
                 .vbp = 25,
                 .vsw = 3,
-                .pxl_clk = 36000000,
+                .pxl_clk = 27000000,
                 .invert_pxl_clk = 0,
         },
-        [8] = {
+        [2] = {
                 .name = "VGA",
                 .width = 1024,
                 .height = 768,
@@ -355,7 +273,7 @@ static struct da8xx_panel known_lcd_panels[] = {
                 .pxl_clk = 72000000,
                 .invert_pxl_clk = 0,
         },
-        [9] = {
+        [3] = {
                 .name = "LVDS_800x600",
                 .width = 800,
                 .height = 600,
@@ -365,10 +283,10 @@ static struct da8xx_panel known_lcd_panels[] = {
                 .vfp = 1,
                 .vbp = 23,
                 .vsw = 3,
-                .pxl_clk = 36000000,
+                .pxl_clk = 38000000,
                 .invert_pxl_clk = 0,
         },
-        [10] = {
+        [4] = {
                 .name = "LVDS_1024x768",
                 .width = 1024,
                 .height = 768,
@@ -381,6 +299,7 @@ static struct da8xx_panel known_lcd_panels[] = {
                 .pxl_clk = 65000000,
                 .invert_pxl_clk = 0,
         },
+
 };
 
 /* Enable the Raster Engine of the LCD Controller */
@@ -898,8 +817,8 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
 int register_vsync_cb(vsync_callback_t handler, void *arg, int idx)
 {
 	if ((vsync_cb_handler == NULL) && (vsync_cb_arg == NULL)) {
-		vsync_cb_handler = handler;
 		vsync_cb_arg = arg;
+		vsync_cb_handler = handler;
 	} else {
 		return -EEXIST;
 	}
@@ -976,6 +895,12 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
 			wake_up_interruptible(&par->vsync_wait);
 			if (vsync_cb_handler)
 				vsync_cb_handler(vsync_cb_arg);
+		}
+		if (stat & LCD_SYNC_LOST) {
+			printk(KERN_ERR "LCDC sync lost\n");
+			lcd_disable_raster(NO_WAIT_FOR_FRAME_DONE);
+			lcdc_write(stat, LCD_MASKED_STAT_REG);
+			lcd_enable_raster();
 		}
 	}
 
@@ -1713,6 +1638,8 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
 {
 	struct fb_info *info = platform_get_drvdata(dev);
 	struct da8xx_fb_par *par = info->par;
+	struct da8xx_lcdc_platform_data *fb_pdata =
+				dev->dev.platform_data;
 
 	console_lock();
 
@@ -1722,6 +1649,10 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
 
 	fb_set_suspend(info, 1);
 	lcd_disable_raster(WAIT_FOR_FRAME_DONE);
+
+	if (fb_pdata->get_context_loss_count)
+		par->context_loss_cnt =
+			fb_pdata->get_context_loss_count(&dev->dev);
 	lcd_context_save();
 
 	pm_runtime_put(&dev->dev);
@@ -1733,13 +1664,30 @@ static int fb_resume(struct platform_device *dev)
 {
 	struct fb_info *info = platform_get_drvdata(dev);
 	struct da8xx_fb_par *par = info->par;
+	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
+	int loss_cnt;
 
 	console_lock();
 
 	pm_runtime_get_sync(&dev->dev);
 
+	if (fb_pdata->get_context_loss_count) {
+		loss_cnt =
+			fb_pdata->get_context_loss_count(&dev->dev);
+		if (loss_cnt < 0) {
+			dev_err(&dev->dev,
+				"%s failed, context loss count  = %d\n",
+				__func__, loss_cnt);
+		} else if (par->context_loss_cnt == loss_cnt) {
+			goto skip_context_restore;
+		}
+	}
+
+	/* Sleep is required inorder to avoid underflow error */
 	msleep(1);
 	lcd_context_restore();
+
+skip_context_restore:
 	lcd_enable_raster();
 
 	if (par->panel_power_ctrl)

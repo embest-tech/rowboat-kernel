@@ -44,7 +44,9 @@ struct usb_cppi41_info {
 	u16 *tx_comp_q;
 	u16 *rx_comp_q;
 	u8 bd_intr_ctrl;
-	u8 grndis_for_host_rx;
+	u8 rx_dma_mode;
+	u8 rx_inf_mode;
+	u8 sched_tbl_ctrl;
 	u32 version;
 };
 
@@ -65,4 +67,5 @@ void cppi41_completion(struct musb *musb, u32 rx, u32 tx);
 void cppi41_handle_txfifo_intr(struct musb *musb, u16 usbintr);
 void txfifoempty_int_enable(struct musb *musb, u8 ep_num);
 void txfifoempty_int_disable(struct musb *musb, u8 ep_num);
+void cppi41_isoc_schedular(struct musb *musb);
 #endif	/* _CPPI41_DMA_H_ */

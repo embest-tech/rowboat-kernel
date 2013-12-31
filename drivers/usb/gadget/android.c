@@ -964,8 +964,6 @@ static int android_bind(struct usb_composite_dev *cdev)
 	struct usb_gadget	*gadget = cdev->gadget;
 	int			gcnum, id, ret;
 
-	usb_gadget_disconnect(gadget);
-
 	ret = android_init_functions(dev->functions, cdev);
 	if (ret)
 		return ret;
@@ -1089,8 +1087,10 @@ static void android_disconnect(struct usb_gadget *gadget)
 	composite_disconnect(gadget);
 
 	spin_lock_irqsave(&cdev->lock, flags);
-	dev->connected = 0;
-	schedule_work(&dev->work);
+	if (dev->connected) {
+		dev->connected = 0;
+		schedule_work(&dev->work);
+	}
 	spin_unlock_irqrestore(&cdev->lock, flags);
 }
 

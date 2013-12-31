@@ -322,8 +322,11 @@ start:
 		if (!hw_ep->tx_channel)
 			musb_h_tx_start(hw_ep);
 		else if (is_cppi_enabled(musb) || is_cppi41_enabled(musb)
-				|| tusb_dma_omap(musb))
-			musb_h_tx_dma_start(hw_ep);
+				|| tusb_dma_omap(musb)) {
+			if (!musb->tx_isoc_sched_enable ||
+				hw_ep->xfer_type != USB_ENDPOINT_XFER_ISOC)
+				musb_h_tx_dma_start(hw_ep);
+		}
 	}
 }
 
@@ -388,8 +391,12 @@ void musb_gb_work(struct work_struct *data)
 	struct musb *musb = container_of(data, struct musb, gb_work);
 	struct urb *urb;
 
-	while ((urb = pop_queue(musb)) != 0)
-		musb_giveback(musb, urb, 0);
+	while ((urb = pop_queue(musb)) != 0) {
+		if (urb->status == -EINPROGRESS)
+			musb_giveback(musb, urb, 0);
+		else
+			musb_giveback(musb, urb, urb->status);
+	}
 }
 
 /*
@@ -404,7 +411,6 @@ static void musb_advance_schedule(struct musb *musb, struct urb *urb,
 {
 	struct musb_qh		*qh = musb_ep_get_qh(hw_ep, is_in);
 	struct musb_hw_ep	*ep = qh->hw_ep;
-	int			ready = qh->is_ready;
 	int			status;
 
 	status = (urb->status == -EINPROGRESS) ? 0 : urb->status;
@@ -423,14 +429,6 @@ static void musb_advance_schedule(struct musb *musb, struct urb *urb,
 
 	usb_hcd_unlink_urb_from_ep(musb_to_hcd(musb), urb);
 
-	/* If URB completed with error then giveback first */
-	if (status != 0) {
-		qh->is_ready = 0;
-		spin_unlock(&musb->lock);
-		musb_giveback(musb, urb, status);
-		spin_lock(&musb->lock);
-		qh->is_ready = ready;
-	}
 	/* reclaim resources (and bandwidth) ASAP; deschedule it, and
 	 * invalidate qh as soon as list_empty(&hep->urb_list)
 	 */
@@ -496,11 +494,16 @@ static void musb_advance_schedule(struct musb *musb, struct urb *urb,
 		musb_start_urb(musb, is_in, qh);
 	}
 
+	/* if we had set the status as -ECANCELED for dequeued URBs
+	 * now the status has to be changed to -EINPROGRESS
+	 * stack/application will not like -ECANCELED status
+	 */
+	if (urb->status == -ECANCELED)
+		urb->status = -EINPROGRESS;
+
 	/* if URB is successfully completed then giveback in workqueue */
-	if (status == 0) {
-		push_queue(musb, urb);
-		queue_work(musb->gb_queue, &musb->gb_work);
-	}
+	push_queue(musb, urb);
+	queue_work(musb->gb_queue, &musb->gb_work);
 }
 
 static u16 musb_h_flush_rxfifo(struct musb_hw_ep *hw_ep, u16 csr)
@@ -1484,8 +1487,12 @@ void musb_host_tx(struct musb *musb, u8 epnum)
 		if (musb_tx_dma_program(musb->dma_controller, hw_ep, qh, urb,
 				offset, length)) {
 			if (is_cppi_enabled(musb) || is_cppi41_enabled(musb) ||
-					tusb_dma_omap(musb))
-				musb_h_tx_dma_start(hw_ep);
+					tusb_dma_omap(musb)) {
+				if (!musb->tx_isoc_sched_enable ||
+					hw_ep->xfer_type !=
+					USB_ENDPOINT_XFER_ISOC)
+					musb_h_tx_dma_start(hw_ep);
+			}
 			return;
 		}
 	} else	if (tx_csr & MUSB_TXCSR_DMAENAB) {
@@ -1904,6 +1911,12 @@ finish:
 	urb->actual_length += xfer_len;
 	qh->offset += xfer_len;
 	if (done) {
+		/* Reset this dma ->actual_len after transfer complete,
+		 * if not subsequence dequeue request will take this
+		 */
+		if (dma)
+			dma->actual_len = 0;
+
 		if (urb->status == -EINPROGRESS) {
 			/* If short packet is not expected any transfer length
 			 * less than actual length is an error, hence
@@ -2286,8 +2299,14 @@ static int musb_cleanup_urb(struct urb *urb, struct musb_qh *qh)
 	} else  {
 		musb_h_ep0_flush_fifo(ep);
 	}
-	if (status == 0)
+
+	if (status == 0) {
+		/* As this urb is dequeued by stack/application
+		 * we return this urb with ECANCELED status
+		 */
+		urb->status = -ECANCELED;
 		musb_advance_schedule(ep->musb, urb, ep, is_in);
+	}
 	return status;
 }
 

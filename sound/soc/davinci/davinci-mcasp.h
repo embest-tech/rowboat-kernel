@@ -27,6 +27,11 @@
 #define DAVINCI_MCASP_DIT_DAI	1
 
 enum {
+	DAVINCI_CLK_AUX = 0,
+	DAVINCI_CLK_AHCLKX,
+};
+
+enum {
 	DAVINCI_AUDIO_WORD_8 = 0,
 	DAVINCI_AUDIO_WORD_12,
 	DAVINCI_AUDIO_WORD_16,
@@ -55,7 +60,7 @@ struct davinci_audio_dev {
 	/* McASP FIFO related */
 	u8	txnumevt;
 	u8	rxnumevt;
-
+	int	sync_mode;
 	/* backup related */
 	unsigned int *xrsrctl;
 	unsigned int pfunc;
@@ -78,6 +83,7 @@ struct davinci_audio_dev {
 	unsigned int ahclkrctl;
 	unsigned int rxtdm;
 	unsigned int rfifoctl;
+	int context_loss_cnt;
 
 };
 

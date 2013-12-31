@@ -196,7 +196,7 @@
 #define ACLKXE		BIT(5)
 #define TX_ASYNC	BIT(6)
 #define ACLKXPOL	BIT(7)
-
+#define ACLKXDIV_MASK	0x1f
 /*
  * DAVINCI_MCASP_ACLKRCTL_REG Receive Clock Control Register Bits
  */
@@ -204,7 +204,7 @@
 #define ACLKRE		BIT(5)
 #define RX_ASYNC	BIT(6)
 #define ACLKRPOL	BIT(7)
-
+#define ACLKRDIV_MASK	0x1f
 /*
  * DAVINCI_MCASP_AHCLKXCTL_REG - High Frequency Transmit Clock Control
  *     Register Bits
@@ -212,7 +212,7 @@
 #define AHCLKXDIV(val)	(val)
 #define AHCLKXPOL	BIT(14)
 #define AHCLKXE		BIT(15)
-
+#define AHCLKXDIV_MASK	0xfff
 /*
  * DAVINCI_MCASP_AHCLKRCTL_REG - High Frequency Receive Clock Control
  *     Register Bits
@@ -220,7 +220,7 @@
 #define AHCLKRDIV(val)	(val)
 #define AHCLKRPOL	BIT(14)
 #define AHCLKRE		BIT(15)
-
+#define AHCLKRDIV_MASK	0xfff
 /*
  * DAVINCI_MCASP_XRSRCTL_BASE_REG -  Serializer Control Register Bits
  */
@@ -295,6 +295,8 @@
 
 #define DAVINCI_MCASP_NUM_SERIALIZER	16
 
+static void mcasp_stop_tx(struct davinci_audio_dev *dev);
+
 static inline void mcasp_set_bits(void __iomem *reg, u32 val)
 {
 	__raw_writel(__raw_readl(reg) | val, reg);
@@ -339,6 +341,18 @@ static inline void mcasp_set_ctl_reg(void __iomem *regs, u32 val)
 
 static void mcasp_start_rx(struct davinci_audio_dev *dev)
 {
+
+	if ( dev->sync_mode == 1)
+	{
+		/* if rx would like to use FSX instead FSR
+		 * tx engine should be enable
+		 */
+		mcasp_set_ctl_reg(dev->base + DAVINCI_MCASP_GBLCTLX_REG, TXHCLKRST);
+		mcasp_set_ctl_reg(dev->base + DAVINCI_MCASP_GBLCTLX_REG, TXCLKRST);
+		mcasp_set_ctl_reg(dev->base + DAVINCI_MCASP_GBLCTLX_REG, TXSERCLR);
+		mcasp_set_ctl_reg(dev->base + DAVINCI_MCASP_GBLCTLX_REG, TXFSRST);
+	}
+
 	mcasp_set_ctl_reg(dev->base + DAVINCI_MCASP_GBLCTLR_REG, RXHCLKRST);
 	mcasp_set_ctl_reg(dev->base + DAVINCI_MCASP_GBLCTLR_REG, RXCLKRST);
 	mcasp_set_ctl_reg(dev->base + DAVINCI_MCASP_GBLCTLR_REG, RXSERCLR);
@@ -379,6 +393,10 @@ static void mcasp_start_tx(struct davinci_audio_dev *dev)
 		cnt++;
 
 	mcasp_set_reg(dev->base + DAVINCI_MCASP_TXBUF_REG, 0);
+	if (dev->sync_mode == 1)
+	{
+		msleep(50);
+	}
 }
 
 static void davinci_mcasp_start(struct davinci_audio_dev *dev, int stream)
@@ -386,6 +404,10 @@ static void davinci_mcasp_start(struct davinci_audio_dev *dev, int stream)
 	if (stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		if (dev->txnumevt) {	/* flush and enable FIFO */
 			if (dev->version == MCASP_VERSION_3) {
+				if (dev->sync_mode == 1)
+				{
+					mcasp_stop_tx(dev);
+				}
 				mcasp_clr_bits(dev->base + MCASP_VER3_WFIFOCTL,
 								FIFO_ENABLE);
 				mcasp_set_bits(dev->base + MCASP_VER3_WFIFOCTL,
@@ -452,16 +474,92 @@ static void davinci_mcasp_stop(struct davinci_audio_dev *dev, int stream)
 		mcasp_stop_rx(dev);
 	}
 }
-
-static int davinci_mcasp_set_dai_fmt(struct snd_soc_dai *cpu_dai,
-					 unsigned int fmt)
+static int davinci_mcasp_set_clkdiv(struct snd_soc_dai *dai, int div_id, int div)
 {
-	struct davinci_audio_dev *dev = snd_soc_dai_get_drvdata(cpu_dai);
-	void __iomem *base = dev->base;
+		struct davinci_audio_dev *dev = snd_soc_dai_get_drvdata(dai);
+		switch (div_id) {
+				case 0:		/* MCLK divider */
+						mcasp_mod_bits(dev->base + DAVINCI_MCASP_AHCLKXCTL_REG,
+										AHCLKXDIV(div - 1), AHCLKXDIV_MASK);
+						mcasp_mod_bits(dev->base + DAVINCI_MCASP_AHCLKRCTL_REG,
+										AHCLKRDIV(div - 1), AHCLKRDIV_MASK);
+						break;
 
-	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBS_CFS:
+				case 1:		/* BCLK divider */
+						mcasp_mod_bits(dev->base + DAVINCI_MCASP_ACLKXCTL_REG,
+										ACLKXDIV(div - 1), ACLKXDIV_MASK);
+						mcasp_mod_bits(dev->base + DAVINCI_MCASP_ACLKRCTL_REG,
+										ACLKRDIV(div - 1), ACLKRDIV_MASK);
+						break;
+
+				default:
+						return -EINVAL;
+		}
+
+		return 0;
+}
+static int davinci_mcasp_set_sysclk(struct snd_soc_dai *dai, int clk_id,
+				unsigned int freq, int dir)
+{
+		struct davinci_audio_dev *dev = snd_soc_dai_get_drvdata(dai);
+		if (dir == SND_SOC_CLOCK_OUT) {
+			switch(clk_id) {
+				case DAVINCI_CLK_AHCLKX:
+					mcasp_clr_bits(dev->base + DAVINCI_MCASP_AHCLKXCTL_REG, AHCLKXE);
+/*
+					mcasp_set_bits(base + DAVINCI_MCASP_PFUNC_REG,
+						 AHCLKX);
+					mcasp_set_bits(base + DAVINCI_MCASP_PFUNC_REG,
+						ACLKX | AFSX);
+*/
+					mcasp_clr_bits(dev->base + DAVINCI_MCASP_PDIR_REG,
+						AHCLKX);
+					mcasp_set_bits(dev->base + DAVINCI_MCASP_PDIR_REG,
+						ACLKX | AFSX);
+					break;
+				default:
+					mcasp_set_bits(dev->base + DAVINCI_MCASP_AHCLKXCTL_REG, AHCLKXE);
+					mcasp_set_bits(dev->base + DAVINCI_MCASP_AHCLKRCTL_REG, AHCLKRE);
+					mcasp_set_bits(dev->base + DAVINCI_MCASP_PDIR_REG, AHCLKX);
+			}
+		} else {
+				mcasp_clr_bits(dev->base + DAVINCI_MCASP_AHCLKXCTL_REG, AHCLKXE);
+				mcasp_clr_bits(dev->base + DAVINCI_MCASP_AHCLKRCTL_REG, AHCLKRE);
+				mcasp_clr_bits(dev->base + DAVINCI_MCASP_PDIR_REG, AHCLKX);
+		}
+
+		return 0;
+}
+static int davinci_mcasp_set_dai_fmt(struct snd_soc_dai *cpu_dai,
+				unsigned int fmt)
+{
+		struct davinci_audio_dev *dev = snd_soc_dai_get_drvdata(cpu_dai);
+		void __iomem *base = dev->base;
+
+		switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
+				case SND_SOC_DAIFMT_DSP_B:
+				case SND_SOC_DAIFMT_AC97:
+						mcasp_clr_bits(dev->base+DAVINCI_MCASP_TXFMCTL_REG, FSXDUR);
+						mcasp_clr_bits(dev->base+DAVINCI_MCASP_RXFMCTL_REG, FSRDUR);
+
+						break;
+				default:
+						/* configure a full-word SYNC pulse (LRCLK) */
+						mcasp_set_bits(dev->base+DAVINCI_MCASP_TXFMCTL_REG, FSXDUR);
+						mcasp_set_bits(dev->base+DAVINCI_MCASP_RXFMCTL_REG, FSRDUR);
+
+						/* make 1st data bit occur one ACLK cycle after the frame sync */
+						mcasp_set_bits(dev->base+DAVINCI_MCASP_TXFMT_REG, FSXDLY(1));
+						mcasp_set_bits(dev->base+DAVINCI_MCASP_RXFMT_REG, FSRDLY(1));
+						break;
+		}
+
+
+		switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
+				case SND_SOC_DAIFMT_CBS_CFS:
 		/* codec is clock and frame slave */
+		mcasp_set_bits(dev->base+DAVINCI_MCASP_RXFMT_REG, FSRDLY(1));
+
 		mcasp_set_bits(base + DAVINCI_MCASP_ACLKXCTL_REG, ACLKXE);
 		mcasp_set_bits(base + DAVINCI_MCASP_TXFMCTL_REG, AFSXE);
 
@@ -716,19 +814,26 @@ static void davinci_hw_param(struct davinci_audio_dev *dev, int stream)
 			printk(KERN_ERR "playback tdm slot %d not supported\n",
 				dev->tdm_slots);
 
-		mcasp_clr_bits(dev->base + DAVINCI_MCASP_TXFMCTL_REG, FSXDUR);
+		mcasp_set_bits(dev->base + DAVINCI_MCASP_TXFMCTL_REG, FSXDUR);
 	} else {
 		/* bit stream is MSB first with no delay */
 		/* DSP_B mode */
 		mcasp_set_bits(dev->base + DAVINCI_MCASP_RXFMT_REG, RXORD);
 		mcasp_set_bits(dev->base + DAVINCI_MCASP_AHCLKRCTL_REG,
-				AHCLKRE);
+			AHCLKRE);
 		mcasp_set_reg(dev->base + DAVINCI_MCASP_RXTDM_REG, mask);
 
-		if ((dev->tdm_slots >= 2) && (dev->tdm_slots <= 32))
+		if ((dev->tdm_slots >= 2) && (dev->tdm_slots <= 32)){
 			mcasp_mod_bits(dev->base + DAVINCI_MCASP_RXFMCTL_REG,
 					FSRMOD(dev->tdm_slots), FSRMOD(0x1FF));
-		else
+
+			if (dev->sync_mode == 0)
+			{
+				/*for ASYNC = 0 case*/
+				mcasp_mod_bits(dev->base + DAVINCI_MCASP_TXFMCTL_REG,
+						FSXMOD(dev->tdm_slots), FSXMOD(0x1FF));
+			}
+		}else
 			printk(KERN_ERR "capture tdm slot %d not supported\n",
 				dev->tdm_slots);
 
@@ -876,6 +981,8 @@ static struct snd_soc_dai_ops davinci_mcasp_dai_ops = {
 	.trigger	= davinci_mcasp_trigger,
 	.hw_params	= davinci_mcasp_hw_params,
 	.set_fmt	= davinci_mcasp_set_dai_fmt,
+	.set_sysclk	= davinci_mcasp_set_sysclk,
+	.set_clkdiv	= davinci_mcasp_set_clkdiv,
 
 };
 
@@ -890,13 +997,13 @@ static struct snd_soc_dai_driver davinci_mcasp_dai[] = {
 	{
 		.name		= "davinci-mcasp.0",
 		.playback	= {
-			.channels_min	= 2,
+			.channels_min	= 1,
 			.channels_max 	= 2,
 			.rates 		= DAVINCI_MCASP_RATES,
 			.formats	= DAVINCI_MCASP_PCM_FMTS,
 		},
 		.capture 	= {
-			.channels_min 	= 2,
+			.channels_min 	= 1,
 			.channels_max 	= 2,
 			.rates 		= DAVINCI_MCASP_RATES,
 			.formats	= DAVINCI_MCASP_PCM_FMTS,
@@ -911,6 +1018,12 @@ static struct snd_soc_dai_driver davinci_mcasp_dai[] = {
 			.channels_max	= 384,
 			.rates		= DAVINCI_MCASP_RATES,
 			.formats	= DAVINCI_MCASP_PCM_FMTS,
+		},
+		.capture    = {
+			.channels_min   = 1,
+			.channels_max   = 2,
+			.rates      = DAVINCI_MCASP_RATES,
+			.formats    = DAVINCI_MCASP_PCM_FMTS,
 		},
 		.ops 		= &davinci_mcasp_dai_ops,
 	},
@@ -971,6 +1084,7 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
 	dev->version = pdata->version;
 	dev->txnumevt = pdata->txnumevt;
 	dev->rxnumevt = pdata->rxnumevt;
+	dev->sync_mode = pdata->sync_mode;
 	dev->dev	= &pdev->dev;
 
 	if (dev->version == MCASP_VERSION_3) {
@@ -999,7 +1113,6 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
 	else
 		/* first TX, then RX */
 		res = platform_get_resource(pdev, IORESOURCE_DMA, 0);
-
 	if (!res) {
 		dev_err(&pdev->dev, "no DMA resource\n");
 		ret = -ENODEV;
@@ -1035,6 +1148,7 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
 
 	if (ret != 0)
 		goto err_iounmap;
+
 	return 0;
 
 err_iounmap:
@@ -1075,6 +1189,11 @@ static int davinci_mcasp_suspend(struct platform_device *pdev,
 {
 	int ret = 0, idx;
 	struct davinci_audio_dev *dev = dev_get_drvdata(&pdev->dev);
+	struct snd_platform_data *pdata = pdev->dev.platform_data;
+
+	if (pdata->get_context_loss_count)
+		dev->context_loss_cnt =
+			pdata->get_context_loss_count(&pdev->dev);
 
 	if (dev->version == MCASP_VERSION_3) {
 		dev->gblctlx = mcasp_get_reg(dev->base +
@@ -1124,12 +1243,24 @@ static int davinci_mcasp_suspend(struct platform_device *pdev,
 
 static int davinci_mcasp_resume(struct platform_device *pdev)
 {
-	int ret = 0, idx;
+	int ret = 0, idx, loss_cnt;
 	struct davinci_audio_dev *dev = dev_get_drvdata(&pdev->dev);
+	struct snd_platform_data *pdata = pdev->dev.platform_data;
 
 	ret = pm_runtime_get_sync(&pdev->dev);
 	if (ret < 0)
 		dev_err(&pdev->dev, "failed to get runtime pm\n");
+
+	if (pdata->get_context_loss_count) {
+		loss_cnt = pdata->get_context_loss_count(&pdev->dev);
+		if (loss_cnt < 0) {
+			dev_err(&pdev->dev,
+				"%s failed, context loss count = %d\n",
+				__func__, loss_cnt);
+		} else if (dev->context_loss_cnt == loss_cnt) {
+			return 0;
+		}
+	}
 
 	if (dev->version == MCASP_VERSION_3) {
 		mcasp_set_reg(dev->base + DAVINCI_MCASP_GBLCTLX_REG,

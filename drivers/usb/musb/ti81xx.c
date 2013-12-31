@@ -93,6 +93,7 @@ struct ti81xx_glue {
 	struct platform_device *musb[2];/* child musb pdevs */
 	u8	irq;			/* usbss irq */
 	u8	first;			/* ignore first call of resume */
+	int	context_loss_cnt;
 
 #ifdef CONFIG_PM
 	struct ti81xx_usbss_regs usbss_regs;
@@ -473,6 +474,7 @@ int __devinit cppi41_init(u8 id, u8 irq, int num_instances)
 	cppi_info->tx_comp_q = id ? tx_comp_q1 : tx_comp_q;
 	cppi_info->rx_comp_q = id ? rx_comp_q1 : rx_comp_q;
 	cppi_info->bd_intr_ctrl = 1;
+	cppi_info->sched_tbl_ctrl = 0;
 	cppi_info->version = usbss_read(USBSS_REVISION);
 
 	if (cppi41_init_done)
@@ -609,27 +611,42 @@ void txfifoempty_intr_disable(struct musb *musb, u8 ep_num)
 
 #endif /* CONFIG_USB_TI_CPPI41_DMA */
 
-void ti81xx_musb_enable_sof(struct musb *musb)
+int ti81xx_musb_enable_sof(struct musb *musb)
 {
 	void __iomem *reg_base = musb->ctrl_base;
+
+	if (musb->sof_enabled) {
+		musb->sof_enabled++;
+		return musb->sof_enabled;
+	}
 
 	musb->sof_enabled = 1;
 	musb_writeb(musb->mregs, MUSB_INTRUSBE, MUSB_INTR_SOF |
 		musb_readb(musb->mregs, MUSB_INTRUSBE));
 	musb_writel(reg_base, USB_CORE_INTR_SET_REG, MUSB_INTR_SOF |
 		musb_readl(reg_base, USB_CORE_INTR_SET_REG));
+
+	return musb->sof_enabled;
 }
 
-void ti81xx_musb_disable_sof(struct musb *musb)
+int ti81xx_musb_disable_sof(struct musb *musb)
 {
 	void __iomem *reg_base = musb->ctrl_base;
 	u8 intrusb;
+
+	if (musb->sof_enabled)
+		musb->sof_enabled--;
+
+	if (musb->sof_enabled)
+		return musb->sof_enabled;
 
 	intrusb = musb_readb(musb->mregs, MUSB_INTRUSBE);
 	intrusb &= ~MUSB_INTR_SOF;
 	musb_writeb(musb->mregs, MUSB_INTRUSBE, intrusb);
 	musb_writel(reg_base, USB_CORE_INTR_CLEAR_REG, MUSB_INTR_SOF);
 	musb->sof_enabled = 0;
+
+	return 0;
 }
 
 /**
@@ -703,6 +720,12 @@ static void otg_timer(unsigned long _musb)
 		}
 		break;
 	case OTG_STATE_A_WAIT_VFALL:
+		if (!(devctl & MUSB_DEVCTL_SESSION)) {
+			devctl |= MUSB_DEVCTL_SESSION;
+			musb_writeb(musb->mregs, MUSB_DEVCTL, devctl);
+
+			devctl = musb_readb(musb->mregs, MUSB_DEVCTL);
+		}
 		/*
 		 * Wait till VBUS falls below SessionEnd (~0.2 V); the 1.3
 		 * RTL seems to mis-handle session "start" otherwise (or in
@@ -715,7 +738,7 @@ static void otg_timer(unsigned long _musb)
 			break;
 		}
 		musb->xceiv->state = OTG_STATE_A_WAIT_VRISE;
-		musb_writel(musb->ctrl_base, USB_CORE_INTR_SET_REG,
+		musb_writel(musb->ctrl_base, USB_IRQ_STATUS_RAW_1,
 			    MUSB_INTR_VBUSERROR << USB_INTR_USB_SHIFT);
 		break;
 	case OTG_STATE_B_IDLE:
@@ -967,18 +990,20 @@ void musb_babble_hwfix(struct musb *musb)
 
 			session_restart = 1;
 		} else {
+			u32 sofcnt;
 			pr_info("babble: controller shall resume normal\n");
 			/* check controller resumes normal operation
 			 * by checking sof occurs for few frames
 			 */
-			musb->sof_cnt = 2;
+			sofcnt = musb->sof_cnt;
 			ti81xx_musb_enable_sof(musb);
 			udelay(280);
-			if (musb->sof_cnt) {
+			if (musb->sof_cnt - sofcnt > 0)
+				pr_info("babble: controller resumed normal\n");
+			else {
 				pr_info("babble: controller cannot resume\n");
 				session_restart = 1;
-			} else
-				pr_info("babble: controller resumed normal\n");
+			}
 			ti81xx_musb_disable_sof(musb);
 		}
 	} else
@@ -1026,6 +1051,7 @@ static irqreturn_t ti81xx_interrupt(int irq, void *hci)
 	u32 pend1 = 0, pend2 = 0;
 	u32 epintr, usbintr;
 	u8  is_babble = 0;
+	int err;
 
 	spin_lock_irqsave(&musb->lock, flags);
 
@@ -1051,12 +1077,12 @@ static irqreturn_t ti81xx_interrupt(int irq, void *hci)
 	dev_dbg(musb->controller, "usbintr (%x) epintr(%x)\n", usbintr, epintr);
 
 	if (musb->int_usb & MUSB_INTR_SOF) {
-		if (musb->sof_enabled) {
-			if (musb->sof_cnt == 0)
-				ti81xx_musb_disable_sof(musb);
-			else
-				--musb->sof_cnt;
-		}
+		musb->sof_cnt++;
+		musb->int_usb &= ~MUSB_INTR_SOF;
+#ifdef CONFIG_USB_TI_CPPI41_DMA
+		if (musb->tx_isoc_sched_enable)
+			cppi41_isoc_schedular(musb);
+#endif
 		ret = IRQ_HANDLED;
 	}
 
@@ -1093,14 +1119,14 @@ static irqreturn_t ti81xx_interrupt(int irq, void *hci)
 		ERR("CAUTION: musb%d: Babble Interrupt Occured\n", musb->id);
 	}
 
-	if (usbintr & (USB_INTR_DRVVBUS << USB_INTR_USB_SHIFT)) {
+	err = is_host_enabled(musb) && (musb->int_usb &
+			MUSB_INTR_VBUSERROR);
+
+	if (err || (usbintr & (USB_INTR_DRVVBUS << USB_INTR_USB_SHIFT))) {
 		int drvvbus = musb_readl(reg_base, USB_STAT_REG);
 		void __iomem *mregs = musb->mregs;
 		u8 devctl = musb_readb(mregs, MUSB_DEVCTL);
-		int err;
 
-		err = is_host_enabled(musb) && (musb->int_usb &
-						MUSB_INTR_VBUSERROR);
 		if (err) {
 			/*
 			 * The Mentor core doesn't debounce VBUS as needed
@@ -1298,7 +1324,21 @@ int ti81xx_musb_init(struct musb *musb)
 	musb_platform_set_mode(musb, mode);
 
 #ifdef CONFIG_USB_TI_CPPI41_DMA
-	musb->txfifo_intr_enable = 1;
+	/* TxFifo empty interrupt logic is supported
+	 * only for isochronous tranfers only
+	 */
+	musb->txfifo_intr_enable = data->txfifo_intr_enable;
+	musb->tx_isoc_sched_enable = data->tx_isoc_sched_enable;
+
+	if (musb->tx_isoc_sched_enable) {
+		if (musb->txfifo_intr_enable) {
+			musb->txfifo_intr_enable = 0;
+			dev_dbg(musb->controller, "disable txfifo intr"
+				" logic disabled\n");
+		}
+		dev_dbg(musb->controller, "tx-isoc-schedular logic enabled\n");
+	}
+
 	if (musb->txfifo_intr_enable)
 		printk(KERN_DEBUG "TxFifo Empty intr enabled\n");
 	else
@@ -1308,7 +1348,7 @@ int ti81xx_musb_init(struct musb *musb)
 	 * issue fixed in PG2.0 RTL
 	 */
 	if (data->grndis_for_host_rx)
-		usb_cppi41_info[musb->id].grndis_for_host_rx = 1;
+		usb_cppi41_info[musb->id].rx_dma_mode = USB_GENERIC_RNDIS_MODE;
 #endif
 	/* enable babble workaround */
 	INIT_WORK(&musb->work, evm_deferred_musb_restart);
@@ -1407,6 +1447,8 @@ static struct musb_platform_ops ti81xx_ops = {
 	.txfifoempty_intr_disable = txfifoempty_intr_disable,
 #endif
 	.reinit = musb_reinit,
+	.enable_sof = ti81xx_musb_enable_sof,
+	.disable_sof = ti81xx_musb_disable_sof
 };
 
 static void __devexit ti81xx_delete_musb_pdev(struct ti81xx_glue *glue, u8 id)
@@ -1790,6 +1832,10 @@ static int ti81xx_runtime_suspend(struct device *dev)
 	struct platform_device *pdev;
 	int i;
 
+	if (data->get_context_loss_count)
+		glue->context_loss_cnt =
+				data->get_context_loss_count(glue->dev);
+
 	/* save wrappers and cppi4.1 dma register */
 	ti81xx_save_context(glue);
 
@@ -1815,7 +1861,7 @@ static int ti81xx_runtime_resume(struct device *dev)
 	struct ti81xx_glue *glue = dev_get_drvdata(dev);
 	struct musb_hdrc_platform_data *plat = dev->platform_data;
 	struct omap_musb_board_data *data = plat->board_data;
-	int i;
+	int i, loss_cnt;
 
 	/*
 	 * ignore first call of resume as all registers are not yet
@@ -1830,6 +1876,16 @@ static int ti81xx_runtime_resume(struct device *dev)
 	for (i = 0; i <= data->instances; ++i) {
 		if (data->set_phy_power)
 			data->set_phy_power(i, 1, false);
+	}
+
+	if (data->get_context_loss_count) {
+		loss_cnt = data->get_context_loss_count(glue->dev);
+		if (loss_cnt < 0) {
+			dev_err(dev, "%s failed, countext loss count = %d\n",
+					__func__, loss_cnt);
+		} else if (glue->context_loss_cnt == loss_cnt) {
+			return 0;
+		}
 	}
 
 	/* restore wrappers and cppi4.1 dma register */

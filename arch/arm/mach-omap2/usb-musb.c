@@ -31,6 +31,7 @@
 #include <mach/am35xx.h>
 #include <plat/usb.h>
 #include <plat/omap_device.h>
+#include <plat/omap-pm.h>
 #include "mux.h"
 
 static struct musb_hdrc_config musb_config = {
@@ -101,6 +102,19 @@ void __init usb_musb_init(struct omap_musb_board_data *musb_board_data)
 		name = "musb-ti81xx";
 		board_data->grndis_for_host_rx = 0;
 		board_data->babble_ctrl = 0;
+		board_data->tx_isoc_sched_enable = 1;
+
+		/* enable txfifo interrupt enable */
+		if (cpu_is_am33xx())
+			board_data->txfifo_intr_enable = 0;
+
+		/*
+		 * disable txfifo_intr_enable if tx_isoc_sched logic
+		 * is enabled
+		 */
+		if (board_data->tx_isoc_sched_enable)
+			board_data->txfifo_intr_enable = 0;
+
 		if (cpu_is_am33xx() && omap_rev() >= AM335X_REV_ES2_0) {
 			board_data->grndis_for_host_rx = 1;
 			board_data->babble_ctrl = 1;
@@ -109,6 +123,9 @@ void __init usb_musb_init(struct omap_musb_board_data *musb_board_data)
 		oh_name = "usb_otg_hs";
 		name = "musb-omap2430";
 	}
+
+	board_data->get_context_loss_count =
+		omap_pm_get_dev_context_loss_count;
 
         oh = omap_hwmod_lookup(oh_name);
         if (WARN(!oh, "%s: could not find omap_hwmod for %s\n",

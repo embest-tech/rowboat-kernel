@@ -91,10 +91,13 @@ struct omap_musb_board_data {
 	u8	instances;
 	u8	grndis_for_host_rx;
 	u8	babble_ctrl;
+	u8	txfifo_intr_enable;
+	u8	tx_isoc_sched_enable;
 	void	(*set_phy_power)(u8 id, u8 on, bool wkup);
 	void	(*clear_irq)(void);
 	void	(*set_mode)(u8 mode);
 	void	(*reset)(void);
+	int	(*get_context_loss_count)(struct device *);
 };
 
 enum musb_interface    {MUSB_INTERFACE_ULPI, MUSB_INTERFACE_UTMI};
@@ -371,6 +374,8 @@ static inline u32 omap1_usb2_init(unsigned nwires, unsigned alt_pingroup)
 #define USB_RNDIS_MODE		1
 #define USB_CDC_MODE		2
 #define USB_GENERIC_RNDIS_MODE	3
+#define USB_INFINITE_DMAMODE	4
+#define MAX_GRNDIS_PKTSIZE	(64 * 1024)
 
 /* AutoReq register bits */
 #define USB_RX_AUTOREQ_SHIFT(n) (((n) - 1) << 1)

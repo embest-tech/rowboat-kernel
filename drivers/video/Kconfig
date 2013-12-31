@@ -35,6 +35,9 @@ config VIDEO_OUTPUT_CONTROL
 	  This framework adds support for low-level control of the video
 	  output switch.
 
+config HDMI
+	bool
+
 menuconfig FB
 	tristate "Support for frame buffer devices"
 	---help---
@@ -2427,6 +2430,8 @@ source "drivers/video/omap2/Kconfig"
 
 source "drivers/video/backlight/Kconfig"
 source "drivers/video/display/Kconfig"
+
+source "drivers/video/nxp/Kconfig"
 
 if VT
 	source "drivers/video/console/Kconfig"

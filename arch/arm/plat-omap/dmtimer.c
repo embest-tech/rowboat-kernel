@@ -80,11 +80,6 @@ static void omap_dm_timer_write_reg(struct omap_dm_timer *timer, u32 reg,
 
 static void omap_timer_restore_context(struct omap_dm_timer *timer)
 {
-	omap_dm_timer_write_reg(timer, OMAP_TIMER_OCP_CFG_OFFSET,
-				timer->context.tiocp_cfg);
-	if (timer->revision > 1)
-		__raw_writel(timer->context.tistat, timer->sys_stat);
-
 	__raw_writel(timer->context.tisr, timer->irq_stat);
 	omap_dm_timer_write_reg(timer, OMAP_TIMER_WAKEUP_EN_REG,
 				timer->context.twer);
@@ -120,20 +115,19 @@ static void omap_dm_timer_wait_for_reset(struct omap_dm_timer *timer)
 
 static void omap_dm_timer_reset(struct omap_dm_timer *timer)
 {
-	omap_dm_timer_enable(timer);
 	if (timer->pdev->id != 1) {
 		omap_dm_timer_write_reg(timer, OMAP_TIMER_IF_CTRL_REG, 0x06);
 		omap_dm_timer_wait_for_reset(timer);
 	}
 
 	__omap_dm_timer_reset(timer, 0, 0);
-	omap_dm_timer_disable(timer);
-	timer->posted = 1;
 }
 
 int omap_dm_timer_prepare(struct omap_dm_timer *timer)
 {
 	struct dmtimer_platform_data *pdata = timer->pdev->dev.platform_data;
+
+	omap_dm_timer_enable(timer);
 
 	timer->fclk = clk_get(&timer->pdev->dev, "fck");
 	if (WARN_ON_ONCE(IS_ERR_OR_NULL(timer->fclk))) {
@@ -145,7 +139,8 @@ int omap_dm_timer_prepare(struct omap_dm_timer *timer)
 	if (pdata->needs_manual_reset)
 		omap_dm_timer_reset(timer);
 
-	timer->posted = 1;
+	__omap_dm_timer_enable_posted(timer);
+	omap_dm_timer_disable(timer);
 	return 0;
 }
 
@@ -690,6 +685,7 @@ static int __devinit omap_dm_timer_probe(struct platform_device *pdev)
 	}
 
 	timer->id = pdev->id;
+	timer->errata = pdata->timer_errata;
 	timer->irq = irq->start;
 	timer->reserved = pdata->reserved;
 	timer->pdev = pdev;

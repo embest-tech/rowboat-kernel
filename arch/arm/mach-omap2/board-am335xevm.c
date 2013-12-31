@@ -37,6 +37,7 @@
 #include <linux/mfd/tps65217.h>
 #include <linux/pwm_backlight.h>
 #include <linux/input/ti_tsc.h>
+#include <linux/platform_data/ti_adc.h>
 #include <linux/mfd/ti_tscadc.h>
 #include <linux/reboot.h>
 #include <linux/pwm/pwm.h>
@@ -57,6 +58,7 @@
 #include <asm/hardware/asp.h>
 
 #include <plat/omap_device.h>
+#include <plat/omap-pm.h>
 #include <plat/irqs.h>
 #include <plat/board.h>
 #include <plat/common.h>
@@ -76,6 +78,7 @@
 #include "devices.h"
 #include "hsmmc.h"
 
+#include "control.h"
 /* Convert GPIO signal to GPIO pin number */
 #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
 
@@ -255,6 +258,12 @@ struct da8xx_lcdc_platform_data dvi_pdata = {
 	.type      = "1024x768@60",
 };
 
+struct da8xx_lcdc_platform_data hdmi_pdata = {
+	.manu_name    = "NXP HDMI",
+	.controller_data  = &dvi_cfg,
+	.type      = "nxp-1280x720@60",
+};
+
 /* Touchscreen Controller Data for AM335xEVM */
 /* Calibrated on AM335xEVM Rev. 1.1A and 1.2A */
 /* The values have to be fine tuned for other revisions, if requred */
@@ -274,8 +283,13 @@ static struct tsc_data am335xevm_touchscreen_data = {
 	.steps_to_configure = 5,
 };
 
+static struct adc_data am335x_adc_data = {
+	.adc_channels = 4,
+};
+
 static struct mfd_tscadc_board tscadc = {
 	.tsc_init = &am335xevm_touchscreen_data,
+	.adc_init = &am335x_adc_data,
 };
 
 /* Touchscreen Controller Data for Beaglebone Cape */
@@ -308,6 +322,12 @@ static u8 am335x_iis_serializer_direction1[] = {
 	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
 };
 
+static u8 am335x_iis_serializer_direction0[] = {
+    TX_MODE,  RX_MODE,  INACTIVE_MODE,    INACTIVE_MODE,
+    INACTIVE_MODE,  INACTIVE_MODE,  INACTIVE_MODE,  INACTIVE_MODE,
+    INACTIVE_MODE,  INACTIVE_MODE,  INACTIVE_MODE,  INACTIVE_MODE,
+    INACTIVE_MODE,  INACTIVE_MODE,  INACTIVE_MODE,  INACTIVE_MODE,
+};
 static struct snd_platform_data am335x_evm_snd_data1 = {
 	.tx_dma_offset	= 0x46400000,	/* McASP1 */
 	.rx_dma_offset	= 0x46400000,
@@ -317,8 +337,24 @@ static struct snd_platform_data am335x_evm_snd_data1 = {
 	.serial_dir	= am335x_iis_serializer_direction1,
 	.asp_chan_q	= EVENTQ_2,
 	.version	= MCASP_VERSION_3,
-	.txnumevt	= 1,
-	.rxnumevt	= 1,
+	.txnumevt	= 32,
+	.rxnumevt	= 32,
+	.get_context_loss_count	=
+			omap_pm_get_dev_context_loss_count,
+};
+
+static struct snd_platform_data am335x_evm_snd_data0 = {
+    .tx_dma_offset  = 0x46000000,   /* McASP0 */
+    .rx_dma_offset  = 0x46000000,
+    .op_mode    = DAVINCI_MCASP_IIS_MODE,
+    .num_serializer = ARRAY_SIZE(am335x_iis_serializer_direction0),
+    .tdm_slots  = 2,
+    .serial_dir = am335x_iis_serializer_direction0,
+    .asp_chan_q = EVENTQ_2,
+    .version    = MCASP_VERSION_3,
+    .txnumevt   = 1,
+    .rxnumevt   = 1,
+    .sync_mode  = 1,
 };
 
 static u8 am335x_evm_sk_iis_serializer_direction1[] = {
@@ -337,7 +373,34 @@ static struct snd_platform_data am335x_evm_sk_snd_data1 = {
 	.serial_dir	= am335x_evm_sk_iis_serializer_direction1,
 	.asp_chan_q	= EVENTQ_2,
 	.version	= MCASP_VERSION_3,
+	.txnumevt	= 32,
+	.get_context_loss_count	=
+			omap_pm_get_dev_context_loss_count,
+};
+
+static struct snd_platform_data am335x_evm_sk_snd_data0 = {
+    .tx_dma_offset  = 0x46000000,   /* McASP1 */
+    /*.rx_dma_offset    = 0x46400000,*/
+    .op_mode    = DAVINCI_MCASP_IIS_MODE,
+    .num_serializer = ARRAY_SIZE(am335x_evm_sk_iis_serializer_direction1),
+    .tdm_slots  = 2,
+    .serial_dir = am335x_evm_sk_iis_serializer_direction1,
+    .asp_chan_q = EVENTQ_2,
+    .version    = MCASP_VERSION_3,
+    .txnumevt   = 1,
+};
+
+static struct snd_platform_data bone_black_snd_data0 = {
+	.tx_dma_offset	= 0x46000000,	/* McASP0*/
+	.rx_dma_offset	= 0x46000000,
+	.op_mode	= DAVINCI_MCASP_IIS_MODE,
+	.num_serializer	= ARRAY_SIZE(am335x_iis_serializer_direction1),
+	.tdm_slots	= 2,
+	.serial_dir	= am335x_iis_serializer_direction1,
+	.asp_chan_q	= EVENTQ_2,
+	.version	= MCASP_VERSION_3,
 	.txnumevt	= 1,
+	.rxnumevt	= 1,
 };
 
 static struct omap2_hsmmc_info am335x_mmc[] __initdata = {
@@ -643,6 +706,48 @@ static struct pinmux_config lcdc_pin_mux[] = {
 	{NULL, 0},
 };
 
+/* Module pin mux for HDMI board */
+static struct pinmux_config hdmi_pin_mux[] = {
+	{"lcd_data0.lcd_data0",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data1.lcd_data1",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data2.lcd_data2",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data3.lcd_data3",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data4.lcd_data4",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data5.lcd_data5",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data6.lcd_data6",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data7.lcd_data7",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data8.lcd_data8",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data9.lcd_data9",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data10.lcd_data10",  OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data11.lcd_data11",  OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data12.lcd_data12",  OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data13.lcd_data13",  OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data14.lcd_data14",  OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_data15.lcd_data15",  OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
+		| AM33XX_PULL_DISA},
+	{"lcd_vsync.lcd_vsync",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT},
+	{"lcd_hsync.lcd_hsync",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT},
+	{"lcd_pclk.lcd_pclk",      OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT},
+	{"lcd_ac_bias_en.lcd_ac_bias_en", OMAP_MUX_MODE0
+		| AM33XX_PIN_OUTPUT}, /*DVIEN*/
+	{NULL, 0},
+};
+
 /* Module pin mux for DVI board */
 static struct pinmux_config dvi_pin_mux[] = {
 	{"lcd_data0.lcd_data0",    OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT
@@ -873,6 +978,29 @@ static struct pinmux_config mcasp1_pin_mux[] = {
 	{NULL, 0},
 };
 
+/* Module pin mux for mcasp1 */
+static struct pinmux_config mcasp0_pin_mux[] = {
+    {"mcasp0_aclkx.mcasp0_aclkx", OMAP_MUX_MODE0 |AM33XX_PIN_INPUT_PULLDOWN },
+    {"mcasp0_fsx.mcasp0_fsx", OMAP_MUX_MODE0 | AM33XX_PIN_INPUT_PULLDOWN },
+    {"mcasp0_axr0.mcasp0_axr0", OMAP_MUX_MODE0 |AM33XX_PIN_OUTPUT_PULLUP },
+    {"mcasp0_axr1.mcasp0_axr1", OMAP_MUX_MODE0 |AM33XX_PIN_INPUT_PULLUP
+                        },
+    {NULL, 0},
+};
+
+/* Module pin mux for BeagleBone Black mcasp0 and hdmi */
+static struct pinmux_config bone_black_mcasp0_pin_mux[] = {
+	{"mcasp0_aclkx.mcasp0_aclkx", OMAP_MUX_MODE0 |AM33XX_PIN_OUTPUT},
+	{"mcasp0_fsx.mcasp0_fsx", OMAP_MUX_MODE0 | AM33XX_PIN_OUTPUT},
+	{"mcasp0_ahclkr.mcasp0_axr2", OMAP_MUX_MODE2 | AM33XX_PIN_OUTPUT},
+	/* Same pin is used for rx, but for hdmi we don't need rx */
+	{"mcasp0_ahclkx.mcasp0_ahclkx", OMAP_MUX_MODE0 | AM33XX_PIN_INPUT_PULLUP},
+	{"spi0_d1.i2c1_sda",    OMAP_MUX_MODE2 | AM33XX_SLEWCTRL_SLOW |
+					AM33XX_PULL_ENBL | AM33XX_INPUT_EN},
+	{"spi0_cs0.i2c1_scl",   OMAP_MUX_MODE2 | AM33XX_SLEWCTRL_SLOW |
+					AM33XX_PULL_ENBL | AM33XX_INPUT_EN},
+	{NULL, 0},
+};
 
 /* Module pin mux for mmc0 */
 static struct pinmux_config mmc0_common_pin_mux[] = {
@@ -1597,6 +1725,8 @@ static void lcdc_init(int evm_id, int profile)
 		return;
 	}
 
+	lcdc_pdata->get_context_loss_count = omap_pm_get_dev_context_loss_count;
+
 	if (am33xx_register_lcdc(lcdc_pdata))
 		pr_info("Failed to register LCDC device\n");
 
@@ -1673,6 +1803,51 @@ static void bone_lcd4_lcdc_init(int evm_id, int profile)
 
 	if (am33xx_register_lcdc(&NHD_480272MF_ATXI_bone_lcd_cape_pdata))
 		pr_info("Failed to register Beagleboardtoys 4.3\" LCD cape device\n");
+
+	return;
+}
+
+static struct i2c_board_info tda99X_i2c_boardinfo[] = {
+	{
+		I2C_BOARD_INFO("tda998x",  0x70),
+	},
+};
+
+static void hdmi_init(int evm_id, int profile)
+{
+	struct i2c_adapter *adapter;
+	struct i2c_client *client;
+	unsigned int i2c_instance;
+
+	setup_pin_mux(hdmi_pin_mux);
+
+	if (conf_disp_pll(371000000)) {
+		pr_info("Failed to set pixclock to 371000000, not attempting to"
+				"register DVI adapter\n");
+		return;
+	}
+
+	if (am33xx_register_lcdc(&hdmi_pdata))
+		pr_info("Failed to register BeagleBoardToys HDMI adapter\n");
+
+
+	if(evm_id == BEAGLE_BONE_BLACK)
+		i2c_instance = 1;
+
+	/* I2C adapter request */
+	adapter = i2c_get_adapter(i2c_instance);
+	if (!adapter) {
+		pr_err("Failed to get adapter i2c%u\n", i2c_instance);
+		return;
+	}
+
+	client = i2c_new_device(adapter, tda99X_i2c_boardinfo);
+	if (!client)
+		pr_err("Failed to register HDMI tda998x to i2c%u\n", i2c_instance);
+
+	i2c_put_adapter(adapter);
+
+	pr_info("Setup HDMI display complete\n");
 
 	return;
 }
@@ -1856,6 +2031,25 @@ free:
 	return -1;
 }
 
+static struct pinmux_config clkout2_pin_mux[] = {
+	{"xdma_event_intr1.clkout2", OMAP_MUX_MODE3 | AM33XX_PIN_OUTPUT},
+	{NULL, 0},
+};
+
+static void bone_camera_cape_clkout2_init(void)
+{
+	void __iomem *base;
+	unsigned int val;
+
+	/* XXX: HACK */
+	base = ioremap(0x44E00700, SZ_4K);
+	val = (5 << 3) | (3 << 0); //32 MHz
+	writel(val, base);
+	iounmap(base);
+
+	setup_pin_mux(clkout2_pin_mux);
+}
+
 #define BEAGLEBONE_CAMERA_ORIENTATION GPIO_TO_PIN(0, 30)
 
 static void cssp_gpmc_init(void)
@@ -1886,6 +2080,8 @@ static void cssp_gpmc_init(void)
 			pr_info("Camera cape sensor is facing backward\n");
 		}
 	}
+
+	bone_camera_cape_clkout2_init();
 
 	platform_device_register(&cssp_camera);
 
@@ -2442,6 +2638,36 @@ static void i2c2_init(int evm_id, int profile)
 	return;
 }
 
+/* BeagleBone Black HDMI Audio */
+static struct platform_device am335x_hdmi_codec_device = {
+	.name		= "hdmi-audio-codec",
+	.id		= -1,
+};
+
+/* Setup McASP 0*/
+static void mcasp0_init(int evm_id, int profile)
+{
+	/* Configure McASP */
+	switch (evm_id) {
+	case EVM_SK:
+		setup_pin_mux(mcasp0_pin_mux);
+		am335x_register_mcasp(&am335x_evm_sk_snd_data0, 0);
+		break;
+	case BEAGLE_BONE_BLACK:
+		gpio_request(GPIO_TO_PIN(1, 27), "BONE_AUDIO_CLOCK");
+		gpio_direction_output(GPIO_TO_PIN(1, 27), 1);
+		setup_pin_mux(bone_black_mcasp0_pin_mux);
+		am335x_register_mcasp(&bone_black_snd_data0, 0);
+		platform_device_register(&am335x_hdmi_codec_device);
+		break;
+	default:
+		setup_pin_mux(mcasp0_pin_mux);
+		am335x_register_mcasp(&am335x_evm_snd_data0, 0);
+	}
+
+	return;
+}
+
 /* Setup McASP 1 */
 static void mcasp1_init(int evm_id, int profile)
 {
@@ -2460,17 +2686,31 @@ static void mcasp1_init(int evm_id, int profile)
 
 static void mmc1_init(int evm_id, int profile)
 {
-	setup_pin_mux(mmc1_common_pin_mux);
-	setup_pin_mux(mmc1_dat4_7_pin_mux);
-	setup_pin_mux(mmc1_wp_only_pin_mux);
-	setup_pin_mux(mmc1_cd_only_pin_mux);
+	switch (evm_id) {
+	case BEAGLE_BONE_BLACK:
+		setup_pin_mux(mmc1_common_pin_mux);
+		setup_pin_mux(mmc1_dat4_7_pin_mux);
 
-	am335x_mmc[1].mmc = 2;
-	am335x_mmc[1].caps = MMC_CAP_4_BIT_DATA;
-	am335x_mmc[1].gpio_cd = GPIO_TO_PIN(2, 2);
-	am335x_mmc[1].gpio_wp = GPIO_TO_PIN(1, 29);
-	am335x_mmc[1].ocr_mask = MMC_VDD_32_33 | MMC_VDD_33_34; /* 3V3 */
+		am335x_mmc[1].mmc		= 2;
+		am335x_mmc[1].caps		= MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA;
+		am335x_mmc[1].nonremovable	= true;
+		am335x_mmc[1].gpio_cd		= -EINVAL;
+		am335x_mmc[1].gpio_wp		= -EINVAL;
+		am335x_mmc[1].ocr_mask		= MMC_VDD_32_33 | MMC_VDD_33_34; /* 3V3 */
+		break;
+	default:
+		setup_pin_mux(mmc1_common_pin_mux);
+		setup_pin_mux(mmc1_dat4_7_pin_mux);
+		setup_pin_mux(mmc1_wp_only_pin_mux);
+		setup_pin_mux(mmc1_cd_only_pin_mux);
 
+		am335x_mmc[1].mmc		= 2;
+		am335x_mmc[1].caps		= MMC_CAP_4_BIT_DATA;
+		am335x_mmc[1].gpio_cd		= GPIO_TO_PIN(2, 2);
+		am335x_mmc[1].gpio_wp		= GPIO_TO_PIN(1, 29);
+		am335x_mmc[1].ocr_mask		= MMC_VDD_32_33 | MMC_VDD_33_34; /* 3V3 */
+		break;
+	}
 	/* mmc will be initialized when mmc0_init is called */
 	return;
 }
@@ -2604,6 +2844,12 @@ static inline void __init am335xevm_init_btwilink(void)
 }
 #endif
 
+/* WL1271 Audio */
+static struct platform_device wl1271bt_codec_device = {
+	.name		= "wl1271bt-dummy-codec",
+	.id		= -1,
+};
+
 static void wl12xx_bluetooth_enable(void)
 {
 #ifndef CONFIG_TI_ST
@@ -2617,6 +2863,7 @@ static void wl12xx_bluetooth_enable(void)
 #else
 	am335xevm_init_btwilink();
 #endif
+	 platform_device_register(&wl1271bt_codec_device);
 }
 
 static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
@@ -2706,6 +2953,7 @@ static void mmc0_init(int evm_id, int profile)
 	case BEAGLE_BONE_A3:
 	case BEAGLE_BONE_OLD:
 	case EVM_SK:
+	case BEAGLE_BONE_BLACK:
 		setup_pin_mux(mmc0_common_pin_mux);
 		setup_pin_mux(mmc0_cd_only_pin_mux);
 		break;
@@ -2762,10 +3010,10 @@ static void tps65217_init(int evm_id, int profile)
 	}
 
 	if (!(val & TPS65217_STATUS_ACPWR)) {
-		/* If powered by USB then disable OPP120 and OPPTURBO */
+		/* If powered by USB then disable OPP120, OPPTURBO and OPPNITRO*/
 		pr_info("Maximum current provided by the USB port is 500mA"
-			" which is not sufficient\nwhen operating @OPP120 and"
-			" OPPTURBO. The current requirement for some\nuse-cases"
+			" which is not sufficient\nwhen operating @OPP120, OPPTURBO and"
+			" OPPNITRO. The current requirement for some\nuse-cases"
 			" using OPP100 might also exceed the maximum current"
 			" that the\nUSB port can provide. Unless you are fully"
 			" confident that the current\nrequirements for OPP100"
@@ -2773,6 +3021,8 @@ static void tps65217_init(int evm_id, int profile)
 			" AC power is recommended.\n");
 		opp_disable(mpu_dev, 600000000);
 		opp_disable(mpu_dev, 720000000);
+		opp_disable(mpu_dev, 800000000);
+		opp_disable(mpu_dev, 1000000000);
 	}
 }
 
@@ -2956,6 +3206,7 @@ static void am335x_rtc_init(int evm_id, int profile)
 	switch (evm_id) {
 	case BEAGLE_BONE_A3:
 	case BEAGLE_BONE_OLD:
+	case BEAGLE_BONE_BLACK:
 		am335x_rtc_info.pm_off = true;
 		break;
 	default:
@@ -2965,7 +3216,7 @@ static void am335x_rtc_init(int evm_id, int profile)
 	clk_disable(clk);
 	clk_put(clk);
 
-	if (omap_rev() == AM335X_REV_ES2_0)
+	if (omap_rev() >= AM335X_REV_ES2_0)
 		am335x_rtc_info.wakeup_capable = 1;
 
 	oh = omap_hwmod_lookup("rtc");
@@ -2981,11 +3232,6 @@ static void am335x_rtc_init(int evm_id, int profile)
 }
 
 /* Enable clkout2 */
-static struct pinmux_config clkout2_pin_mux[] = {
-	{"xdma_event_intr1.clkout2", OMAP_MUX_MODE3 | AM33XX_PIN_OUTPUT},
-	{NULL, 0},
-};
-
 static void clkout2_enable(int evm_id, int profile)
 {
 	struct clk *ck_32;
@@ -3001,6 +3247,12 @@ static void clkout2_enable(int evm_id, int profile)
 	setup_pin_mux(clkout2_pin_mux);
 }
 
+static void sgx_init(int evm_id, int profile)
+{
+	if (omap3_has_sgx()) {
+		am33xx_gpu_init();
+	}
+}
 /* General Purpose EVM */
 static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{am335x_rtc_init, DEV_ON_BASEBOARD, PROFILE_ALL},
@@ -3021,6 +3273,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{i2c1_init,     DEV_ON_DGHTR_BRD, (PROFILE_ALL & ~PROFILE_2)},
 	{lis331dlh_init, DEV_ON_DGHTR_BRD, (PROFILE_ALL & ~PROFILE_2)},
 	{mcasp1_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_3 | PROFILE_7)},
+	{mcasp0_init,	DEV_ON_BASEBOARD, (PROFILE_ALL)},
 	{mmc1_init,	DEV_ON_DGHTR_BRD, PROFILE_2},
 	{mmc2_wl12xx_init,	DEV_ON_BASEBOARD, (PROFILE_0 | PROFILE_3 |
 								PROFILE_5)},
@@ -3035,6 +3288,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{volume_keys_init,  DEV_ON_DGHTR_BRD, PROFILE_0},
 	{uart2_init,	DEV_ON_DGHTR_BRD, PROFILE_3},
 	{haptics_init,	DEV_ON_DGHTR_BRD, (PROFILE_4)},
+	{sgx_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
 	{NULL, 0, 0},
 };
 
@@ -3063,22 +3317,37 @@ static struct evm_dev_cfg beaglebone_old_dev_cfg[] = {
 	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{i2c2_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{sgx_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{NULL, 0, 0},
 };
 
 /* Beaglebone Rev A3 and after */
 static struct evm_dev_cfg beaglebone_dev_cfg[] = {
 	{am335x_rtc_init, DEV_ON_BASEBOARD, PROFILE_NONE},
-	{clkout2_enable, DEV_ON_BASEBOARD, PROFILE_NONE},
 	{tps65217_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{mii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{i2c2_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{sgx_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{NULL, 0, 0},
 };
 
+/* Beaglebone Black */
+static struct evm_dev_cfg beaglebone_black_dev_cfg[] = {
+	{am335x_rtc_init, DEV_ON_BASEBOARD, PROFILE_NONE},
+	{tps65217_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{mii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{usb0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{mmc1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{i2c2_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{mcasp0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{sgx_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	{NULL, 0, 0},
+};
 /* EVM - Starter Kit */
 static struct evm_dev_cfg evm_sk_dev_cfg[] = {
 	{am335x_rtc_init, DEV_ON_BASEBOARD, PROFILE_ALL},
@@ -3096,6 +3365,7 @@ static struct evm_dev_cfg evm_sk_dev_cfg[] = {
 	{uart1_wl12xx_init, DEV_ON_BASEBOARD, PROFILE_ALL},
 	{wl12xx_init,       DEV_ON_BASEBOARD, PROFILE_ALL},
 	{gpio_ddr_vtt_enb_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+	{sgx_init,       DEV_ON_BASEBOARD, PROFILE_ALL},
 	{NULL, 0, 0},
 };
 
@@ -3108,7 +3378,105 @@ static int am33xx_evm_tx_clk_dly_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
+#define AM33XX_VDD_CORE_OPP50_UV		1100000
+#define AM33XX_OPP120_FREQ		600000000
+#define AM33XX_OPPTURBO_FREQ		720000000
+
+#define AM33XX_ES2_0_VDD_CORE_OPP50_UV	950000
+#define AM33XX_ES2_0_OPP120_FREQ	720000000
+#define AM33XX_ES2_0_OPPTURBO_FREQ	800000000
+#define AM33XX_ES2_0_OPPNITRO_FREQ	1000000000
+
+#define AM33XX_ES2_1_VDD_CORE_OPP50_UV	950000
+#define AM33XX_ES2_1_OPP120_FREQ	720000000
+#define AM33XX_ES2_1_OPPTURBO_FREQ	800000000
+#define AM33XX_ES2_1_OPPNITRO_FREQ	1000000000
+
+static void am335x_opp_update(void)
+{
+	u32 rev;
+	int voltage_uv = 0;
+	struct device *core_dev, *mpu_dev;
+	struct regulator *core_reg;
+
+	core_dev = omap_device_get_by_hwmod_name("l3_main");
+	mpu_dev = omap_device_get_by_hwmod_name("mpu");
+
+	if (!mpu_dev || !core_dev) {
+		pr_err("%s: Aiee.. no mpu/core devices? %p %p\n", __func__,
+		       mpu_dev, core_dev);
+		return;
+	}
+
+	core_reg = regulator_get(core_dev, "vdd_core");
+	if (IS_ERR(core_reg)) {
+		pr_err("%s: unable to get core regulator\n", __func__);
+		return;
+	}
+
+	/*
+	 * Ensure physical regulator is present.
+	 * (e.g. could be dummy regulator.)
+	 */
+	voltage_uv = regulator_get_voltage(core_reg);
+	if (voltage_uv < 0) {
+		pr_err("%s: physical regulator not present for core" \
+		       "(%d)\n", __func__, voltage_uv);
+		regulator_put(core_reg);
+		return;
+	}
+
+	pr_debug("%s: core regulator value %d\n", __func__, voltage_uv);
+	if (voltage_uv > 0) {
+		rev = omap_rev();
+		switch (rev) {
+		case AM335X_REV_ES1_0:
+			if (voltage_uv <= AM33XX_VDD_CORE_OPP50_UV) {
+				/*
+				 * disable the higher freqs - we dont care about
+				 * the results
+				 */
+				opp_disable(mpu_dev, AM33XX_OPP120_FREQ);
+				opp_disable(mpu_dev, AM33XX_OPPTURBO_FREQ);
+			}
+			break;
+		case AM335X_REV_ES2_0:
+			if (voltage_uv <= AM33XX_ES2_0_VDD_CORE_OPP50_UV) {
+				/*
+				 * disable the higher freqs - we dont care about
+				 * the results
+				 */
+				opp_disable(mpu_dev,
+					    AM33XX_ES2_0_OPP120_FREQ);
+				opp_disable(mpu_dev,
+					    AM33XX_ES2_0_OPPTURBO_FREQ);
+				opp_disable(mpu_dev,
+					    AM33XX_ES2_0_OPPNITRO_FREQ);
+			}
+			break;
+		case AM335X_REV_ES2_1:
+		/* FALLTHROUGH */
+		default:
+			if (voltage_uv <= AM33XX_ES2_1_VDD_CORE_OPP50_UV) {
+				/*
+				 * disable the higher freqs - we dont care about
+				 * the results
+				 */
+				opp_disable(mpu_dev,
+					    AM33XX_ES2_1_OPP120_FREQ);
+				opp_disable(mpu_dev,
+					    AM33XX_ES2_1_OPPTURBO_FREQ);
+				opp_disable(mpu_dev,
+					    AM33XX_ES2_1_OPPNITRO_FREQ);
+			}
+			break;
+		}
+	}
+}
+
+#ifdef CONFIG_MACH_AM335XEVM_VIBRATOR
 int am335xevm_vibrator_init(void);
+#endif
 
 static void setup_general_purpose_evm(void)
 {
@@ -3129,8 +3497,10 @@ static void setup_general_purpose_evm(void)
 	phy_register_fixup_for_uid(AM335X_EVM_PHY_ID, AM335X_EVM_PHY_MASK,
 				   am33xx_evm_tx_clk_dly_phy_fixup);
 
+#ifdef CONFIG_MACH_AM335XEVM_VIBRATOR
 	/* Initialize Vibrator on AM335xEVM */
 	am335xevm_vibrator_init();
+#endif
 }
 
 static void setup_ind_auto_motor_ctrl_evm(void)
@@ -3179,6 +3549,22 @@ static void setup_beaglebone(void)
 	am335x_mmc[0].gpio_wp = -EINVAL;
 
 	_configure_device(BEAGLE_BONE_A3, beaglebone_dev_cfg, PROFILE_NONE);
+
+	/* TPS65217 regulator has full constraints */
+	regulator_has_full_constraints();
+
+	am33xx_cpsw_init(AM33XX_CPSW_MODE_MII, NULL, NULL);
+}
+
+/* BeagleBone Black */
+static void setup_beaglebone_black(void)
+{
+	pr_info("The board is a AM335x Beaglebone Black.\n");
+
+	/* Beagle Bone has Micro-SD slot which doesn't have Write Protect pin */
+	am335x_mmc[0].gpio_wp = -EINVAL;
+
+	_configure_device(BEAGLE_BONE_BLACK, beaglebone_black_dev_cfg, PROFILE_NONE);
 
 	/* TPS65217 regulator has full constraints */
 	regulator_has_full_constraints();
@@ -3312,8 +3698,13 @@ static void bone_setup_display_daughter_board(struct memory_accessor *m, void *c
 	/* Display needs to be initialized even if display daughter card is not found so as
 	 * to enable framebuffer driver which is needed for successful Android bootup
 	 */
-	pr_info("No daughter card found on BeagleBone\n");
-	vnc_lcdc_init(DEV_ON_BASEBOARD, PROFILE_NONE);
+	pr_info("No display cape found on BeagleBone\n");
+
+	/* HDMI display is setup for BeagleBone Black */
+	if (am335x_evm_get_id() == BEAGLE_BONE_BLACK)
+		hdmi_init(DEV_ON_BASEBOARD, PROFILE_NONE);
+	else
+		vnc_lcdc_init(DEV_ON_BASEBOARD, PROFILE_NONE);
 }
 
 static void bone_setup_daughter_board(struct memory_accessor *m, void *c)
@@ -3347,6 +3738,7 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 {
 	int ret;
 	char tmp[10];
+	struct device *mpu_dev;
 
 	/* 1st get the MAC address from EEPROM */
 	ret = mem_acc->read(mem_acc, (char *)&am335x_mac_addr,
@@ -3393,6 +3785,15 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 			setup_beaglebone_old();
 		else
 			setup_beaglebone();
+	} else if (!strncmp("A335BNLT", config.name, 8)) {
+		daughter_brd_detected = false;
+		if(!strncmp("0A5A", config.version, 4) ||
+		   !strncmp("0A5B", config.version, 4) ||
+		   !strncmp("0A5C", config.version, 4)) {
+			mpu_dev = omap_device_get_by_hwmod_name("mpu");
+			opp_enable(mpu_dev, AM33XX_ES2_0_OPPNITRO_FREQ);
+		}
+		setup_beaglebone_black();
 	} else if (!strncmp("A335X_SK", config.name, 8)) {
 		daughter_brd_detected = false;
 		setup_starterkit();
@@ -3408,6 +3809,8 @@ static void am335x_evm_setup(struct memory_accessor *mem_acc, void *context)
 		else
 			goto out;
 	}
+
+	am335x_opp_update();
 
 	return;
 

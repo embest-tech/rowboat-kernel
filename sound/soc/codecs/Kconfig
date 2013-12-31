@@ -25,6 +25,7 @@ config SND_SOC_ALL_CODECS
 	select SND_SOC_AK4641 if I2C
 	select SND_SOC_AK4642 if I2C
 	select SND_SOC_AK4671 if I2C
+	select SND_SOC_AM335X_HDMI_CODEC
 	select SND_SOC_ALC5623 if I2C
 	select SND_SOC_CQ0093VC if MFD_DAVINCI_VOICECODEC
 	select SND_SOC_CS42L51 if I2C
@@ -57,6 +58,7 @@ config SND_SOC_ALL_CODECS
 	select SND_SOC_TWL6040 if TWL4030_CORE
 	select SND_SOC_UDA134X
 	select SND_SOC_UDA1380 if I2C
+	select SND_SOC_WL1271BT
 	select SND_SOC_WL1273 if MFD_WL1273_CORE
 	select SND_SOC_WM1250_EV1 if I2C
 	select SND_SOC_WM2000 if I2C
@@ -166,6 +168,9 @@ config SND_SOC_AK4642
 config SND_SOC_AK4671
 	tristate
 
+config SND_SOC_AM335X_HDMI_CODEC
+	tristate "AM335X HDMI Audio Codec support"
+
 config SND_SOC_ALC5623
        tristate
 
@@ -274,6 +279,10 @@ config SND_SOC_UDA134X
 
 config SND_SOC_UDA1380
         tristate
+
+config SND_SOC_WL1271BT
+	tristate "WL1271 Bluetooth Codec support"
+	default n
 
 config SND_SOC_WL1273
 	tristate

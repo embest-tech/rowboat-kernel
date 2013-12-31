@@ -45,17 +45,23 @@
 #define TSCADC_STEPENB(val)		((val) << 0)
 #define TSCADC_STPENB_STEPENB		TSCADC_STEPENB(0x1FFFF)
 #define TSCADC_STPENB_STEPENB_TC	TSCADC_STEPENB(0x1FFF)
+#define TSCADC_ENB(val)			(1 << (val))
 
 /* IRQ enable */
 #define TSCADC_IRQENB_HW_PEN		BIT(0)
 #define TSCADC_IRQENB_FIFO0THRES	BIT(2)
+#define TSCADC_IRQENB_FIFO0OVRRUN	BIT(3)
+#define TSCADC_IRQENB_FIFO0UNDRFLW	BIT(4)
 #define TSCADC_IRQENB_FIFO1THRES	BIT(5)
+#define TSCADC_IRQENB_FIFO1OVRRUN       BIT(6)
+#define TSCADC_IRQENB_FIFO1UNDRFLW      BIT(7)
 #define TSCADC_IRQENB_PENUP		BIT(9)
 
 /* Step Configuration */
 #define TSCADC_STEPCONFIG_MODE_MASK	(3 << 0)
 #define TSCADC_STEPCONFIG_MODE(val)	((val) << 0)
 #define TSCADC_STEPCONFIG_MODE_HWSYNC	TSCADC_STEPCONFIG_MODE(2)
+#define TSCADC_STEPCONFIG_MODE_SWCNT	TSCADC_STEPCONFIG_MODE(1)
 #define TSCADC_STEPCONFIG_AVG_MASK	(7 << 2)
 #define TSCADC_STEPCONFIG_AVG(val)	((val) << 2)
 #define TSCADC_STEPCONFIG_AVG_16	TSCADC_STEPCONFIG_AVG(4)
@@ -115,17 +121,28 @@
 #define TSCADC_CNTRLREG_8WIRE		TSCADC_CNTRLREG_AFE_CTRL(3)
 #define TSCADC_CNTRLREG_TSCENB		BIT(7)
 
+/* FIFO READ Register */
+#define TSCADC_FIFOREAD_DATA_MASK	(0xfff << 0)
+#define TSCADC_FIFOREAD_CHNLID_MASK	(0xf << 16)
+
+/* Sequencer Status */
+#define TSCADC_SEQ_STATUS		BIT(5)
+
 #define ADC_CLK				3000000
-#define	MAX_CLK_DIV			7
 #define TOTAL_STEPS			16
 #define TOTAL_CHANNELS			8
+#define FIFO1_THRESHOLD			19
+
+/*
+ * ADC runs at 3MHz, and it takes
+ * 15 cycles to latch one data output.
+ * Hence the idle time for ADC to
+ * process one sample data would be
+ * around 5 micro seconds.
+ */
+#define IDLE_TIMEOUT			5 /* microsec */
 
 #define TSCADC_CELLS			2
-
-enum tscadc_cells {
-	TSC_CELL,
-	ADC_CELL,
-};
 
 struct mfd_tscadc_board {
 	struct tsc_data *tsc_init;
@@ -143,4 +160,8 @@ struct ti_tscadc_dev {
 
 	/* adc device */
 	struct adc_device *adc;
+
+	/* Context save */
+	unsigned int irqstat;
+	unsigned int ctrl;
 };
