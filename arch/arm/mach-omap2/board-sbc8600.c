@@ -538,9 +538,9 @@ static struct pinmux_config rmii1_pin_mux[] = {
 };
 
 static struct pinmux_config i2c0_pin_mux[] = {
-        {"i2c0_sda.i2c0_sda",    OMAP_MUX_MODE0 | AM33XX_SLEWCTRL_SLOW |
+        {"i2c0_sda.i2c0_sda",    OMAP_MUX_MODE0 | AM33XX_SLEWCTRL_FAST |
                                         AM33XX_PULL_ENBL | AM33XX_PULL_UP | AM33XX_INPUT_EN},
-        {"i2c0_scl.i2c0_scl",   OMAP_MUX_MODE0 | AM33XX_SLEWCTRL_SLOW |
+        {"i2c0_scl.i2c0_scl",   OMAP_MUX_MODE0 | AM33XX_SLEWCTRL_FAST |
                                         AM33XX_PULL_ENBL | AM33XX_PULL_UP | AM33XX_INPUT_EN},
         {NULL, 0},
 };
